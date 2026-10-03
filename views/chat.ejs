@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Live Chat Support - <%= settings.name %></title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'sans': ['Plus Jakarta Sans', 'sans-serif'],
+            'outfit': ['Outfit', 'sans-serif'],
+            'mono': ['JetBrains Mono', 'monospace']
+          },
+          boxShadow: {
+            'card': '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
+            'btn': '0 4px 14px 0 rgba(37, 99, 235, 0.25)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden; 
+      background-color: #f8fafc;
+      touch-action: manipulation; 
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .chat-bubble-mine {
+      background: #2563eb;
+      color: #ffffff;
+      border-radius: 18px 18px 4px 18px;
+    }
+    
+    .chat-bubble-other {
+      background: #ffffff;
+      color: #0f172a;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px 18px 18px 4px;
+    }
+    
+    .chat-image {
+      max-width: 220px;
+      max-height: 240px;
+      border-radius: 12px;
+      object-fit: cover;
+      cursor: pointer;
+      display: block;
+      margin: 6px 0;
+      transition: transform 0.2s;
+    }
+    .chat-image:hover {
+      transform: scale(1.02);
+    }
+    
+    .send-btn:disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .modal-backdrop.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .modal-backdrop {
+      transition: opacity 0.2s ease;
+      opacity: 1;
+    }
+    
+    #chatMessages::-webkit-scrollbar {
+      width: 5px;
+    }
+    #chatMessages::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .highlight-msg {
+      animation: highlightAnim 1.5s ease-out;
+    }
+    @keyframes highlightAnim {
+      0% { background-color: #dbeafe; }
+      100% { background-color: transparent; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased">
+
+  <div class="fixed inset-0 flex flex-col w-full max-w-3xl mx-auto bg-white sm:border-x border-slate-200/80 shadow-2xl overflow-hidden">
+    
+    <!-- Modern Header -->
+    <div class="bg-slate-900 px-4 sm:px-6 py-3.5 shrink-0 z-10 flex items-center gap-2 sm:gap-3 text-white border-b border-slate-800">
+      <a href="/dashboard" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-white transition-colors shrink-0">
+        <i class="fas fa-arrow-left text-xs"></i>
+      </a>
+      
+      <div class="flex-1 text-center min-w-0">
+        <div class="flex items-center justify-center gap-1.5 sm:gap-2">
+          <h1 class="text-xs sm:text-sm lg:text-base font-bold text-white font-outfit truncate">Live Chat Support — <%= settings.name %></h1>
+          
+          <span class="relative flex h-2.5 w-2.5 shrink-0 items-center gap-1.5">
+            <span id="adminOnlinePing" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span id="adminOnlineDot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            <span id="adminOnlineLabel" class="text-[11px] font-medium text-slate-300 ml-1 hidden sm:inline">Admin Online</span>
+          </span>
+        </div>
+      </div>
+
+      <% if (user && user.role === 'admin') { %>
+        <button onclick="resetChat()" 
+                class="w-9 h-9 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/30 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                title="Reset seluruh chat (hanya admin)">
+          <i class="fas fa-trash-alt text-xs"></i>
+        </button>
+      <% } else { %>
+        <div class="w-9 h-9 shrink-0"></div>
+      <% } %>
+    </div>
+
+    <!-- Messages Container -->
+    <div id="chatMessages" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 bg-slate-50">
+    </div>
+
+    <!-- Input Bar -->
+    <div class="bg-white border-t border-slate-200 p-3 sm:p-4 shrink-0 z-10 pb-safe relative shadow-lg">
+      
+      <!-- Reply Preview Box -->
+      <div id="replyPreviewContainer" class="hidden relative mx-0 mb-3 p-3 bg-blue-50/70 border border-blue-200 rounded-lg sm:rounded-2xl flex flex-col">
+        <div class="flex justify-between items-center mb-0.5">
+          <span id="replyPreviewName" class="text-xs font-bold text-blue-700 font-outfit">Username</span>
+          <button onclick="cancelReply()" type="button" class="text-slate-500 hover:text-slate-700 p-1 bg-white rounded-lg w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center border border-slate-200 cursor-pointer">
+            <i class="fas fa-times text-[10px]"></i>
+          </button>
+        </div>
+        <span id="replyPreviewText" class="text-xs text-slate-600 truncate pr-4">Membalas pesan...</span>
+      </div>
+
+      <!-- Image Upload Preview Box -->
+      <div id="imagePreviewContainer" class="hidden relative inline-block mb-3 ml-0">
+        <img id="imagePreview" src="" alt="Preview" class="h-20 w-20 object-cover rounded-lg sm:rounded-2xl border border-slate-200 shadow-sm" />
+        <button onclick="removeImage()" type="button" class="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-rose-600 shadow-sm cursor-pointer">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form id="chatForm" class="flex items-center gap-2 sm:gap-2 sm:gap-3 w-full">
+        <label for="imageInput" class="text-slate-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 transition-colors flex items-center justify-center shrink-0">
+          <i class="fas fa-image text-sm"></i>
+        </label>
+        <input type="file" id="imageInput" accept="image/*" class="hidden" />
+
+        <div class="flex-1 relative">
+          <input type="text" id="messageInput" placeholder="Tuliskan pesan..." autocomplete="off"
+                 class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 placeholder:text-slate-400 transition-all">
+        </div>
+
+        <button type="submit" id="sendBtn"
+                class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold font-outfit flex items-center justify-center transition-all shadow-btn active:scale-95 shrink-0 cursor-pointer">
+          <i class="fas fa-paper-plane text-xs"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Image Viewer Modal -->
+  <div id="imageModal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop bg-slate-950/80 backdrop-blur-sm">
+    <div class="relative max-w-[90%] max-h-[90%] flex items-center justify-center p-2">
+      <button id="closeModalBtn" class="absolute -top-4 -right-4 text-slate-700 bg-white hover:bg-slate-100 rounded-full w-9 h-9 flex items-center justify-center text-sm z-10 transition-colors shadow-md border border-slate-200 cursor-pointer">
+        <i class="fas fa-times"></i>
+      </button>
+      <img id="modalImage" src="" alt="Pratinjau Gambar" class="object-contain max-w-full max-h-full rounded-lg sm:rounded-2xl shadow-2xl border border-white/20">
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const currentUser = <%- JSON.stringify(user) %>;
+    const socket = io();
+
+    socket.emit('join_support_chat', { userId: currentUser._id, role: currentUser.role });
+
+    const messagesContainer = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const chatForm = document.getElementById('chatForm');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const sendBtn = document.getElementById('sendBtn');
+    
+    let displayedIds = new Set();
+    let lastTimestamp = null;
+    let lastRenderedDate = null;
+    let isNearBottom = true;
+    let isFirstLoad = true;
+    let uploadedImageUrl = null;
+    let replyingTo = null;
+    let typingTimeout = null;
+
+    // Typing Indicator element
+    const typingIndicatorEl = document.createElement('div');
+    typingIndicatorEl.id = 'typingIndicator';
+    typingIndicatorEl.className = 'hidden flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-full w-fit text-xs text-slate-500 shadow-xs';
+    typingIndicatorEl.innerHTML = `
+      <div class="flex gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce [animation-delay:0.2s]"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce [animation-delay:0.4s]"></span>
+      </div>
+      <span id="typingText" class="text-[11px] font-medium">Sedang mengetik...</span>
+    `;
+
+    // Socket Events
+    socket.on('support_admin_status', ({ online }) => {
+      const dot = document.getElementById('adminOnlineDot');
+      const ping = document.getElementById('adminOnlinePing');
+      const label = document.getElementById('adminOnlineLabel');
+      if (online) {
+        dot.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500';
+        ping.classList.remove('hidden');
+        if (label) { label.textContent = 'Admin Online'; label.className = 'text-[11px] font-medium text-emerald-400 ml-1 hidden sm:inline'; }
+      } else {
+        dot.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-slate-500';
+        ping.classList.add('hidden');
+        if (label) { label.textContent = 'Admin Offline'; label.className = 'text-[11px] font-medium text-slate-400 ml-1 hidden sm:inline'; }
+      }
+    });
+
+    socket.on('chat:new_message', (msg) => {
+      renderMessage(msg);
+      scrollToBottomIfNeeded();
+      // Auto read if receiver is looking at the screen
+      if (msg.userId !== currentUser._id) {
+        socket.emit('chat:read', { messageId: msg._id, userId: currentUser._id });
+      }
+    });
+
+    socket.on('chat:messages_read', () => {
+      document.querySelectorAll('.msg-status-icon').forEach(icon => {
+        icon.className = 'fa-solid fa-check-double text-blue-200 text-[10px] msg-status-icon';
+        icon.title = 'Dibaca';
+      });
+    });
+
+    socket.on('chat:typing_status', ({ isTyping, username }) => {
+      const textEl = document.getElementById('typingText');
+      if (isTyping) {
+        if (textEl) textEl.textContent = `${username || 'Admin'} sedang mengetik...`;
+        typingIndicatorEl.classList.remove('hidden');
+        messagesContainer.appendChild(typingIndicatorEl);
+        forceScrollToBottom();
+      } else {
+        typingIndicatorEl.classList.add('hidden');
+      }
+    });
+
+    messageInput.addEventListener('input', () => {
+      socket.emit('chat:typing', { targetUserId: currentUser._id, isTyping: true, username: currentUser.username });
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        socket.emit('chat:typing', { targetUserId: currentUser._id, isTyping: false, username: currentUser.username });
+      }, 2000);
+    });
+
+    function getAvatarColor(username) {
+      let hash = 0;
+      for (let i = 0; i < username.length; i++) {
+        hash = username.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const colors = ['#3b82f6', '#0ea5e9', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+      return colors[Math.abs(hash) % colors.length];
+    }
+
+    function formatTime(isoString) {
+      const date = new Date(isoString);
+      return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+
+    function initiateReply(msg) {
+      replyingTo = {
+        _id: msg._id,
+        username: msg.username,
+        message: msg.message,
+        image: msg.image
+      };
+      
+      document.getElementById('replyPreviewName').textContent = msg.username;
+      
+      const replyPreviewContainer = document.getElementById('replyPreviewContainer');
+      
+      let previewTxt = '';
+      if (msg.image && !msg.message) previewTxt = '📷 Gambar';
+      else if (msg.image && msg.message) previewTxt = '📷 ' + msg.message;
+      else previewTxt = msg.message;
+      
+      document.getElementById('replyPreviewText').textContent = previewTxt;
+      replyPreviewContainer.classList.remove('hidden');
+      messageInput.focus();
+    }
+
+    function cancelReply() {
+      replyingTo = null;
+      document.getElementById('replyPreviewContainer').classList.add('hidden');
+    }
+
+    function renderMessage(msg) {
+      if (displayedIds.has(msg._id)) return;
+      displayedIds.add(msg._id);
+
+      const isMine = (msg.userId === currentUser._id || msg.role === currentUser.role);
+      const isAdmin = msg.role === 'admin';
+      const messageDate = new Date(msg.createdAt);
+
+      const currentDateText = messageDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      if (!lastRenderedDate || currentDateText !== lastRenderedDate) {
+        lastRenderedDate = currentDateText;
+        const dateDivider = document.createElement('div');
+        dateDivider.className = 'flex justify-center my-3';
+        const dateBubble = document.createElement('div');
+        dateBubble.className = 'bg-slate-200/80 text-slate-600 text-[11px] font-medium px-3 py-0.5 rounded-full';
+        dateBubble.textContent = currentDateText;
+        dateDivider.appendChild(dateBubble);
+        messagesContainer.appendChild(dateDivider);
+      }
+
+      const wrapper = document.createElement('div');
+      wrapper.id = `msg-${msg._id}`;
+      wrapper.className = `flex items-end gap-1.5 sm:gap-2 group p-0.5 ${isMine ? 'flex-row-reverse' : ''}`;
+
+      if (!isMine) {
+        const avatar = document.createElement('div');
+        avatar.className = 'w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-white font-bold text-xs shrink-0 relative';
+        
+        if (msg.profilePicture) {
+          avatar.innerHTML = `<img src="${msg.profilePicture}" class="w-full h-full object-cover" alt="${msg.username}">`;
+        } else {
+          const color = getAvatarColor(msg.username);
+          avatar.style.backgroundColor = color;
+          avatar.textContent = msg.username.charAt(0).toUpperCase();
+        }
+        
+        wrapper.appendChild(avatar);
+      }
+
+      const bubble = document.createElement('div');
+      bubble.className = `px-4 py-2.5 text-xs sm:text-sm ${isMine ? 'chat-bubble-mine max-w-[80%] shadow-xs' : 'chat-bubble-other max-w-[75%] shadow-xs'}`;
+
+      if (!isMine) {
+        const nameEl = document.createElement('div');
+        nameEl.className = `text-[11px] font-bold font-outfit mb-1 text-slate-900`;
+        nameEl.innerHTML = msg.username;
+        if (isAdmin) {
+          nameEl.innerHTML += ' <span class="text-blue-600 font-medium"><i class="fas fa-check-circle text-xs ml-0.5"></i> Admin Support</span>';
+        }
+        bubble.appendChild(nameEl);
+      }
+
+      if (msg.replyTo && (msg.replyTo.message || msg.replyTo.image)) {
+        const replyBox = document.createElement('div');
+        replyBox.className = `rounded-xl ${isMine ? 'bg-blue-700/60 text-blue-100 border border-blue-400/30' : 'bg-slate-100 text-slate-700 border border-slate-200'} p-2 mb-2 flex flex-col text-left cursor-pointer transition-colors`;
+        
+        replyBox.onclick = () => {
+           const target = document.getElementById(`msg-${msg.replyTo._id}`);
+           if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              target.classList.add('highlight-msg');
+              setTimeout(() => target.classList.remove('highlight-msg'), 1500);
+           }
+        };
+
+        const repName = document.createElement('span');
+        repName.className = `font-bold text-[11px] leading-tight mb-0.5 font-outfit ${isMine ? 'text-white' : 'text-slate-900'}`;
+        repName.textContent = msg.replyTo.username;
+        replyBox.appendChild(repName);
+
+        let repTxtStr = '';
+        if (msg.replyTo.image && !msg.replyTo.message) repTxtStr = '📷 Gambar';
+        else if (msg.replyTo.image && msg.replyTo.message) repTxtStr = '📷 ' + msg.replyTo.message;
+        else repTxtStr = msg.replyTo.message;
+
+        const repTxt = document.createElement('span');
+        repTxt.className = `text-[11px] truncate ${isMine ? 'text-blue-200' : 'text-slate-500'}`;
+        repTxt.textContent = repTxtStr;
+        replyBox.appendChild(repTxt);
+
+        bubble.appendChild(replyBox);
+      }
+
+      if (msg.image) {
+        const img = document.createElement('img');
+        img.src = msg.image;
+        img.className = 'chat-image rounded-xl border border-black/10';
+        img.onclick = () => openImageModal(msg.image);
+        img.onload = () => {
+          if (isFirstLoad || isNearBottom) forceScrollToBottom();
+        };
+        bubble.appendChild(img);
+      }
+
+      if (msg.message) {
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = `text-xs sm:text-sm leading-relaxed break-words`;
+        
+        const messageSpan = document.createElement('span');
+        messageSpan.className = 'whitespace-pre-wrap';
+        messageSpan.textContent = msg.message;
+        
+        const metaSpan = document.createElement('span');
+        metaSpan.className = `float-right text-[10px] ml-3 mt-1.5 flex items-center gap-1 ${isMine ? 'text-blue-200' : 'text-slate-400'}`;
+        
+        let statusHtml = '';
+        if (isMine) {
+          if (msg.isRead || msg.status === 'read') {
+            statusHtml = `<i class="fa-solid fa-check-double text-blue-200 text-[10px] msg-status-icon" title="Dibaca"></i>`;
+          } else if (msg.status === 'sending') {
+            statusHtml = `<i class="fa-regular fa-clock text-blue-300 text-[10px]" title="Mengirim..."></i>`;
+          } else {
+            statusHtml = `<i class="fa-solid fa-check text-blue-300 text-[10px] msg-status-icon" title="Terkirim"></i>`;
+          }
+        }
+
+        metaSpan.innerHTML = `${formatTime(msg.createdAt)} ${statusHtml}`;
+
+        contentWrapper.appendChild(messageSpan);
+        contentWrapper.appendChild(metaSpan);
+        
+        const clearFix = document.createElement('div');
+        clearFix.className = 'clear-both';
+        contentWrapper.appendChild(clearFix);
+
+        bubble.appendChild(contentWrapper);
+      } else {
+        const timeDiv = document.createElement('div');
+        timeDiv.className = `text-[10px] text-right flex items-center justify-end gap-1 ${isMine ? 'text-blue-200' : 'text-slate-400'}`;
+        let statusHtml = '';
+        if (isMine) {
+          if (msg.isRead || msg.status === 'read') {
+            statusHtml = `<i class="fa-solid fa-check-double text-blue-200 text-[10px] msg-status-icon" title="Dibaca"></i>`;
+          } else {
+            statusHtml = `<i class="fa-solid fa-check text-blue-300 text-[10px] msg-status-icon" title="Terkirim"></i>`;
+          }
+        }
+        timeDiv.innerHTML = `${formatTime(msg.createdAt)} ${statusHtml}`;
+        bubble.appendChild(timeDiv);
+      }
+
+      wrapper.appendChild(bubble);
+
+      const replyBtn = document.createElement('button');
+      replyBtn.className = 'text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200/60 transition-all active:scale-95 shrink-0 opacity-0 group-hover:opacity-100 cursor-pointer';
+      replyBtn.innerHTML = '<i class="fas fa-reply text-xs"></i>';
+      replyBtn.onclick = () => initiateReply(msg);
+      wrapper.appendChild(replyBtn);
+
+      messagesContainer.appendChild(wrapper);
+    }
+
+    const imageModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+
+    function openImageModal(imageUrl) {
+      window.location.hash = '#image?url=' + encodeURIComponent(imageUrl);
+    }
+
+    function closeImageModal() {
+      window.location.hash = '';
+    }
+
+    function handleHashChange() {
+      const hash = window.location.hash;
+      if (hash.startsWith('#image?url=')) {
+        const urlParam = hash.substring('#image?url='.length);
+        const imageUrl = decodeURIComponent(urlParam);
+        modalImage.src = imageUrl;
+        imageModal.classList.remove('hidden');
+        imageModal.classList.remove('opacity-0');
+      } else {
+        imageModal.classList.add('opacity-0');
+        setTimeout(() => {
+          imageModal.classList.add('hidden');
+          modalImage.src = '';
+        }, 200);
+      }
+    }
+
+    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('load', handleHashChange);
+
+    document.getElementById('closeModalBtn').addEventListener('click', closeImageModal);
+    imageModal.addEventListener('click', (e) => {
+      if (e.target === imageModal || e.target.parentElement === imageModal) {
+        closeImageModal();
+      }
+    });
+
+    async function resetChat() {
+      if (!confirm('⚠️ Anda yakin ingin menghapus SELURUH chat? Tindakan ini tidak dapat dibatalkan.')) return;
+      
+      try {
+        const res = await fetch('/api/chat/reset', {
+          method: 'POST', 
+          credentials: 'include'
+        });
+        const data = await res.json();
+        if (data.success) {
+          messagesContainer.innerHTML = '';
+          displayedIds.clear();
+          lastTimestamp = null;
+          lastRenderedDate = null;
+          isFirstLoad = true;
+          await fetchMessages();
+        } else {
+          alert(data.error || 'Gagal mereset chat.');
+        }
+      } catch (err) {
+        alert('Gagal menghubungi server untuk reset chat.');
+        console.error(err);
+      }
+    }
+
+    function forceScrollToBottom() {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    function scrollToBottomIfNeeded() {
+      if (isFirstLoad || isNearBottom) forceScrollToBottom();
+    }
+    messagesContainer.addEventListener('scroll', () => {
+      const threshold = 100;
+      isNearBottom = messagesContainer.scrollTop + messagesContainer.clientHeight >= messagesContainer.scrollHeight - threshold;
+    });
+
+    async function fetchMessages(since = null) {
+      try {
+        let url = '/api/chat/messages';
+        if (since) url += `?since=${encodeURIComponent(new Date(since).toISOString())}`;
+        const res = await fetch(url, { credentials: 'include' });
+        const messages = await res.json();
+        
+        if (!Array.isArray(messages)) return;
+        
+        for (const msg of messages) {
+          renderMessage(msg);
+          const msgTime = new Date(msg.createdAt).getTime();
+          if (!lastTimestamp || msgTime > lastTimestamp) lastTimestamp = msgTime;
+        }
+
+        if (messages.length > 0) scrollToBottomIfNeeded();
+
+        if (isFirstLoad) {
+          setTimeout(() => {
+            forceScrollToBottom();
+            messagesContainer.classList.add('scroll-smooth');
+            isFirstLoad = false;
+          }, 150);
+        }
+      } catch (err) {
+        console.error('Gagal fetch chat:', err);
+      }
+    }
+
+    imageInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('image', file);
+      try {
+        const res = await fetch('/api/chat/upload', { method: 'POST', body: formData, credentials: 'include' });
+        const data = await res.json();
+        if (data.success) {
+          uploadedImageUrl = data.imageUrl;
+          imagePreview.src = data.imageUrl;
+          imagePreviewContainer.classList.remove('hidden');
+        } else alert(data.error || 'Gagal upload gambar');
+      } catch (err) {
+        alert('Gagal upload gambar');
+      }
+      imageInput.value = '';
+    });
+
+    function removeImage() {
+      uploadedImageUrl = null;
+      imagePreviewContainer.classList.add('hidden');
+      imagePreview.src = '';
+    }
+
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = messageInput.value.trim();
+      if (!text && !uploadedImageUrl) return;
+
+      sendBtn.disabled = true;
+
+      // Optimistic temp message with sending status
+      const tempId = 'temp_' + Date.now();
+      const tempMsg = {
+        _id: tempId,
+        userId: currentUser._id,
+        username: currentUser.username,
+        message: text,
+        image: uploadedImageUrl,
+        role: currentUser.role,
+        replyTo: replyingTo,
+        createdAt: new Date().toISOString(),
+        status: 'sending',
+        isRead: false
+      };
+      renderMessage(tempMsg);
+      forceScrollToBottom();
+
+      try {
+        const res = await fetch('/api/chat/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            message: text, 
+            image: uploadedImageUrl,
+            replyTo: replyingTo
+          }),
+          credentials: 'include'
+        });
+        const data = await res.json();
+        if (data.success && data.message) {
+          // Replace temp element
+          const tempEl = document.getElementById(`msg-${tempId}`);
+          if (tempEl) tempEl.remove();
+          displayedIds.delete(tempId);
+
+          renderMessage(data.message);
+          forceScrollToBottom();
+          messageInput.value = '';
+          removeImage();
+          cancelReply();
+        }
+      } catch (err) {
+        alert('Gagal mengirim pesan');
+      }
+      sendBtn.disabled = false;
+      socket.emit('chat:typing', { targetUserId: currentUser._id, isTyping: false, username: currentUser.username });
+    });
+
+    async function init() {
+      await fetchMessages();
+    }
+    
+    init();
+  </script>
+</body>
+</html>

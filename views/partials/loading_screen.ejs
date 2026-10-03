@@ -1,0 +1,103 @@
+<!-- MODERN FINTECH LOADING SCREEN FOR PUTZPAY -->
+<div id="premium-loading-screen" class="fixed inset-0 z-[999999] bg-slate-900/40 backdrop-blur-md flex flex-col items-center justify-center p-4 transition-all duration-500 ease-in-out font-sans overflow-hidden select-none">
+
+  <!-- MAIN LOADING CARD -->
+  <div class="relative z-10 w-full max-w-sm bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col items-center text-center space-y-5">
+    
+    <!-- TOP STATUS BADGE -->
+    <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-xs font-semibold text-blue-700 font-mono">
+      <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+      <span>Memuat Sistem</span>
+    </div>
+
+    <!-- LOGO BOX -->
+    <div class="w-16 h-16 rounded-lg sm:rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 text-2xl my-1 relative overflow-hidden">
+      <% if (typeof settings !== 'undefined' && settings.logoUrl) { %>
+        <img src="<%= settings.logoUrl %>" alt="Logo" class="w-12 h-12 rounded-xl object-contain" />
+      <% } else { %>
+        <i class="fa-solid fa-bolt text-blue-600 text-2xl"></i>
+      <% } %>
+    </div>
+
+    <!-- TITLE & SUBTITLE -->
+    <div class="space-y-1">
+      <h2 class="text-xl font-bold tracking-tight text-slate-900 font-outfit">
+        <%= typeof settings !== 'undefined' ? (settings.name || 'PutzPay') : 'PutzPay' %>
+      </h2>
+      <p class="text-xs text-slate-500 font-sans">
+        Menyiapkan layanan pembayaran otomatis...
+      </p>
+    </div>
+
+    <!-- PROGRESS BAR TRACK -->
+    <div class="w-full space-y-2.5 pt-1">
+      <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div id="neo-loading-progress-bar" class="h-full bg-blue-600 rounded-full transition-all duration-300 ease-out w-[10%]"></div>
+      </div>
+
+      <!-- STATUS STEP TEXT WITH SPINNER -->
+      <div class="flex items-center justify-between text-xs font-mono text-slate-500">
+        <span id="neo-loading-status" class="truncate">Menghubungkan server...</span>
+        <span id="neo-loading-percent" class="font-bold text-blue-600">10%</span>
+      </div>
+    </div>
+
+    <!-- FOOTER STAMP -->
+    <div class="pt-3 border-t border-slate-100 w-full flex items-center justify-between text-[11px] font-mono text-slate-400">
+      <span class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+        <span>Secure TLS 1.3</span>
+      </span>
+      <span class="text-slate-400">PutzPay v2.0</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  (function() {
+    const screen = document.getElementById('premium-loading-screen');
+    const bar = document.getElementById('neo-loading-progress-bar');
+    const percentText = document.getElementById('neo-loading-percent');
+    const statusText = document.getElementById('neo-loading-status');
+
+    if (!screen) return;
+
+    const steps = [
+      { p: 25, msg: 'Inisialisasi core engine...' },
+      { p: 55, msg: 'Menghubungkan database...' },
+      { p: 85, msg: 'Sinkronisasi QRIS gateway...' },
+      { p: 100, msg: 'Sistem siap digunakan!' }
+    ];
+
+    let currentStep = 0;
+
+    function runSimulation() {
+      if (currentStep < steps.length) {
+        const item = steps[currentStep];
+        if (bar) bar.style.width = item.p + '%';
+        if (percentText) percentText.textContent = item.p + '%';
+        if (statusText) statusText.textContent = item.msg;
+        currentStep++;
+        setTimeout(runSimulation, 220);
+      } else {
+        setTimeout(dismissLoading, 250);
+      }
+    }
+
+    function dismissLoading() {
+      if (!screen) return;
+      screen.classList.add('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        screen.style.display = 'none';
+      }, 500);
+    }
+
+    window.addEventListener('load', () => {
+      runSimulation();
+    });
+
+    // Fallback timer
+    setTimeout(dismissLoading, 2500);
+  })();
+</script>

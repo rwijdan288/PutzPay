@@ -1,0 +1,461 @@
+<%- include('partials/header') %>
+
+<div class="max-w-7xl mx-auto px-4 py-8 sm:py-10 space-y-8 animate-fade-in">
+
+  <!-- Breadcrumbs & Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-1.5 sm:gap-2 text-xs font-mono text-slate-400 mb-1">
+        <a href="/dashboard" class="hover:text-blue-600 transition-colors">DASHBOARD</a>
+        <span>/</span>
+        <span class="text-slate-700 font-bold">LINK PEMBAYARAN</span>
+      </div>
+      <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-black text-slate-900 font-sans tracking-tight">
+        Link Pembayaran Siap Pakai
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-500 font-sans mt-1">
+        Terima pembayaran QRIS langsung dari pembeli secara instan tanpa perlu coding atau integrasi API.
+      </p>
+    </div>
+
+    <!-- Create Button -->
+    <button onclick="openCreateModal()" class="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg sm:rounded-2xl shadow-btn transition-all active:scale-95 cursor-pointer shrink-0">
+      <i class="fa-solid fa-plus text-xs"></i>
+      <span>Buat Link Pembayaran</span>
+    </button>
+  </div>
+
+  <!-- Summary Stats Cards -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+    <div class="bg-white border border-slate-200 rounded-lg sm:rounded-2xl p-4 sm:p-5 shadow-xs">
+      <span class="text-xs font-semibold text-slate-500 block mb-1">Total Link Dibuat</span>
+      <p class="text-base sm:text-lg lg:text-xl lg:text-2xl font-black text-slate-900 font-outfit"><%= stats.totalLinks %></p>
+      <span class="text-[11px] font-mono text-slate-400 mt-1 block">Tautan No-Code</span>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-lg sm:rounded-2xl p-4 sm:p-5 shadow-xs">
+      <span class="text-xs font-semibold text-slate-500 block mb-1">Link Aktif</span>
+      <p class="text-base sm:text-lg lg:text-xl lg:text-2xl font-black text-emerald-600 font-outfit"><%= stats.activeLinks %></p>
+      <span class="text-[11px] font-mono text-emerald-600 mt-1 block">Siap Menerima QRIS</span>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-lg sm:rounded-2xl p-4 sm:p-5 shadow-xs">
+      <span class="text-xs font-semibold text-slate-500 block mb-1">Transaksi Berhasil</span>
+      <p class="text-base sm:text-lg lg:text-xl lg:text-2xl font-black text-blue-600 font-outfit"><%= stats.totalPaidCount %></p>
+      <span class="text-[11px] font-mono text-blue-600 mt-1 block">Total Pembayaran</span>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-lg sm:rounded-2xl p-4 sm:p-5 shadow-xs">
+      <span class="text-xs font-semibold text-slate-500 block mb-1">Total Omset Terkumpul</span>
+      <p class="text-base sm:text-lg lg:text-xl lg:text-2xl font-black text-slate-900 font-outfit">Rp <%= stats.totalPaidAmount.toLocaleString('id-ID') %></p>
+      <span class="text-[11px] font-mono text-emerald-600 mt-1 block">Masuk Saldo Akun</span>
+    </div>
+  </div>
+
+  <!-- Payment Links List Section -->
+  <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+    
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <h2 class="text-base font-bold text-slate-900 font-sans">Daftar Link Pembayaran</h2>
+        <span class="text-xs font-mono bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full font-semibold"><%= paymentLinks.length %></span>
+      </div>
+
+      <!-- Search Input -->
+      <div class="relative w-full sm:w-64">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input type="text" id="linkSearch" onkeyup="filterLinks()" placeholder="Cari judul link atau URL..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-sans focus:outline-none focus:border-indigo-500 focus:bg-white transition-all">
+      </div>
+    </div>
+
+    <% if (!paymentLinks || paymentLinks.length === 0) { %>
+      <!-- Empty State -->
+      <div class="text-center py-12 px-4 space-y-3">
+        <div class="w-16 h-16 mx-auto rounded-2xl sm:rounded-3xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl shadow-soft">
+          <i class="fa-solid fa-link"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-900 font-sans">Belum Ada Link Pembayaran</h3>
+        <p class="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed font-sans">
+          Buat link pembayaran pertamamu sekarang. Bagikan tautan ke pembeli atau cetak QR codenya di meja kasir/toko.
+        </p>
+        <div class="pt-2">
+          <button onclick="openCreateModal()" class="inline-flex items-center gap-1.5 sm:gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-btn active:scale-95 cursor-pointer">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span>Buat Link Sekarang</span>
+          </button>
+        </div>
+      </div>
+    <% } else { %>
+      <!-- Grid of Payment Links -->
+      <div id="linksGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
+        <% paymentLinks.forEach(link => { %>
+          <div class="link-card border border-slate-200 hover:border-indigo-300 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-xs hover:shadow-card-hoverd transition-all space-y-4 bg-white flex flex-col justify-between" data-title="<%= link.title.toLowerCase() %>" data-code="<%= link.code.toLowerCase() %>">
+            
+            <div class="space-y-3">
+              <!-- Card Top: Title & Status -->
+              <div class="flex items-start justify-between gap-2 sm:gap-3">
+                <div class="space-y-1.5 flex-1 min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <% if (link.isActive) { %>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">AKTIF</span>
+                    <% } else { %>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 text-slate-500 border border-slate-200">NONAKTIF</span>
+                    <% } %>
+
+                    <% if (link.amountType === 'fixed') { %>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-blue-50 text-blue-700 border border-blue-200">Tetap (Rp <%= link.amount.toLocaleString('id-ID') %>)</span>
+                    <% } else { %>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-purple-50 text-purple-700 border border-purple-200">Bebas / Donasi</span>
+                    <% } %>
+                  </div>
+
+                  <h3 class="text-xs sm:text-sm lg:text-base font-bold text-slate-900 font-sans tracking-tight truncate" title="<%= link.title %>"><%= link.title %></h3>
+                  
+                  <% if (link.description) { %>
+                    <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed"><%= link.description %></p>
+                  <% } %>
+                </div>
+
+                <!-- Delete Button -->
+                <button onclick="deleteLink('<%= link._id %>', '<%= link.title %>')" class="text-slate-400 hover:text-rose-600 p-2 rounded-xl hover:bg-rose-50 transition-colors cursor-pointer shrink-0" title="Hapus Link">
+                  <i class="fa-regular fa-trash-can text-xs"></i>
+                </button>
+              </div>
+
+              <!-- URL Box with Copy Button -->
+              <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl p-2.5">
+                <span class="text-xs font-mono text-slate-600 truncate flex-1 select-all pl-1">
+                  <%= settings.appUrl || '' %>/pay/<%= link.code %>
+                </span>
+                <button onclick="copyLinkUrl('<%= link.code %>')" class="px-3 py-1.5 bg-white hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-xs">
+                  <i class="fa-regular fa-copy text-xs"></i>
+                  <span>Salin</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats & Quick Actions -->
+            <div class="flex items-center justify-between gap-1.5 sm:gap-2 pt-3 border-t border-slate-100 text-xs">
+              <div class="text-[11px] font-mono text-slate-500">
+                <span class="font-bold text-slate-800"><%= link.totalPaidCount || 0 %></span> Bayar • 
+                <span class="font-bold text-emerald-600">Rp <%= (link.totalPaidAmount || 0).toLocaleString('id-ID') %></span>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <!-- Show QR Code Modal Button -->
+                <button onclick="showLinkQrModal('<%= link.code %>', '<%= link.title %>')" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium transition-colors cursor-pointer" title="Tampilkan QRIS Code">
+                  <i class="fa-solid fa-qrcode text-xs"></i> <span class="hidden sm:inline">QR</span>
+                </button>
+
+                <!-- Open in New Tab -->
+                <a href="/pay/<%= link.code %>" target="_blank" rel="noopener noreferrer" class="p-2 px-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1" title="Buka Halaman Checkout">
+                  <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                  <span class="hidden sm:inline">Buka</span>
+                </a>
+
+                <!-- Toggle Active/Inactive -->
+                <button onclick="toggleLinkActive('<%= link._id %>')" class="p-2 <%= link.isActive ? 'bg-amber-50 hover:bg-amber-100 text-amber-700' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700' %> rounded-xl text-xs font-semibold transition-colors cursor-pointer" title="<%= link.isActive ? 'Nonaktifkan' : 'Aktifkan' %>">
+                  <i class="fa-solid <%= link.isActive ? 'fa-pause' : 'fa-play' %> text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+
+  </div>
+
+</div>
+
+<!-- ===================== MODAL BUAT LINK PEMBAYARAN ===================== -->
+<div id="createModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden opacity-0 transition-opacity duration-200">
+  <div class="bg-white rounded-2xl sm:rounded-3xl max-w-xl sm:max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 transform scale-95 transition-transform duration-200 max-h-[90vh] overflow-y-auto space-y-6">
+    
+    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+      <div>
+        <h3 class="text-lg font-bold text-slate-900 font-sans">Buat Link Pembayaran Baru</h3>
+        <p class="text-xs text-slate-500 font-sans mt-0.5">Tautan instan siap dibagikan ke media sosial atau pelanggan.</p>
+      </div>
+      <button onclick="closeCreateModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </button>
+    </div>
+
+    <form id="createLinkForm" onsubmit="handleCreateLink(event)" class="space-y-4">
+      
+      <!-- Judul Link / Nama Produk -->
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1 font-sans">
+          Judul Pembayaran / Nama Produk <span class="text-rose-500">*</span>
+        </label>
+        <input type="text" id="linkTitle" required placeholder="Contoh: Kaos Polos Hitam XL / Donasi Server" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-sans focus:outline-none focus:border-indigo-500 focus:bg-white transition-all">
+      </div>
+
+      <!-- Kustom URL / Slug -->
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1 font-sans">
+          Kustom URL Link (Opsional)
+        </label>
+        <div class="flex items-center rounded-xl border border-slate-200 bg-slate-50 overflow-hidden focus-within:border-indigo-500 focus-within:bg-white transition-all">
+          <span class="px-3 text-xs font-mono text-slate-400 bg-slate-100/80 py-2.5 border-r border-slate-200 select-none">/pay/</span>
+          <input type="text" id="linkSlug" placeholder="kaos-hitam (kosongkan untuk otomatis)" class="w-full px-3 py-2.5 text-xs font-mono bg-transparent focus:outline-none">
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1 font-sans">Hanya huruf, angka, tanda hubung (-), dan garis bawah (_).</p>
+      </div>
+
+      <!-- Deskripsi -->
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1 font-sans">
+          Deskripsi / Catatan (Opsional)
+        </label>
+        <textarea id="linkDesc" rows="2" placeholder="Tuliskan keterangan produk atau instruksi untuk pembeli..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-sans focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"></textarea>
+      </div>
+
+      <!-- Tipe Nominal -->
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1.5 font-sans">Tipe Nominal Pembayaran</label>
+        <div class="grid grid-cols-2 gap-2 sm:gap-3">
+          <label class="border border-slate-200 rounded-lg sm:rounded-2xl p-3 flex items-start gap-1.5 sm:gap-2.5 cursor-pointer hover:border-indigo-300 transition-colors has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/40">
+            <input type="radio" name="amountType" value="fixed" checked onchange="handleTypeChange()" class="mt-0.5 text-indigo-600 focus:ring-indigo-500">
+            <div>
+              <span class="block text-xs font-bold text-slate-900 font-sans">Nominal Tetap</span>
+              <span class="block text-[11px] text-slate-500 mt-0.5">Pembeli membayar harga pasti yang Anda tentukan.</span>
+            </div>
+          </label>
+
+          <label class="border border-slate-200 rounded-lg sm:rounded-2xl p-3 flex items-start gap-1.5 sm:gap-2.5 cursor-pointer hover:border-indigo-300 transition-colors has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/40">
+            <input type="radio" name="amountType" value="custom" onchange="handleTypeChange()" class="mt-0.5 text-indigo-600 focus:ring-indigo-500">
+            <div>
+              <span class="block text-xs font-bold text-slate-900 font-sans">Bebas / Donasi</span>
+              <span class="block text-[11px] text-slate-500 mt-0.5">Pembeli dapat mengetik nominal yang ingin dibayar.</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Nominal Input (for Fixed) -->
+      <div id="fixedAmountSection">
+        <label class="block text-xs font-bold text-slate-700 mb-1 font-sans">
+          Harga / Nominal Tetap (Rp) <span class="text-rose-500">*</span>
+        </label>
+        <div class="relative">
+          <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 select-none">Rp</span>
+          <input type="number" id="linkAmount" min="<%= minDeposit %>" placeholder="Contoh: 50000" class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:border-indigo-500 focus:bg-white transition-all">
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1">Minimal Rp <%= minDeposit.toLocaleString('id-ID') %>.</p>
+      </div>
+
+      <!-- Minimal Amount Input (for Custom) -->
+      <div id="customAmountSection" class="hidden">
+        <label class="block text-xs font-bold text-slate-700 mb-1 font-sans">
+          Batas Minimal Pembayaran (Rp)
+        </label>
+        <div class="relative">
+          <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 select-none">Rp</span>
+          <input type="number" id="linkMinAmount" min="<%= minDeposit %>" value="<%= minDeposit %>" class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:border-indigo-500 focus:bg-white transition-all">
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-1.5 sm:gap-2.5">
+        <button type="button" onclick="closeCreateModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer">
+          Batal
+        </button>
+        <button type="submit" id="submitLinkBtn" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-btn active:scale-95 cursor-pointer flex items-center gap-1.5">
+          <i class="fa-solid fa-check text-xs"></i>
+          <span>Simpan & Buat Link</span>
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<!-- ===================== MODAL QR CODE LINK PEMBAYARAN ===================== -->
+<div id="qrModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden opacity-0 transition-opacity duration-200">
+  <div class="bg-white rounded-2xl sm:rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-slate-200 transform scale-95 transition-transform duration-200 space-y-4">
+    
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <h3 id="qrModalTitle" class="text-xs font-bold text-slate-900 font-sans truncate">QR Code Link</h3>
+      <button onclick="closeQrModal()" class="text-slate-400 hover:text-slate-700 cursor-pointer">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </button>
+    </div>
+
+    <div class="flex flex-col items-center">
+      <div class="p-3 bg-white border-2 border-slate-200 rounded-lg sm:rounded-2xl shadow-soft">
+        <img id="qrModalImg" src="" alt="QR Code" class="w-52 h-52 object-contain rounded-xl">
+      </div>
+      <p id="qrModalUrl" class="text-[11px] font-mono text-slate-500 mt-2.5 break-all max-w-xs"></p>
+    </div>
+
+    <div class="flex items-center gap-1.5 sm:gap-2 pt-2">
+      <a id="qrDownloadLink" download="QR_Payment_Link.png" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-btn active:scale-95 cursor-pointer flex items-center justify-center gap-1.5">
+        <i class="fa-solid fa-download text-xs"></i>
+        <span>Unduh QR (PNG)</span>
+      </a>
+      <button onclick="closeQrModal()" class="py-2 sm:py-2.5 sm:px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer">
+        Tutup
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+  // Filter Search
+  function filterLinks() {
+    const q = document.getElementById('linkSearch').value.toLowerCase().trim();
+    const cards = document.querySelectorAll('.link-card');
+    cards.forEach(card => {
+      const title = card.getAttribute('data-title') || '';
+      const code = card.getAttribute('data-code') || '';
+      if (title.includes(q) || code.includes(q)) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  // Copy Link URL
+  function copyLinkUrl(code) {
+    const fullUrl = `${window.location.origin}/pay/${code}`;
+    navigator.clipboard.writeText(fullUrl).then(() => {
+      showToast('Tautan ' + fullUrl + ' disalin!', 'success');
+    }).catch(() => {
+      showToast('URL: ' + fullUrl, 'info');
+    });
+  }
+
+  // Modal Open / Close
+  function openCreateModal() {
+    const modal = document.getElementById('createModal');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      modal.classList.remove('opacity-0');
+      modal.firstElementChild.classList.remove('scale-95');
+      modal.firstElementChild.classList.add('scale-100');
+    }, 10);
+  }
+
+  function closeCreateModal() {
+    const modal = document.getElementById('createModal');
+    modal.classList.add('opacity-0');
+    modal.firstElementChild.classList.add('scale-95');
+    modal.firstElementChild.classList.remove('scale-100');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 200);
+  }
+
+  function handleTypeChange() {
+    const isFixed = document.querySelector('input[name="amountType"]:checked').value === 'fixed';
+    document.getElementById('fixedAmountSection').classList.toggle('hidden', !isFixed);
+    document.getElementById('customAmountSection').classList.toggle('hidden', isFixed);
+  }
+
+  // Handle Form Submit
+  async function handleCreateLink(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitLinkBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> <span>Menyimpan...</span>';
+
+    const title = document.getElementById('linkTitle').value;
+    const customSlug = document.getElementById('linkSlug').value;
+    const description = document.getElementById('linkDesc').value;
+    const amountType = document.querySelector('input[name="amountType"]:checked').value;
+    const amount = document.getElementById('linkAmount').value;
+    const minAmount = document.getElementById('linkMinAmount').value;
+
+    try {
+      const res = await fetch('/payment-links/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, customSlug, description, amountType, amount, minAmount })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Gagal membuat link pembayaran');
+      }
+
+      showToast('Link pembayaran berhasil dibuat!', 'success');
+      closeCreateModal();
+      setTimeout(() => window.location.reload(), 600);
+
+    } catch (err) {
+      alert(err.message || 'Terjadi kesalahan');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-check text-xs"></i> <span>Simpan & Buat Link</span>';
+    }
+  }
+
+  // Toggle Active/Inactive
+  async function toggleLinkActive(id) {
+    try {
+      const res = await fetch(`/payment-links/${id}/toggle`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Gagal mengubah status');
+      }
+      showToast(data.message || 'Status diperbarui', 'success');
+      setTimeout(() => window.location.reload(), 400);
+    } catch (e) {
+      alert(e.message || 'Terjadi kesalahan');
+    }
+  }
+
+  // Delete Link
+  async function deleteLink(id, title) {
+    if (!confirm(`Hapus link pembayaran "${title}"? Tindakan ini tidak dapat dibatalkan.`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/payment-links/${id}/delete`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Gagal menghapus');
+      }
+      showToast('Link pembayaran berhasil dihapus', 'info');
+      setTimeout(() => window.location.reload(), 400);
+    } catch (e) {
+      alert(e.message || 'Terjadi kesalahan');
+    }
+  }
+
+  // Show QR Modal using Google Charts or public QR generator for high resolution
+  function showLinkQrModal(code, title) {
+    const url = `${window.location.origin}/pay/${code}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
+
+    document.getElementById('qrModalTitle').textContent = title;
+    document.getElementById('qrModalUrl').textContent = url;
+    document.getElementById('qrModalImg').src = qrUrl;
+    document.getElementById('qrDownloadLink').href = qrUrl;
+
+    const modal = document.getElementById('qrModal');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      modal.classList.remove('opacity-0');
+      modal.firstElementChild.classList.remove('scale-95');
+      modal.firstElementChild.classList.add('scale-100');
+    }, 10);
+  }
+
+  function closeQrModal() {
+    const modal = document.getElementById('qrModal');
+    modal.classList.add('opacity-0');
+    modal.firstElementChild.classList.add('scale-95');
+    modal.firstElementChild.classList.remove('scale-100');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 200);
+  }
+</script>

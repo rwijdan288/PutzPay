@@ -1,0 +1,376 @@
+<%- include('partials/header', { title: 'Chat Global Komunitas' }) %>
+
+<div class="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-8 space-y-6 w-full min-w-0 font-sans">
+
+  <!-- Header Banner -->
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-white shadow-sm sm:shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+    <div class="space-y-1.5 z-10">
+      <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider border border-blue-500/30">
+        <i class="fa-solid fa-earth-americas text-xs"></i>
+        <span>Komunitas PutzPay</span>
+      </div>
+      <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-bold tracking-tight text-white font-outfit">Chat Global Realtime</h1>
+      <p class="text-xs sm:text-sm text-slate-400 font-sans">Ruang diskusi terbuka seluruh member dan pengembang platform.</p>
+    </div>
+
+    <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-800/80 border border-slate-700/80 px-4 py-2 rounded-xl text-slate-200 self-start sm:self-center z-10">
+      <span class="relative flex h-2.5 w-2.5">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+      </span>
+      <span class="text-xs font-medium font-mono text-emerald-400">Realtime Socket</span>
+    </div>
+  </div>
+
+  <!-- Moderation Warning Banner -->
+  <div id="globalModBanner" class="hidden p-4 bg-rose-50 border border-rose-200 rounded-lg sm:rounded-2xl text-rose-800 text-xs shadow-xs flex items-center gap-2 sm:gap-3">
+    <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+      <i class="fa-solid fa-triangle-exclamation text-base"></i>
+    </div>
+    <div id="globalModText" class="font-sans font-medium"></div>
+  </div>
+
+  <!-- Chat Container -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm sm:shadow-card flex flex-col h-[650px]">
+    
+    <!-- Messages Scroll Area -->
+    <div id="globalMessages" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 bg-slate-50 custom-scroll">
+      <div class="p-8 text-center text-xs text-slate-400">
+        <i class="fa-solid fa-spinner animate-spin text-lg mb-2 text-blue-600"></i>
+        <p>Memuat percakapan global...</p>
+      </div>
+    </div>
+
+    <!-- Reply Preview Box -->
+    <div id="globalReplyPreview" class="hidden relative mx-4 mb-2 p-3 bg-blue-50/70 border border-blue-200 rounded-lg sm:rounded-2xl flex flex-col">
+      <div class="flex justify-between items-center mb-0.5">
+        <span id="globalReplyName" class="text-xs font-bold text-blue-700 font-outfit">Username</span>
+        <button onclick="cancelGlobalReply()" type="button" class="text-slate-400 hover:text-slate-700 p-1 bg-white rounded-lg w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center border border-slate-200 cursor-pointer">
+          <i class="fas fa-times text-[10px]"></i>
+        </button>
+      </div>
+      <span id="globalReplyText" class="text-xs text-slate-600 truncate pr-4">Membalas pesan...</span>
+    </div>
+
+    <!-- Image Upload Preview Box -->
+    <div id="globalImagePreviewContainer" class="hidden relative inline-block mb-2 ml-4">
+      <img id="globalImagePreview" src="" alt="Preview" class="h-16 w-16 object-cover rounded-xl border border-slate-200 shadow-sm" />
+      <button onclick="removeGlobalImage()" type="button" class="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-rose-600 shadow-sm cursor-pointer">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Form Input Bar -->
+    <div class="bg-white border-t border-slate-200 p-3 sm:p-4 shrink-0">
+      <form id="globalChatForm" class="flex items-center gap-2 sm:gap-2 sm:gap-3">
+        <label for="globalImageInput" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-blue-50 hover:text-blue-600 border border-slate-200 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shrink-0">
+          <i class="fas fa-image text-sm"></i>
+        </label>
+        <input type="file" id="globalImageInput" accept="image/*" class="hidden" />
+
+        <input type="text" id="globalMessageInput" placeholder="Tuliskan pesan ke obrolan global..." autocomplete="off"
+               class="flex-1 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 placeholder:text-slate-400 transition-all">
+
+        <button type="submit" id="globalSendBtn"
+                class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold font-outfit flex items-center justify-center gap-1.5 shadow-btn active:scale-95 shrink-0 cursor-pointer disabled:opacity-50">
+          <span id="globalSendText">Kirim</span> <i class="fas fa-paper-plane text-xs"></i>
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Image Viewer Modal -->
+<div id="imageModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-slate-950/80 backdrop-blur-sm">
+  <div class="relative max-w-[90%] max-h-[90%] flex items-center justify-center p-2">
+    <button onclick="closeImageModal()" class="absolute -top-4 -right-4 text-slate-700 bg-white hover:bg-slate-100 rounded-full w-9 h-9 flex items-center justify-center text-sm z-10 transition-colors shadow-md border border-slate-200 cursor-pointer">
+      <i class="fas fa-times"></i>
+    </button>
+    <img id="modalImage" src="" alt="Pratinjau Gambar" class="object-contain max-w-full max-h-full rounded-lg sm:rounded-2xl shadow-2xl border border-white/20">
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const currentUser = <%- JSON.stringify(user) %>;
+  const socket = io();
+
+  socket.emit('join_global_chat');
+
+  const globalMessages = document.getElementById('globalMessages');
+  const globalChatForm = document.getElementById('globalChatForm');
+  const globalMessageInput = document.getElementById('globalMessageInput');
+  const globalImageInput = document.getElementById('globalImageInput');
+  const globalImagePreview = document.getElementById('globalImagePreview');
+  const globalImagePreviewContainer = document.getElementById('globalImagePreviewContainer');
+  const globalSendBtn = document.getElementById('globalSendBtn');
+  const globalSendText = document.getElementById('globalSendText');
+
+  let displayedIds = new Set();
+  let uploadedGlobalImageUrl = null;
+  let globalReplyTo = null;
+  let cooldownTimer = null;
+
+  socket.on('global:receive', (msg) => {
+    renderGlobalMessage(msg);
+    forceScrollGlobalChat();
+  });
+
+  socket.on('global:delete', ({ messageId }) => {
+    const el = document.getElementById(`global-msg-${messageId}`);
+    if (el) {
+      el.innerHTML = `
+        <div class="p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-[11px] italic text-slate-500">
+          <i class="fa-solid fa-trash-can mr-1"></i> Pesan ini telah dihapus oleh Admin.
+        </div>
+      `;
+    }
+  });
+
+  socket.on('global:user_status', ({ targetUserId, action, mod }) => {
+    if (targetUserId === currentUser._id) {
+      checkModerationStatus();
+    }
+  });
+
+  function getAvatarColor(username) {
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+      hash = username.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const colors = ['#3b82f6', '#0ea5e9', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+    return colors[Math.abs(hash) % colors.length];
+  }
+
+  function renderGlobalMessage(msg) {
+    if (displayedIds.has(msg._id)) return;
+    displayedIds.add(msg._id);
+
+    const isMine = (msg.userId === currentUser._id);
+    const isAdmin = (msg.role === 'admin');
+
+    const wrapper = document.createElement('div');
+    wrapper.id = `global-msg-${msg._id}`;
+    wrapper.className = `flex items-start gap-1.5 sm:gap-2.5 group ${isMine ? 'flex-row-reverse' : ''}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs font-outfit shrink-0 overflow-hidden shadow-xs';
+    if (msg.profilePicture) {
+      avatar.innerHTML = `<img src="${msg.profilePicture}" class="w-full h-full object-cover" alt="${msg.username}">`;
+    } else {
+      avatar.style.backgroundColor = getAvatarColor(msg.username);
+      avatar.textContent = msg.username.charAt(0).toUpperCase();
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = `p-3.5 rounded-lg sm:rounded-2xl max-w-[85%] shadow-xs text-xs sm:text-sm ${isMine ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-white text-slate-900 border border-slate-200/80 rounded-tl-sm'}`;
+
+    if (msg.isDeleted) {
+      bubble.innerHTML = `
+        <div class="text-[11px] italic text-slate-400">
+          <i class="fa-solid fa-trash-can mr-1"></i> Pesan ini telah dihapus oleh Admin.
+        </div>
+      `;
+      wrapper.appendChild(avatar);
+      wrapper.appendChild(bubble);
+      globalMessages.appendChild(wrapper);
+      return;
+    }
+
+    const header = document.createElement('div');
+    header.className = `flex items-center gap-1.5 sm:gap-2 mb-1 text-xs font-bold font-outfit ${isMine ? 'text-white' : 'text-slate-900'}`;
+    header.innerHTML = `
+      <span>${msg.username}</span>
+      ${isAdmin ? '<span class="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-[10px] font-mono"><i class="fa-solid fa-crown text-[9px]"></i> ADMIN</span>' : ''}
+      <span class="text-[10px] ${isMine ? 'text-blue-200' : 'text-slate-400'} font-normal ml-auto">${new Date(msg.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+    `;
+    bubble.appendChild(header);
+
+    if (msg.replyTo && (msg.replyTo.message || msg.replyTo.image)) {
+      const replyBox = document.createElement('div');
+      replyBox.className = `rounded-xl ${isMine ? 'bg-blue-700/60 text-blue-100 border border-blue-400/30' : 'bg-slate-100 text-slate-700 border border-slate-200'} p-2 mb-2 flex flex-col text-left text-[11px]`;
+      replyBox.innerHTML = `
+        <span class="font-bold font-outfit ${isMine ? 'text-white' : 'text-slate-900'}">${msg.replyTo.username}</span>
+        <span class="truncate ${isMine ? 'text-blue-200' : 'text-slate-500'}">${msg.replyTo.message || '📷 Gambar'}</span>
+      `;
+      bubble.appendChild(replyBox);
+    }
+
+    if (msg.image) {
+      const img = document.createElement('img');
+      img.src = msg.image;
+      img.className = 'max-w-[220px] rounded-xl my-1.5 cursor-pointer shadow-xs border border-black/10';
+      img.onclick = () => openImageModal(msg.image);
+      bubble.appendChild(img);
+    }
+
+    if (msg.message) {
+      const txt = document.createElement('p');
+      txt.className = `whitespace-pre-wrap text-xs sm:text-sm leading-relaxed ${isMine ? 'text-white' : 'text-slate-800'}`;
+      txt.textContent = msg.message;
+      bubble.appendChild(txt);
+    }
+
+    wrapper.appendChild(avatar);
+    wrapper.appendChild(bubble);
+
+    // Reply Action Button
+    const replyBtn = document.createElement('button');
+    replyBtn.className = 'text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200/60 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer self-center';
+    replyBtn.innerHTML = '<i class="fas fa-reply text-xs"></i>';
+    replyBtn.onclick = () => initiateGlobalReply(msg);
+    wrapper.appendChild(replyBtn);
+
+    globalMessages.appendChild(wrapper);
+  }
+
+  function initiateGlobalReply(msg) {
+    globalReplyTo = { _id: msg._id, username: msg.username, message: msg.message };
+    document.getElementById('globalReplyName').textContent = msg.username;
+    document.getElementById('globalReplyText').textContent = msg.message || '📷 Gambar';
+    document.getElementById('globalReplyPreview').classList.remove('hidden');
+    globalMessageInput.focus();
+  }
+
+  function cancelGlobalReply() {
+    globalReplyTo = null;
+    document.getElementById('globalReplyPreview').classList.add('hidden');
+  }
+
+  globalImageInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('image', file);
+    try {
+      const res = await fetch('/api/chat/upload', { method: 'POST', body: formData, credentials: 'include' });
+      const data = await res.json();
+      if (data.success) {
+        uploadedGlobalImageUrl = data.imageUrl;
+        globalImagePreview.src = data.imageUrl;
+        globalImagePreviewContainer.classList.remove('hidden');
+      } else alert(data.error || 'Gagal upload gambar');
+    } catch (err) {
+      alert('Gagal upload gambar');
+    }
+    globalImageInput.value = '';
+  });
+
+  function removeGlobalImage() {
+    uploadedGlobalImageUrl = null;
+    globalImagePreviewContainer.classList.add('hidden');
+    globalImagePreview.src = '';
+  }
+
+  function startAntiSpamCooldown(seconds = 3) {
+    let left = seconds;
+    globalSendBtn.disabled = true;
+    globalSendText.textContent = `Tunggu (${left}s)`;
+
+    cooldownTimer = setInterval(() => {
+      left -= 1;
+      if (left <= 0) {
+        clearInterval(cooldownTimer);
+        globalSendBtn.disabled = false;
+        globalSendText.textContent = 'Kirim';
+      } else {
+        globalSendText.textContent = `Tunggu (${left}s)`;
+      }
+    }, 1000);
+  }
+
+  globalChatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = globalMessageInput.value.trim();
+    if (!text && !uploadedGlobalImageUrl) return;
+
+    try {
+      const res = await fetch('/api/globalchat/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text,
+          image: uploadedGlobalImageUrl,
+          replyTo: globalReplyTo
+        }),
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (data.success) {
+        globalMessageInput.value = '';
+        removeGlobalImage();
+        cancelGlobalReply();
+        startAntiSpamCooldown(3);
+      } else {
+        alert(data.error || 'Gagal mengirim pesan');
+      }
+    } catch (err) {
+      alert('Gagal menghubungi server');
+    }
+  });
+
+  async function loadGlobalMessages() {
+    try {
+      const res = await fetch('/api/globalchat/messages', { credentials: 'include' });
+      const msgs = await res.json();
+      globalMessages.innerHTML = '';
+      displayedIds.clear();
+      msgs.forEach(renderGlobalMessage);
+      forceScrollGlobalChat();
+    } catch (err) {
+      console.error('Failed to load global messages:', err);
+    }
+  }
+
+  async function checkModerationStatus() {
+    try {
+      const res = await fetch('/api/globalchat/status', { credentials: 'include' });
+      const mod = await res.json();
+      const banner = document.getElementById('globalModBanner');
+      const text = document.getElementById('globalModText');
+
+      if (mod.isBanned) {
+        banner.classList.remove('hidden');
+        text.textContent = `🚫 Anda DIBANNED dari Chat Global. Alasan: ${mod.reason || 'Pelanggaran ketentuan'}`;
+        globalMessageInput.disabled = true;
+        globalSendBtn.disabled = true;
+      } else if (mod.isMuted) {
+        banner.classList.remove('hidden');
+        const untilStr = mod.mutedUntil ? new Date(mod.mutedUntil).toLocaleString('id-ID') : 'Selamanya';
+        text.textContent = `🔇 Anda sedang DI-MUTE hingga ${untilStr}. Alasan: ${mod.reason || 'Tanpa alasan'}`;
+        globalMessageInput.disabled = true;
+        globalSendBtn.disabled = true;
+      } else {
+        banner.classList.add('hidden');
+        globalMessageInput.disabled = false;
+        globalSendBtn.disabled = false;
+      }
+    } catch (err) {
+      console.error('Check mod status error:', err);
+    }
+  }
+
+  function forceScrollGlobalChat() {
+    globalMessages.scrollTop = globalMessages.scrollHeight;
+  }
+
+  function openImageModal(url) {
+    document.getElementById('modalImage').src = url;
+    document.getElementById('imageModal').classList.remove('hidden');
+  }
+
+  function closeImageModal() {
+    document.getElementById('imageModal').classList.add('hidden');
+  }
+
+  async function init() {
+    await checkModerationStatus();
+    await loadGlobalMessages();
+  }
+
+  init();
+</script>
+
+<%- include('partials/footer') %>

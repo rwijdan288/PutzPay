@@ -1,0 +1,369 @@
+<%- include('partials/header', { title: 'Persetujuan Withdraw - Admin' }) %>
+
+<div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-8 space-y-6 sm:space-y-8 w-full min-w-0 font-sans">
+
+  <!-- Header Section -->
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-white shadow-sm sm:shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+    <div class="space-y-1.5 z-10">
+      <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider border border-blue-500/30">
+        <i class="fa-solid fa-hand-holding-dollar text-xs"></i>
+        <span>Manajemen Pencairan Dana</span>
+      </div>
+      <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-bold tracking-tight text-white font-outfit">Persetujuan Penarikan Saldo</h1>
+      <p class="text-xs sm:text-sm text-slate-400 max-w-2xl">Verifikasi dan proses permintaan pencairan dana pengguna ke e-wallet / rekening bank.</p>
+    </div>
+
+    <% const pendingList = withdrawals.filter(w => w.status === 'pending'); %>
+    <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-800/80 border border-slate-700/80 px-4 py-2 rounded-xl text-slate-200 self-start sm:self-center z-10">
+      <span class="relative flex h-2 w-2">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full <%= pendingList.length > 0 ? 'bg-amber-400' : 'bg-emerald-400' %> opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 <%= pendingList.length > 0 ? 'bg-amber-500' : 'bg-emerald-500' %>"></span>
+      </span>
+      <span class="text-xs font-medium font-mono <%= pendingList.length > 0 ? 'text-amber-400' : 'text-emerald-400' %>"><%= pendingList.length %> Pengajuan Tertunda</span>
+    </div>
+  </div>
+
+  <!-- Search Card -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm sm:shadow-card">
+    <div class="relative w-full max-w-md">
+      <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+      <input id="globalSearchInput" type="text" placeholder="Cari berdasarkan username atau email pengguna..." 
+             class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-mono"
+             value="<%= typeof search !== 'undefined' ? search : '' %>" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div>
+    <% if (pendingList.length === 0) { %>
+      <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-12 text-center shadow-sm sm:shadow-card">
+        <div class="w-14 h-14 rounded-lg sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-3 text-2xl">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-900 font-outfit">Tidak Ada Antrean Penarikan</h3>
+        <p class="text-xs text-slate-500 mt-1">Semua pengajuan withdraw telah diproses atau belum ada pengajuan baru.</p>
+      </div>
+    <% } else { %>
+      <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm sm:shadow-card">
+        <div class="overflow-x-auto custom-scroll" style="max-height: 600px;">
+          <table class="w-full text-xs text-left whitespace-nowrap">
+            <thead class="bg-slate-50 text-xs text-slate-600 font-semibold border-b border-slate-200 uppercase tracking-wider sticky top-0 z-10">
+              <tr>
+                <th class="px-5 py-3.5">Pengguna</th>
+                <th class="px-5 py-3.5">Nominal WD</th>
+                <th class="px-5 py-3.5">Metode</th>
+                <th class="px-5 py-3.5">Rekening / Akun Target</th>
+                <th class="px-5 py-3.5">Waktu Pengajuan</th>
+                <th class="px-5 py-3.5 text-center">Aksi Verifikasi</th>
+              </tr>
+            </thead>
+            <tbody id="pendingTableBody" class="divide-y divide-slate-100 text-slate-800">
+              <% pendingList.forEach(w => { %>
+              <tr class="hover:bg-slate-50/70 cursor-pointer transition-colors"
+                  data-id="<%= w._id %>"
+                  data-type="withdraw"
+                  data-amount="<%= w.amount %>"
+                  data-fee="<%= w.fee || 0 %>"
+                  data-status="<%= w.status %>"
+                  data-created="<%= w.createdAt.toISOString() %>"
+                  data-expired=""
+                  data-username="<%= w.userId?.username || 'Pengguna Dihapus' %>"
+                  data-email="<%= w.userId?.email || '-' %>"
+                  data-method="<%= w.method %>"
+                  data-account="<%= w.accountNumber || '' %>"
+                  data-name="<%= w.accountName || '' %>"
+                  data-note="<%= (w.adminNote || '') %>"
+                  data-completed="<%= w.completedAt ? w.completedAt.toISOString() : '' %>"
+                  onclick="window.location.hash = 'withdraw-' + this.dataset.id">
+                <td class="px-5 py-3.5">
+                  <div class="font-bold text-slate-900 text-xs"><%= w.userId ? w.userId.username : 'Pengguna Dihapus' %></div>
+                  <div class="text-[11px] text-slate-500 font-mono mt-0.5"><%= w.userId ? w.userId.email : '-' %></div>
+                </td>
+                <td class="px-5 py-3.5 text-slate-900 font-bold font-outfit text-sm">Rp <%= w.amount.toLocaleString('id-ID') %></td>
+                <td class="px-5 py-3.5">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 uppercase">
+                    <%= w.method %>
+                  </span>
+                </td>
+                <td class="px-5 py-3.5">
+                  <div class="font-mono font-semibold text-blue-600"><%= w.accountNumber || '-' %></div>
+                  <div class="text-[11px] text-slate-500 mt-0.5"><%= w.accountName || '-' %></div>
+                </td>
+                <td class="px-5 py-3.5 text-slate-500 font-mono date-cell" data-timestamp="<%= w.createdAt.toISOString() %>"></td>
+                <td class="px-5 py-3.5" onclick="event.stopPropagation()">
+                  <div class="flex items-center justify-center gap-1.5 sm:gap-2">
+                    <form method="POST" action="/admin/withdraw/success/<%= w._id %>" class="m-0">
+                      <button class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95">
+                        <i class="fas fa-check text-xs"></i>
+                        <span>Setujui</span>
+                      </button>
+                    </form>
+                    <button type="button" onclick="openRejectModal('<%= w._id %>')" class="bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-600 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer active:scale-95">
+                      <i class="fas fa-times text-xs"></i>
+                      <span>Tolak</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+</div>
+
+<!-- MODAL DETAIL WITHDRAW -->
+<div id="withdrawDetailModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity" onclick="closeWithdrawDetailModal()"></div>
+  <div class="relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden z-10 transform transition-all scale-95 opacity-0 duration-200 flex flex-col max-h-[90vh]" id="withdrawDetailContent">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-1.5 sm:gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
+          <i class="fa-solid fa-hand-holding-dollar"></i>
+        </div>
+        <h2 class="text-sm font-bold text-slate-900 font-outfit">Detail Permintaan Penarikan</h2>
+      </div>
+      <button onclick="closeWithdrawDetailModal()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+        <i class="fas fa-times text-sm"></i>
+      </button>
+    </div>
+
+    <div class="p-6 overflow-y-auto custom-scroll">
+      <div class="border border-slate-200 rounded-lg sm:rounded-2xl overflow-hidden mb-4 shadow-xs">
+        <table class="w-full text-xs text-left divide-y divide-slate-100 text-slate-800">
+          <tbody class="divide-y divide-slate-100">
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600 w-32">Tipe</td><td class="px-4 py-2.5 font-bold" id="modalDetailWithdrawType">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600 w-32">ID Penarikan</td><td class="px-4 py-2.5 font-mono font-semibold text-blue-600 break-all" id="modalDetailWithdrawId">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Pengguna</td><td class="px-4 py-2.5 font-medium" id="modalDetailWithdrawUsername">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Email</td><td class="px-4 py-2.5 font-medium text-slate-600" id="modalDetailWithdrawEmail">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Status</td><td class="px-4 py-2.5" id="modalDetailWithdrawStatus">-</td></tr>
+            <tr id="modalDetailWithdrawAdminNoteRow" class="hidden"><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Keterangan</td><td class="px-4 py-2.5 font-bold text-rose-600" id="modalDetailWithdrawAdminNote"></td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Tanggal Pengajuan</td><td class="px-4 py-2.5 text-slate-500 font-mono" id="modalDetailWithdrawTanggal">-</td></tr>
+            <tr id="modalDetailWithdrawCompletedRow" class="hidden"><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Tanggal Selesai</td><td class="px-4 py-2.5 text-slate-500 font-mono" id="modalDetailWithdrawCompleted">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Nominal WD</td><td class="px-4 py-2.5 font-bold font-outfit" id="modalDetailWithdrawNominal">Rp 0</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Biaya Admin</td><td class="px-4 py-2.5 font-bold font-outfit" id="modalDetailWithdrawFee">Rp 0</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Total Terpotong</td><td class="px-4 py-2.5 font-bold font-outfit" id="modalDetailWithdrawTotalPotong">Rp 0</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Total Diterima User</td><td class="px-4 py-2.5 font-bold text-emerald-600 font-outfit text-sm" id="modalDetailWithdrawDiterima">Rp 0</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Metode Transfer</td><td class="px-4 py-2.5 font-medium uppercase" id="modalDetailWithdrawMethod">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">No. Rekening</td><td class="px-4 py-2.5 font-mono font-semibold text-blue-600" id="modalDetailWithdrawAccount">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Atas Nama</td><td class="px-4 py-2.5 font-medium" id="modalDetailWithdrawName">-</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REJECT -->
+<div id="rejectModal" class="fixed inset-0 z-[160] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity" onclick="closeRejectModal()"></div>
+  <div class="relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden z-10 transform transition-all scale-95 opacity-0 duration-200" id="rejectModalContent">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <i class="fa-solid fa-circle-xmark text-rose-600 text-sm"></i>
+        <h2 class="text-sm font-bold text-slate-900 font-outfit">Konfirmasi Penolakan</h2>
+      </div>
+      <button onclick="closeRejectModal()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+        <i class="fas fa-times text-sm"></i>
+      </button>
+    </div>
+    
+    <div class="p-6">
+      <p class="text-xs text-slate-600 mb-3">
+        Berikan alasan penolakan penarikan saldo ini agar diketahui oleh pengguna:
+      </p>
+      <form id="rejectForm" method="POST" action="" class="flex flex-col gap-4">
+        <textarea name="note" placeholder="Tuliskan alasan spesifik penolakan..." rows="3" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all resize-none placeholder:text-slate-400" required></textarea>
+        <div class="flex gap-1.5 sm:gap-2.5">
+          <button type="button" onclick="closeRejectModal()" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors cursor-pointer">Batal</button>
+          <button type="submit" class="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-xl text-xs shadow-btn transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-95">
+            <i class="fas fa-paper-plane text-xs"></i>
+            <span>Kirim Tolak</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function formatDateCell(cell) {
+    const timestamp = cell.dataset.timestamp;
+    if (!timestamp) return;
+    const d = new Date(timestamp);
+    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const dayName = days[d.getDay()];
+    const dateNum = String(d.getDate()).padStart(2, '0');
+    const timeStr = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+    cell.textContent = `${dayName} ${dateNum}, ${timeStr}`;
+  }
+
+  (() => {
+    const input = document.getElementById('globalSearchInput');
+    if (!input) return;
+
+    input.addEventListener('input', function() {
+      const query = this.value.toLowerCase().trim();
+      const rows = document.querySelectorAll('#pendingTableBody tr');
+      rows.forEach(row => {
+        const username = row.dataset.username || '';
+        const email = row.dataset.email || '';
+        row.style.display = (!query || username.includes(query) || email.includes(query)) ? '' : 'none';
+      });
+    });
+
+    if (input.value) {
+      input.dispatchEvent(new Event('input'));
+    }
+  })();
+
+  function openRejectModal(id) {
+    event.stopPropagation();
+    const modal = document.getElementById('rejectModal');
+    const modalContent = document.getElementById('rejectModalContent');
+    document.getElementById('rejectForm').action = '/admin/withdraw/reject/' + id;
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      modalContent.classList.remove('scale-95', 'opacity-0');
+      modalContent.classList.add('scale-100', 'opacity-100');
+    }, 10);
+  }
+
+  function closeRejectModal() {
+    const modal = document.getElementById('rejectModal');
+    const modalContent = document.getElementById('rejectModalContent');
+    modalContent.classList.remove('scale-100', 'opacity-100');
+    modalContent.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      document.getElementById('rejectForm').reset();
+    }, 200);
+  }
+
+  document.getElementById('rejectModal').addEventListener('click', function(e) {
+    if (e.target === this) closeRejectModal();
+  });
+
+  function getWithdrawDataFromRow(row) {
+    return {
+      id: row.dataset.id,
+      type: row.dataset.type,
+      amount: row.dataset.amount,
+      fee: row.dataset.fee,
+      status: row.dataset.status,
+      created: row.dataset.created,
+      expired: row.dataset.expired || null,
+      username: row.dataset.username,
+      email: row.dataset.email,
+      method: row.dataset.method,
+      account: row.dataset.account,
+      name: row.dataset.name,
+      note: row.dataset.note,
+      completed: row.dataset.completed || null
+    };
+  }
+
+  function openWithdrawDetailModal(transactionData) {
+    document.getElementById('modalDetailWithdrawType').innerHTML = '<span class="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200"><i class="fas fa-arrow-up text-[9px]"></i> Withdraw</span>';
+    document.getElementById('modalDetailWithdrawId').innerText = transactionData.id;
+    document.getElementById('modalDetailWithdrawUsername').innerText = transactionData.username || '-';
+    document.getElementById('modalDetailWithdrawEmail').innerText = transactionData.email || '-';
+
+    const formatOpts = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false };
+    const created = new Date(transactionData.created);
+    document.getElementById('modalDetailWithdrawTanggal').innerText = created.toLocaleString('id-ID', formatOpts).replace(/\./g, ':');
+
+    if (transactionData.completed) {
+      const compDate = new Date(transactionData.completed);
+      document.getElementById('modalDetailWithdrawCompleted').innerText = compDate.toLocaleString('id-ID', formatOpts).replace(/\./g, ':');
+      document.getElementById('modalDetailWithdrawCompletedRow').classList.remove('hidden');
+    } else document.getElementById('modalDetailWithdrawCompletedRow').classList.add('hidden');
+
+    const adminNoteRow = document.getElementById('modalDetailWithdrawAdminNoteRow');
+    const adminNoteEl = document.getElementById('modalDetailWithdrawAdminNote');
+    if (
+      (transactionData.status === 'expired' || transactionData.status === 'rejected') &&
+      transactionData.note &&
+      transactionData.note.trim() !== ''
+    ) {
+      adminNoteEl.innerText = transactionData.note;
+      adminNoteRow.classList.remove('hidden');
+    } else {
+      adminNoteRow.classList.add('hidden');
+    }
+
+    const nominal = Math.abs(parseInt(transactionData.amount)) || 0;
+    const fee = parseInt(transactionData.fee) || 0;
+    const totalPotong = nominal + fee;
+    document.getElementById('modalDetailWithdrawNominal').innerText = `Rp ${nominal.toLocaleString('id-ID')}`;
+    document.getElementById('modalDetailWithdrawFee').innerText = `Rp ${fee.toLocaleString('id-ID')}`;
+    document.getElementById('modalDetailWithdrawTotalPotong').innerText = `Rp ${totalPotong.toLocaleString('id-ID')}`;
+    document.getElementById('modalDetailWithdrawDiterima').innerText = `Rp ${nominal.toLocaleString('id-ID')}`;
+
+    let statusHTML = '';
+    const st = transactionData.status;
+    if (st === 'paid' || st === 'success') statusHTML = '<span class="text-xs font-bold uppercase text-emerald-700">COMPLETED</span>';
+    else if (st === 'pending') statusHTML = '<span class="text-xs font-bold uppercase text-amber-700">PENDING</span>';
+    else statusHTML = '<span class="text-xs font-bold uppercase text-rose-700">FAILED</span>';
+    document.getElementById('modalDetailWithdrawStatus').innerHTML = statusHTML;
+
+    document.getElementById('modalDetailWithdrawMethod').innerText = transactionData.method || '-';
+    document.getElementById('modalDetailWithdrawAccount').innerText = transactionData.account || '-';
+    document.getElementById('modalDetailWithdrawName').innerText = transactionData.name || '-';
+
+    const modal = document.getElementById('withdrawDetailModal');
+    const modalContent = document.getElementById('withdrawDetailContent');
+    modal.classList.remove('hidden');
+    setTimeout(() => { modalContent.classList.remove('scale-95', 'opacity-0'); modalContent.classList.add('scale-100', 'opacity-100'); }, 10);
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeWithdrawDetailModal() {
+    if (window.location.hash.startsWith('#withdraw-')) {
+      history.back();
+      setTimeout(() => {
+        if (window.location.hash.startsWith('#withdraw-')) window.location.hash = '';
+      }, 100);
+    } else {
+      const modal = document.getElementById('withdrawDetailModal');
+      const modalContent = document.getElementById('withdrawDetailContent');
+      modalContent.classList.remove('scale-100', 'opacity-100');
+      modalContent.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => { modal.classList.add('hidden'); document.body.style.overflow = ''; }, 200);
+    }
+  }
+
+  function handleWithdrawRouter() {
+    const hash = window.location.hash;
+    if (!hash.startsWith('#withdraw-')) return;
+    const withdrawId = hash.replace('#withdraw-', '');
+    const row = document.querySelector(`tr[data-id="${withdrawId}"]`);
+    if (!row) {
+      closeWithdrawDetailModal();
+      history.replaceState(null, null, window.location.pathname + window.location.search);
+      return;
+    }
+    const data = getWithdrawDataFromRow(row);
+    openWithdrawDetailModal(data);
+  }
+
+  window.addEventListener('hashchange', handleWithdrawRouter);
+  window.addEventListener('popstate', function() {
+    if (!window.location.hash.startsWith('#withdraw-')) {
+      closeWithdrawDetailModal();
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.date-cell').forEach(formatDateCell);
+
+    if (window.location.hash.startsWith('#withdraw-')) {
+      handleWithdrawRouter();
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>

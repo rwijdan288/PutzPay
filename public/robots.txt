@@ -1,0 +1,33 @@
+# Robots.txt for PutzPay Payment Gateway (https://putzpay.biz.id)
+User-agent: *
+Allow: /
+Allow: /home
+Allow: /login
+Allow: /register
+Allow: /docs
+Allow: /partners
+Allow: /kyc
+Allow: /terms
+Allow: /privacy-policy
+Allow: /forgot-password
+Allow: /style.css
+Allow: /app.js
+Allow: /sw.js
+
+# Disallow Internal, User Portals & Protected Endpoints
+Disallow: /admin/
+Disallow: /admin/*
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /deposit
+Disallow: /withdraw
+Disallow: /api/
+Disallow: /invoice/
+Disallow: /chat
+Disallow: /chatglobal
+Disallow: /auth/
+Disallow: /verify-otp
+Disallow: /reset-password/
+Disallow: /banned
+
+Sitemap: https://putzpay.biz.id/sitemap.xml

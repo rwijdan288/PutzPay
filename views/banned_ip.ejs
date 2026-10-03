@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
+  <title>Akses Diblokir - <%= (typeof settings !== 'undefined' && settings.name) ? settings.name : 'PutzPay' %></title>
+  
+  <% if (typeof settings !== 'undefined' && settings.logoUrl) { %>
+  <link rel="icon" type="image/jpeg" href="<%= settings.logoUrl %>">
+  <% } %>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/style.css">
+
+  <script>
+    tailwind.config = { 
+      theme: { 
+        extend: { 
+          fontFamily: { 
+            'sans': ['Plus Jakarta Sans', 'sans-serif'],
+            'outfit': ['Outfit', 'sans-serif'],
+            'mono': ['JetBrains Mono', 'monospace']
+          },
+          boxShadow: {
+            'card': '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
+            'btn': '0 4px 14px 0 rgba(37, 99, 235, 0.25)'
+          }
+        } 
+      } 
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased min-h-screen flex items-center justify-center p-4 font-sans">
+
+  <div class="w-full max-w-md mx-auto">
+    <!-- Brand Header -->
+    <div class="flex items-center justify-center gap-2 sm:gap-3 mb-6">
+      <% if (typeof settings !== 'undefined' && settings.logoUrl) { %>
+        <img src="<%= settings.logoUrl %>" alt="Logo" class="w-10 h-10 rounded-xl object-cover border border-slate-200 shadow-xs" />
+      <% } else { %>
+        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg shadow-xs">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+      <% } %>
+      <div class="flex flex-col">
+        <span class="font-outfit font-bold text-slate-900 text-xl tracking-tight leading-tight"><%= (typeof settings !== 'undefined' && settings.name) ? settings.name : 'PutzPay' %></span>
+        <span class="text-[11px] font-mono text-slate-400">Security Enforcement System</span>
+      </div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm sm:shadow-card space-y-6">
+      
+      <!-- Top Alert Badge -->
+      <div class="flex items-center justify-center">
+        <div class="w-16 h-16 rounded-lg sm:rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 text-2xl shadow-xs">
+          <i class="fa-solid fa-ban"></i>
+        </div>
+      </div>
+
+      <!-- Title & Explanation -->
+      <div class="text-center space-y-2">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200/60">
+          <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+          <span>Akses Ditolak (403 Forbidden)</span>
+        </div>
+        <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl font-bold tracking-tight text-slate-900 font-outfit">
+          IP / Perangkat Anda Telah Diblokir
+        </h1>
+        <p class="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+          Alamat IP jaringan internet atau perangkat Anda telah ditangguhkan (banned/suspend) oleh Administrator <%= (typeof settings !== 'undefined' && settings.name) ? settings.name : 'PutzPay' %>.
+        </p>
+      </div>
+
+      <!-- Details Box -->
+      <div class="bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl p-4 sm:p-5 space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-200/80 pb-2.5">
+          <span class="text-xs font-semibold text-slate-600">Alamat IP Anda</span>
+          <span class="px-2.5 py-0.5 bg-white border border-slate-200 text-slate-900 rounded-lg font-mono text-xs font-semibold">
+            <%= (typeof ip !== 'undefined' && ip) ? ip : '127.0.0.1' %>
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between border-b border-slate-200/80 pb-2.5 gap-2 sm:gap-3">
+          <span class="text-xs font-semibold text-slate-600 shrink-0">Alasan Pemblokiran</span>
+          <span class="text-xs font-medium text-rose-600 text-right">
+            <%= (typeof reason !== 'undefined' && reason) ? reason : 'Pelanggaran Kebijakan Layanan / Aktivitas Tidak Wajar' %>
+          </span>
+        </div>
+
+        <div class="flex items-center justify-between border-b border-slate-200/80 pb-2.5">
+          <span class="text-xs font-semibold text-slate-600">Waktu Pemblokiran</span>
+          <span class="text-xs font-medium font-mono text-slate-700">
+            <%= (typeof bannedAt !== 'undefined' && bannedAt) ? new Date(bannedAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) %>
+          </span>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-600">Status Keamanan</span>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> SUSPENDED / BANNED
+          </span>
+        </div>
+      </div>
+
+      <!-- Contact Actions -->
+      <% const csUrl = (typeof settings !== 'undefined' && settings.customerServiceUrl) ? settings.customerServiceUrl : 'https://cs.putzpay.biz.id'; %>
+      <div class="space-y-3 pt-1">
+        <a href="<%= csUrl %>" target="_blank" rel="noopener noreferrer" class="w-full inline-flex items-center justify-center gap-1.5 sm:gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-btn transition-all cursor-pointer active:scale-95 font-outfit">
+          <i class="fa-solid fa-comments text-xs"></i>
+          <span>Hubungi Customer Service</span>
+        </a>
+
+        <button onclick="window.location.reload()" class="w-full inline-flex items-center justify-center gap-1.5 sm:gap-2 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition-all cursor-pointer active:scale-95">
+          <i class="fa-solid fa-rotate-right text-xs"></i>
+          <span>Muat Ulang Halaman</span>
+        </button>
+      </div>
+
+      <!-- Footer Branding -->
+      <div class="text-center pt-2 border-t border-slate-100">
+        <p class="text-[11px] font-medium text-slate-400 font-mono">
+          &copy; <%= new Date().getFullYear() %> <%= (typeof settings !== 'undefined' && settings.name) ? settings.name : 'PutzPay' %>. All Rights Reserved.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

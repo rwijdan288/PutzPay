@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a" />
+  
+  <!-- Google Search Console Verification -->
+  <meta name="google-site-verification" content="nmJwdWnWtUvTkKW0LVhEMrw8nYt0GZ3TpoUt8Cqjvqo" />
+  
+  <title><%= typeof title !== 'undefined' && title ? title + ' - ' + (settings.name || 'PutzPay') : (settings.name || 'PutzPay') + ' - Payment Gateway & QRIS Aggregator Terpercaya Indonesia' %></title>
+  
+  <meta name="description" content="<%= typeof metaDescription !== 'undefined' && metaDescription ? metaDescription : (settings.description || 'PutzPay adalah platform payment gateway dan QRIS aggregator otomatis di Indonesia untuk memproses deposit, transaksi QRIS realtime, dan pencairan saldo aman.') %>">
+  <meta name="keywords" content="PutzPay, payment gateway indonesia, qris aggregator, qris otomatis, gateway pembayaran, qris api, terima pembayaran qris, mutasi qris">
+  <meta name="author" content="PutzPay">
+  <meta name="robots" content="index, follow">
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://putzpay.biz.id<%= typeof canonicalPath !== 'undefined' ? canonicalPath : (typeof currentPath !== 'undefined' && currentPath !== '/home' ? currentPath : '/') %>" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://putzpay.biz.id<%= typeof canonicalPath !== 'undefined' ? canonicalPath : (typeof currentPath !== 'undefined' && currentPath !== '/home' ? currentPath : '/') %>">
+  <meta property="og:site_name" content="<%= settings.name || 'PutzPay' %>">
+  <meta property="og:title" content="<%= typeof title !== 'undefined' && title ? title + ' - ' + (settings.name || 'PutzPay') : (settings.name || 'PutzPay') + ' - Payment Gateway & QRIS Aggregator Terpercaya Indonesia' %>">
+  <meta property="og:description" content="<%= typeof metaDescription !== 'undefined' && metaDescription ? metaDescription : (settings.description || 'PutzPay adalah platform payment gateway dan QRIS aggregator otomatis di Indonesia untuk memproses deposit, transaksi QRIS realtime, dan pencairan saldo aman.') %>">
+  <% if (settings.logoUrl) { %>
+  <meta property="og:image" content="<%= settings.logoUrl %>">
+  <% } %>
+  <meta property="og:locale" content="id_ID">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://putzpay.biz.id<%= typeof canonicalPath !== 'undefined' ? canonicalPath : (typeof currentPath !== 'undefined' && currentPath !== '/home' ? currentPath : '/') %>">
+  <meta name="twitter:title" content="<%= typeof title !== 'undefined' && title ? title + ' - ' + (settings.name || 'PutzPay') : (settings.name || 'PutzPay') + ' - Payment Gateway & QRIS Aggregator' %>">
+  <meta name="twitter:description" content="<%= typeof metaDescription !== 'undefined' && metaDescription ? metaDescription : (settings.description || 'PutzPay adalah platform payment gateway dan QRIS aggregator otomatis di Indonesia.') %>">
+  <% if (settings.logoUrl) { %>
+  <meta name="twitter:image" content="<%= settings.logoUrl %>">
+  <% } %>
+
+  <!-- Structured Data JSON-LD for Google Search Console & Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FinancialService",
+    "name": "<%= settings.name || 'PutzPay' %>",
+    "url": "https://putzpay.biz.id",
+    "description": "<%= settings.description || 'Platform Payment Gateway QRIS Auto-Settlement dan Aggregator Pembayaran Digital Indonesia' %>",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://putzpay.biz.id/docs",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  
+  <% if (settings.logoUrl) { %>
+  <link rel="icon" type="image/jpeg" href="<%= settings.logoUrl %>">
+  <% } %>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Outfit:wght@500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/style.css">
+  
+  <% if (typeof turnstileSiteKey !== 'undefined' && turnstileSiteKey) { %>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <% } %>
+  
+  <script>
+    tailwind.config = { 
+      theme: { 
+        extend: { 
+          fontFamily: { 
+            'sans': ['Plus Jakarta Sans', 'sans-serif'],
+            'outfit': ['Outfit', 'sans-serif'],
+            'mono': ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              300: '#93c5fd',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            },
+            slate: {
+              850: '#151f32',
+              950: '#090d16',
+            }
+          },
+          boxShadow: {
+            'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
+            'card': '0 4px 20px -2px rgba(15, 23, 42, 0.06)',
+            'card-hover': '0 10px 25px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.03)',
+            'btn': '0 2px 4px 0 rgba(37, 99, 235, 0.2)',
+          }
+        } 
+      } 
+    }
+  </script>
+  <style>
+    body { 
+      background-color: #f8fafc; 
+      color: #0f172a;
+      min-height: 100vh;
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+      padding-top: 68px; 
+    }
+
+    .fixed-navbar {
+      top: 0; left: 0; width: 100%; z-index: 40; 
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: fixed; 
+      border-bottom: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+    }
+
+    .hamburger-checkbox, .user-dropdown-checkbox { display: none; }
+
+    /* Modern Slide-over Mobile Navigation */
+    .mobile-menu {
+      position: fixed; top: 0; left: -320px; width: 280px; height: 100vh; 
+      background: #ffffff; 
+      transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 60; overflow-y: auto; 
+      padding-top: 1.25rem; padding-bottom: 2rem;
+      border-right: 1px solid #e2e8f0;
+      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .hamburger-checkbox:checked ~ .mobile-menu { left: 0; }
+    
+    .mobile-menu-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 55; opacity: 0; visibility: hidden; transition: all 0.25s ease; cursor: pointer;
+    }
+    .hamburger-checkbox:checked ~ .mobile-menu-overlay { opacity: 1; visibility: visible; }
+
+    /* Cloudflare Turnstile Responsive Alignment */
+    .turnstile-container {
+      width: 100%;
+      max-width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      margin: 0.5rem 0;
+    }
+    .turnstile-container .cf-turnstile,
+    .turnstile-container iframe {
+      max-width: 100% !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+      display: block !important;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased selection:bg-brand-500 selection:text-white">
+
+<% const isOwnerUser = (typeof user !== 'undefined' && user && user.role === 'owner'); %>
+<% const isAdmin = (typeof user !== 'undefined' && user && (user.role === 'admin' || user.role === 'owner')); %>
+
+<input type="checkbox" class="hamburger-checkbox" id="hamburger-toggle">
+
+<!-- STICKY NAVBAR -->
+<nav class="fixed-navbar">
+  <div class="max-w-7xl mx-auto flex justify-between items-center h-[68px] px-4 sm:px-6 lg:px-8">
+    
+    <!-- Left: Mobile Menu Toggle + Brand Logo -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <label for="hamburger-toggle" class="lg:hidden w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 flex items-center justify-center cursor-pointer transition-colors" title="Buka Menu" aria-label="Buka Menu Navigasi">
+        <i class="fa-solid fa-bars-staggered text-sm"></i>
+      </label>
+
+      <a href="/" class="flex items-center gap-1.5 sm:gap-2.5 group">
+        <% if (settings.logoUrl) { %>
+          <img src="<%= settings.logoUrl %>" alt="Logo" class="w-9 h-9 rounded-xl object-cover border border-slate-200 shadow-xs" />
+        <% } else { %>
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 border border-blue-500 text-white flex items-center justify-center font-extrabold text-sm shadow-sm group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-bolt text-xs"></i>
+          </div>
+        <% } %>
+        <div class="flex flex-col">
+          <span class="font-outfit font-extrabold text-slate-900 text-base sm:text-lg tracking-tight leading-tight"><%= settings.name %></span>
+          <span class="text-[10px] font-mono font-semibold tracking-wider text-slate-400 uppercase leading-none">Payment Gateway</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Center: Desktop Nav Pills -->
+    <% if (user) { %>
+    <div class="hidden lg:flex items-center gap-1 bg-slate-100/90 p-1.5 rounded-full border border-slate-200/90 text-xs font-semibold font-sans">
+      <% if (user.role === 'admin' || user.role === 'owner') { %>
+        <a href="/admin/dashboard" class="px-3 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-pie text-blue-600 text-xs"></i> Dashboard
+        </a>
+        <a href="/admin/users" class="px-3 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-users text-indigo-600 text-xs"></i> Pengguna
+        </a>
+        <a href="/admin/withdraw" class="px-3 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-arrow-up-right-from-square text-emerald-600 text-xs"></i> Penarikan
+        </a>
+        <a href="/admin/transactions" class="px-3 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-receipt text-cyan-600 text-xs"></i> Transaksi
+        </a>
+        <a href="/admin/kyc" class="px-3 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-id-card-clip text-purple-600 text-xs"></i> Verifikasi KYC
+        </a>
+        <a href="/partners" class="px-3 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-handshake text-blue-600 text-xs"></i> Partner
+        </a>
+        <a href="/kyc" class="px-3 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-id-card text-indigo-600 text-xs"></i> KYC
+        </a>
+      <% } else { %>
+        <a href="/dashboard" class="px-3 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-grip text-blue-600 text-xs"></i> Dashboard
+        </a>
+        <a href="/deposit" class="px-3 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-qrcode text-emerald-600 text-xs"></i> QRIS
+        </a>
+        <a href="/payment-links" class="px-3 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-link text-indigo-600 text-xs"></i> Link Bayar
+        </a>
+        <a href="/withdraw" class="px-3 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-wallet text-amber-600 text-xs"></i> Penarikan
+        </a>
+        <a href="/docs" class="px-3 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-code text-slate-600 text-xs"></i> Dokumentasi
+        </a>
+        <a href="/partners" class="px-3 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-handshake text-blue-600 text-xs"></i> Partner
+        </a>
+        <a href="/kyc" class="px-3 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-id-card text-indigo-600 text-xs"></i> KYC
+          <% if (user.kycStatus === 'VERIFIED') { %>
+            <span class="text-[9px] font-bold font-mono px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 ml-0.5"><i class="fa-solid fa-check text-[8px]"></i> Verified</span>
+          <% } %>
+        </a>
+      <% } %>
+    </div>
+    <% } else { %>
+    <!-- Center: Desktop Nav (Guest Mode) -->
+    <div class="hidden lg:flex items-center gap-1 bg-slate-100/90 p-1.5 rounded-full border border-slate-200/90 text-xs font-semibold font-sans">
+      <a href="/" class="px-3.5 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+        <i class="fa-solid fa-house text-slate-500 text-xs"></i> Home
+      </a>
+      <a href="/docs" class="px-3.5 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+        <i class="fa-solid fa-code text-slate-500 text-xs"></i> Dokumentasi
+      </a>
+      <a href="/partners" class="px-3.5 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+        <i class="fa-solid fa-handshake text-blue-600 text-xs"></i> Partner
+      </a>
+      <a href="/kyc" class="px-3.5 py-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white transition-all flex items-center gap-1.5">
+        <i class="fa-solid fa-id-card text-indigo-600 text-xs"></i> KYC
+      </a>
+    </div>
+    <% } %>
+
+    <!-- Right Header Actions (Notification Bell + Account Dropdown) -->
+    <div class="flex items-center gap-2 sm:gap-2 sm:gap-3">
+      <% if (user) { %>
+
+        <!-- Notification Bell Button -->
+        <button type="button" onclick="openNotificationModal()" class="relative w-9 h-9 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 hover:text-slate-900 transition-all shadow-xs active:scale-95 cursor-pointer" title="Pusat Notifikasi" aria-label="Notifikasi">
+          <i class="fa-solid fa-bell text-sm"></i>
+          <!-- Small Red Ping Indicator -->
+          <span id="navNotifBadge" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white animate-pulse"></span>
+        </button>
+
+        <!-- Compact Account Dropdown Trigger: [ Avatar ] [ ▼ ] -->
+        <div class="relative">
+          <input type="checkbox" id="user-menu-toggle" class="user-dropdown-checkbox peer">
+          
+          <label for="user-menu-toggle" class="flex items-center gap-1.5 p-1 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 shadow-xs transition-all cursor-pointer select-none active:scale-95">
+            <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-xs font-bold font-sans shrink-0">
+              <%= (user.name || user.username || 'U').charAt(0).toUpperCase() %>
+            </div>
+            <i class="fa-solid fa-chevron-down text-[9px] text-slate-500 pr-1 peer-checked:rotate-180 transition-transform"></i>
+          </label>
+
+          <!-- Backdrop overlay to dismiss dropdown on click outside -->
+          <label for="user-menu-toggle" class="fixed inset-0 z-40 hidden peer-checked:block"></label>
+
+          <!-- Dropdown Menu Box -->
+          <div class="absolute right-0 top-[125%] mt-1 w-56 bg-white border border-slate-200 rounded-lg sm:rounded-2xl shadow-sm sm:shadow-card hidden peer-checked:block z-50 overflow-hidden p-2 space-y-1 animate-fade-in">
+            <div class="px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-100 mb-1">
+              <p class="text-xs font-bold text-slate-900 font-sans truncate"><%= user.username || user.name %></p>
+              <div class="flex items-center gap-1.5 mt-0.5">
+                <span class="w-2 h-2 rounded-full <%= user.role === 'owner' ? 'bg-amber-500' : (user.role === 'admin' ? 'bg-purple-500' : 'bg-emerald-500') %>"></span>
+                <p class="text-[10px] font-mono font-semibold text-slate-500 capitalize"><%= user.role || 'Member' %></p>
+              </div>
+            </div>
+            
+            <a href="<%= isAdmin ? "/admin/account" : "/profile" %>" class="flex items-center gap-1.5 sm:gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors">
+              <i class="fa-regular fa-user text-slate-500 w-4 text-center"></i> Profil Saya
+            </a>
+            
+            <a href="/payment-links" class="flex items-center gap-1.5 sm:gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors">
+              <i class="fa-solid fa-link text-indigo-600 w-4 text-center"></i> Link Bayar
+            </a>
+            
+            <a href="/profile#keamanan-2fa" class="flex items-center gap-1.5 sm:gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors">
+              <i class="fa-solid fa-shield-halved text-blue-600 w-4 text-center"></i> Keamanan (2FA)
+            </a>
+            
+            <button type="button" onclick="openNotificationModal(); document.getElementById('user-menu-toggle').checked = false;" class="w-full flex items-center gap-1.5 sm:gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors text-left cursor-pointer">
+              <i class="fa-regular fa-bell text-slate-500 w-4 text-center"></i> Notifikasi
+            </button>
+
+            <% if (isAdmin) { %>
+              <div class="h-px bg-slate-100 my-1"></div>
+              <a href="/admin/dashboard" class="flex items-center gap-1.5 sm:gap-2.5 px-3 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors">
+                <i class="fa-solid fa-shield-halved text-indigo-500 w-4 text-center"></i> Panel Admin
+              </a>
+            <% } %>
+
+            <div class="h-px bg-slate-100 my-1"></div>
+            
+            <a href="/logout" class="flex items-center gap-1.5 sm:gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">
+              <i class="fa-solid fa-arrow-right-from-bracket text-rose-500 w-4 text-center"></i> Keluar
+            </a>
+          </div>
+        </div>
+
+      <% } else { %>
+        <!-- Guest View Login / Register -->
+        <a href="/docs" class="hidden sm:inline-flex text-xs font-semibold text-slate-600 hover:text-slate-900 px-3 py-2 transition-colors">
+          Panduan API
+        </a>
+        <a href="/login" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-btn active:scale-95 flex items-center gap-1.5">
+          Masuk <i class="fas fa-arrow-right text-[10px]"></i>
+        </a>
+      <% } %>
+    </div>
+  </div>
+</nav>
+
+<!-- MODAL NOTIFICATION CENTER -->
+<div id="notificationCenterModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeNotificationModal()"></div>
+  
+  <div class="relative bg-white border border-slate-200 rounded-2xl sm:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden z-10 my-8 flex flex-col max-h-[85vh] animate-fade-in">
+    
+    <!-- Modal Header -->
+    <div class="px-6 py-4.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70 shrink-0">
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
+          <i class="fa-solid fa-bell"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 font-sans">Pusat Notifikasi</h3>
+          <p class="text-[11px] font-mono text-slate-500">Pemberitahuan Akun & Transaksi</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <button type="button" onclick="markAllNotificationsRead()" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[11px] font-medium transition-colors cursor-pointer" title="Tandai Semua Sudah Dibaca">
+          Tandai Dibaca
+        </button>
+        <button onclick="closeNotificationModal()" class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+          <i class="fas fa-times text-xs"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex border-b border-slate-100 bg-white px-5 py-2 gap-1.5 sm:gap-2 text-xs font-semibold shrink-0">
+      <button type="button" id="notifTabAll" onclick="filterNotifTab('all')" class="px-3 py-1 bg-slate-900 text-white rounded-lg transition-colors cursor-pointer">
+        Semua
+      </button>
+      <button type="button" id="notifTabUnread" onclick="filterNotifTab('unread')" class="px-3 py-1 bg-slate-100 text-slate-600 hover:text-slate-900 rounded-lg transition-colors cursor-pointer">
+        Belum Dibaca
+      </button>
+    </div>
+
+    <!-- Notifications List Body -->
+    <div id="notificationsListContainer" class="p-5 overflow-y-auto space-y-2.5 flex-1 bg-slate-50/50">
+      <div class="text-center py-8 text-xs font-medium text-slate-500">
+        <i class="fa-solid fa-spinner fa-spin text-lg mb-2 block text-blue-600"></i>
+        Memuat notifikasi...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION DETAIL MODAL -->
+<div id="notificationDetailModal" class="fixed inset-0 z-[160] hidden flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeNotificationDetailModal()"></div>
+  <div class="relative bg-white border border-slate-200 rounded-2xl sm:rounded-3xl w-full max-w-md p-6 shadow-2xl z-10 space-y-4 animate-fade-in">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <span id="detailNotifTypePill" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase bg-blue-100 text-blue-700">INFO</span>
+        <span id="detailNotifTime" class="text-[11px] font-mono text-slate-400">-</span>
+      </div>
+      <button onclick="closeNotificationDetailModal()" class="text-slate-400 hover:text-slate-700 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100">
+        <i class="fas fa-times text-xs"></i>
+      </button>
+    </div>
+    <div>
+      <h3 id="detailNotifTitle" class="text-base font-bold text-slate-900 mb-1 font-sans">-</h3>
+      <p id="detailNotifMessage" class="text-xs font-normal text-slate-600 leading-relaxed font-sans whitespace-pre-wrap">-</p>
+    </div>
+    <button onclick="closeNotificationDetailModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer">
+      Tutup
+    </button>
+  </div>
+</div>
+
+<script>
+  let currentNotifList = [];
+  let currentNotifFilter = 'all';
+
+  async function fetchUnreadCount() {
+    try {
+      const res = await fetch('/api/notifications/unread-count');
+      if (!res.ok) return;
+      const data = await res.json();
+      const badge = document.getElementById('navNotifBadge');
+      if (badge) {
+        if (data.unreadCount > 0) {
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+    } catch (e) {}
+  }
+
+  async function openNotificationModal() {
+    const modal = document.getElementById('notificationCenterModal');
+    if (modal) modal.classList.remove('hidden');
+    await loadNotifications();
+  }
+
+  function closeNotificationModal() {
+    const modal = document.getElementById('notificationCenterModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  function openNotificationDetail(id) {
+    const n = currentNotifList.find(item => String(item._id) === String(id));
+    if (!n) return;
+    
+    document.getElementById('detailNotifTitle').textContent = n.title;
+    document.getElementById('detailNotifMessage').textContent = n.message;
+    document.getElementById('detailNotifTime').textContent = new Date(n.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    
+    const pill = document.getElementById('detailNotifTypePill');
+    pill.textContent = (n.type || 'INFO').toUpperCase();
+    if (n.type === 'danger') pill.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase bg-rose-100 text-rose-700';
+    else if (n.type === 'warning') pill.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase bg-amber-100 text-amber-700';
+    else if (n.type === 'success') pill.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase bg-emerald-100 text-emerald-700';
+    else pill.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase bg-blue-100 text-blue-700';
+
+    markSingleNotificationRead(id);
+    document.getElementById('notificationDetailModal').classList.remove('hidden');
+  }
+
+  function closeNotificationDetailModal() {
+    document.getElementById('notificationDetailModal').classList.add('hidden');
+  }
+
+  async function loadNotifications() {
+    const container = document.getElementById('notificationsListContainer');
+    try {
+      const res = await fetch('/api/notifications');
+      if (!res.ok) throw new Error('Gagal memuat');
+      const data = await res.json();
+      currentNotifList = data.notifications || [];
+      renderNotifications();
+      fetchUnreadCount();
+    } catch (err) {
+      if (container) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-xs font-medium text-rose-600">
+            <i class="fa-solid fa-triangle-exclamation text-xl mb-2 block"></i>
+            Gagal memuat notifikasi.
+          </div>
+        `;
+      }
+    }
+  }
+
+  function filterNotifTab(tab) {
+    currentNotifFilter = tab;
+    const tabAll = document.getElementById('notifTabAll');
+    const tabUnread = document.getElementById('notifTabUnread');
+    if (tab === 'all') {
+      tabAll.className = 'px-3 py-1 bg-slate-900 text-white rounded-lg transition-colors cursor-pointer';
+      tabUnread.className = 'px-3 py-1 bg-slate-100 text-slate-600 hover:text-slate-900 rounded-lg transition-colors cursor-pointer';
+    } else {
+      tabAll.className = 'px-3 py-1 bg-slate-100 text-slate-600 hover:text-slate-900 rounded-lg transition-colors cursor-pointer';
+      tabUnread.className = 'px-3 py-1 bg-slate-900 text-white rounded-lg transition-colors cursor-pointer';
+    }
+    renderNotifications();
+  }
+
+  function renderNotifications() {
+    const container = document.getElementById('notificationsListContainer');
+    if (!container) return;
+
+    let list = currentNotifList;
+    if (currentNotifFilter === 'unread') {
+      list = list.filter(n => !n.isRead);
+    }
+
+    if (list.length === 0) {
+      container.innerHTML = `
+        <div class="text-center py-12 text-xs font-medium text-slate-400">
+          <i class="fa-regular fa-bell-slash text-3xl mb-3 block text-slate-300"></i>
+          ${currentNotifFilter === 'unread' ? 'Tidak ada notifikasi yang belum dibaca' : 'Belum ada notifikasi baru'}
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = list.map(n => {
+      const typePill = n.type === 'danger' ? 'bg-rose-100 text-rose-700' : (n.type === 'warning' ? 'bg-amber-100 text-amber-700' : (n.type === 'success' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'));
+      const timeStr = new Date(n.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+      return `
+        <div class="p-3.5 rounded-lg sm:rounded-2xl border ${n.isRead ? 'bg-white border-slate-200/80 text-slate-700' : 'bg-white border-blue-200 shadow-xs text-slate-900'} transition-all flex flex-col gap-1 cursor-pointer hover:border-slate-300" onclick="openNotificationDetail('${n._id}')">
+          <div class="flex items-center justify-between gap-1.5 sm:gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <span class="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase font-mono ${typePill}">
+                ${n.type || 'info'}
+              </span>
+              <h4 class="font-sans font-bold text-xs text-slate-900 truncate max-w-[200px] sm:max-w-xs">${n.title}</h4>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              ${!n.isRead ? '<span class="w-2 h-2 rounded-full bg-rose-500"></span>' : ''}
+              <span class="text-[10px] font-mono text-slate-400">${timeStr}</span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed font-sans">${n.message}</p>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function markSingleNotificationRead(id) {
+    try {
+      await fetch('/api/notifications/' + id + '/read', { method: 'POST' });
+      const notif = currentNotifList.find(n => String(n._id) === String(id));
+      if (notif) notif.isRead = true;
+      renderNotifications();
+      fetchUnreadCount();
+    } catch (e) {}
+  }
+
+  async function markAllNotificationsRead() {
+    try {
+      await fetch('/api/notifications/read-all', { method: 'POST' });
+      currentNotifList.forEach(n => n.isRead = true);
+      renderNotifications();
+      fetchUnreadCount();
+    } catch (e) {}
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    fetchUnreadCount();
+    setInterval(fetchUnreadCount, 30000);
+
+    const hamburgerToggle = document.getElementById('hamburger-toggle');
+    if (hamburgerToggle) {
+      // Auto close mobile drawer when link clicked
+      const drawerLinks = document.querySelectorAll('#mobile-navigation-links a');
+      drawerLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          hamburgerToggle.checked = false;
+        });
+      });
+      // Close on Escape key press
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && hamburgerToggle.checked) {
+          hamburgerToggle.checked = false;
+        }
+      });
+    }
+  });
+</script>
+
+<!-- Mobile Slide-over Drawer -->
+<label for="hamburger-toggle" class="mobile-menu-overlay" aria-label="Tutup Menu"></label>
+
+<div id="mobile-navigation-links" class="mobile-menu">
+  
+  <% if (user) { %>
+    <!-- User Profile Header Card in Mobile Drawer -->
+    <div class="px-4 mb-4 pb-4 border-b border-slate-100 flex items-center justify-between mx-3">
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
+          <%= (user.name || user.username || 'U').charAt(0).toUpperCase() %>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-xs font-bold text-slate-900 font-sans truncate"><%= user.name || user.username %></p>
+          <p class="text-[10px] font-mono text-slate-500 capitalize"><%= user.role || 'Member' %></p>
+        </div>
+      </div>
+      <label for="hamburger-toggle" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center cursor-pointer transition-colors shrink-0" title="Tutup Menu">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </label>
+    </div>
+
+    <div class="flex flex-col gap-1 px-3 text-xs font-semibold font-sans">
+      
+      <% if (user.role === 'admin' || user.role === 'owner') { %>
+        <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Admin Control</div>
+        <a href="/admin/dashboard" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+          <i class="fa-solid fa-chart-pie w-5 text-center text-blue-600"></i> Dashboard
+        </a>
+        <a href="/admin/users" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+          <i class="fa-solid fa-users w-5 text-center text-indigo-600"></i> Kelola User
+        </a>
+        <a href="/admin/banned-ips" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+          <i class="fa-solid fa-ban w-5 text-center text-rose-600"></i> Banned / Suspend IP
+        </a>
+        <a href="/admin/notifications" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+          <i class="fa-solid fa-bullhorn w-5 text-center text-amber-600"></i> Notifikasi Massal
+        </a>
+        <a href="/admin/chat" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+          <i class="fa-solid fa-headset w-5 text-center text-pink-600"></i> Support Chat Admin
+        </a>
+        <a href="/admin/chatglobal" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+          <i class="fa-solid fa-earth-americas w-5 text-center text-teal-600"></i> Global Chat Admin
+        </a>
+        <a href="/admin/withdraw" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+          <i class="fa-solid fa-arrow-up-right-from-square w-5 text-center text-emerald-600"></i> Kelola Withdraw
+        </a>
+        <a href="/admin/transactions" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+          <i class="fa-solid fa-receipt w-5 text-center text-cyan-600"></i> Transaksi User
+        </a>
+        <a href="/admin/kyc" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+          <i class="fa-solid fa-id-card-clip w-5 text-center text-purple-600"></i> Verifikasi KYC
+        </a>
+        <% if (user.role === 'owner') { %>
+          <a href="/admin/settings" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+            <i class="fa-solid fa-sliders w-5 text-center text-slate-600"></i> Pengaturan System
+          </a>
+        <% } %>
+        <% if (locals.canAccessBackup) { %>
+          <a href="/admin/backup" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+            <i class="fa-solid fa-box-archive w-5 text-center text-amber-600"></i> Backup Website
+          </a>
+        <% } %>
+      <% } else { %>
+        <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Menu Utama</div>
+        <a href="/dashboard" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+          <i class="fa-solid fa-grip w-5 text-center text-blue-600"></i> Dashboard 
+        </a>
+        <a href="/deposit" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+          <i class="fa-solid fa-qrcode w-5 text-center text-emerald-600"></i> Deposit QRIS
+        </a>
+        <a href="/payment-links" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+          <i class="fa-solid fa-link w-5 text-center text-indigo-600"></i> Link Bayar
+        </a>
+        <a href="/withdraw" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+          <i class="fa-solid fa-wallet w-5 text-center text-amber-600"></i> Penarikan Saldo
+        </a>
+        <a href="/profile" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+          <i class="fa-solid fa-user-gear w-5 text-center text-indigo-600"></i> Profil Saya
+        </a>
+      <% } %>
+
+      <div class="h-px bg-slate-100 my-2"></div>
+      <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Navigasi & Informasi</div>
+
+      <a href="/" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+        <i class="fa-solid fa-house w-5 text-center text-slate-500"></i> Home
+      </a>
+      <a href="/docs" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+        <i class="fa-solid fa-code w-5 text-center text-slate-600"></i> Panduan API
+      </a>
+      <a href="/partners" class="flex items-center justify-between px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <i class="fa-solid fa-handshake w-5 text-center text-blue-600"></i> Partner
+        </div>
+      </a>
+      <a href="/kyc" class="flex items-center justify-between px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <i class="fa-solid fa-id-card w-5 text-center text-indigo-600"></i> KYC
+        </div>
+        <% if (user.kycStatus === 'VERIFIED') { %>
+          <span class="text-[9px] font-bold font-mono px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-check text-[8px]"></i> Verified</span>
+        <% } %>
+      </a>
+
+      <% if (user.role !== 'admin' && user.role !== 'owner') { %>
+      <div class="h-px bg-slate-100 my-2"></div>
+      <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Bantuan & Komunitas</div>
+      <a href="/chat" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+        <i class="fa-solid fa-headset w-5 text-center text-pink-600"></i> Live Chat Support
+      </a>
+      <a href="/chatglobal" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+        <i class="fa-solid fa-earth-americas w-5 text-center text-teal-600"></i> Global Chat
+      </a>
+      <% } %>
+
+      <div class="h-px bg-slate-100 my-2"></div>
+      <a href="/logout" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-rose-600 hover:bg-rose-50 rounded-xl transition-all">
+        <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center text-rose-500"></i> Keluar
+      </a>
+    </div>
+
+  <% } else { %>
+    <!-- Guest Mobile Drawer -->
+    <div class="px-4 mb-4 pb-4 border-b border-slate-100 flex items-center justify-between mx-3">
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <% if (settings.logoUrl) { %>
+          <img src="<%= settings.logoUrl %>" alt="Logo" class="w-9 h-9 rounded-xl object-cover border border-slate-200 shadow-xs" />
+        <% } else { %>
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
+            <i class="fa-solid fa-bolt text-xs"></i>
+          </div>
+        <% } %>
+        <div class="min-w-0 flex-1">
+          <p class="text-xs font-bold text-slate-900 font-sans truncate"><%= settings.name %></p>
+          <p class="text-[10px] font-mono text-slate-500">Payment Gateway</p>
+        </div>
+      </div>
+      <label for="hamburger-toggle" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center cursor-pointer transition-colors shrink-0" title="Tutup Menu">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </label>
+    </div>
+
+    <div class="flex flex-col gap-1 px-3 text-xs font-semibold font-sans">
+      <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Navigasi Utama</div>
+      
+      <a href="/" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+        <i class="fa-solid fa-house w-5 text-center text-slate-500"></i> Home
+      </a>
+      <a href="/docs" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+        <i class="fa-solid fa-code w-5 text-center text-slate-600"></i> Panduan API
+      </a>
+      <a href="/partners" class="flex items-center justify-between px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <i class="fa-solid fa-handshake w-5 text-center text-blue-600"></i> Partner
+        </div>
+      </a>
+      <a href="/kyc" class="flex items-center justify-between px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <i class="fa-solid fa-id-card w-5 text-center text-indigo-600"></i> KYC
+        </div>
+      </a>
+
+      <div class="h-px bg-slate-100 my-2"></div>
+      <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Akses Akun</div>
+
+      <a href="/login" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-blue-600 bg-blue-50/70 hover:bg-blue-100 rounded-xl transition-all font-bold">
+        <i class="fa-solid fa-right-to-bracket w-5 text-center text-blue-600"></i> Masuk Akun
+      </a>
+      <a href="/register" class="flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+        <i class="fa-solid fa-user-plus w-5 text-center text-emerald-600"></i> Daftar Akun Baru
+      </a>
+    </div>
+  <% } %>
+
+</div>
+
+<main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-5 sm:py-6 w-full min-w-0 overflow-x-hidden">

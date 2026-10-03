@@ -1,0 +1,147 @@
+<%- include('partials/header', { title: settings.maintenanceTitle || 'Mode Pemeliharaan' }) %>
+
+<div class="min-h-screen sm:min-h-[75vh] flex items-center justify-center p-4 sm:p-6 w-full">
+  
+  <div class="w-full max-w-xl bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 sm:p-10 shadow-sm sm:shadow-card space-y-6 text-center transform transition-all relative overflow-hidden animate-fade-in">
+    
+    <!-- Top Status Badge -->
+    <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 text-amber-800 text-xs font-semibold border border-amber-200">
+      <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+      <span>Pemeliharaan Sistem Sedang Berlangsung</span>
+    </div>
+
+    <!-- Main Icon -->
+    <div class="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl shadow-xs">
+      <i class="<%= settings.maintenanceIcon || 'fa-solid fa-wrench' %> animate-pulse"></i>
+    </div>
+
+    <!-- Title & Message -->
+    <div class="space-y-2">
+      <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-black tracking-tight font-outfit text-slate-900 leading-tight">
+        <%= settings.maintenanceTitle || 'Sistem Dalam Pemeliharaan' %>
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-500 font-sans leading-relaxed max-w-md mx-auto">
+        <%= settings.maintenanceMessage || 'Kami sedang melakukan pemeliharaan rutin untuk meningkatkan kualitas layanan. Halaman akan otomatis pulih saat selesai.' %>
+      </p>
+    </div>
+
+    <!-- Countdown Timer (If Configured) -->
+    <% if (settings.maintenanceCountdown) { %>
+      <div id="maintenanceCountdownContainer" class="bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl p-4 max-w-sm mx-auto space-y-2 shadow-xs">
+        <p class="text-[11px] font-semibold uppercase tracking-wider font-mono text-slate-500">Perkiraan Waktu Selesai</p>
+        <div id="countdownClock" class="grid grid-cols-4 gap-1.5 sm:gap-2 font-mono font-bold text-slate-900 text-center">
+          <div class="bg-white border border-slate-200 rounded-xl p-2 shadow-xs">
+            <span id="cdDays" class="text-base sm:text-lg block font-bold text-blue-600">00</span>
+            <span class="text-[9px] uppercase font-sans text-slate-400">Hari</span>
+          </div>
+          <div class="bg-white border border-slate-200 rounded-xl p-2 shadow-xs">
+            <span id="cdHours" class="text-base sm:text-lg block font-bold text-blue-600">00</span>
+            <span class="text-[9px] uppercase font-sans text-slate-400">Jam</span>
+          </div>
+          <div class="bg-white border border-slate-200 rounded-xl p-2 shadow-xs">
+            <span id="cdMins" class="text-base sm:text-lg block font-bold text-blue-600">00</span>
+            <span class="text-[9px] uppercase font-sans text-slate-400">Menit</span>
+          </div>
+          <div class="bg-white border border-slate-200 rounded-xl p-2 shadow-xs">
+            <span id="cdSecs" class="text-base sm:text-lg block font-bold text-blue-600">00</span>
+            <span class="text-[9px] uppercase font-sans text-slate-400">Detik</span>
+          </div>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2.5 pt-2">
+      <button onclick="window.location.reload()" 
+              class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs transition-all shadow-btn active:scale-95 cursor-pointer flex items-center gap-1.5 sm:gap-2">
+        <i class="fa-solid fa-rotate-right text-xs"></i>
+        <span>Refresh Halaman</span>
+      </button>
+
+      <% if (settings.maintenanceTelegram || settings.channelWhatsApp) { %>
+        <a href="<%= settings.maintenanceTelegram || settings.channelWhatsApp %>" target="_blank"
+           class="px-4 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded-xl font-semibold text-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 sm:gap-2">
+          <i class="fa-brands fa-telegram text-xs"></i>
+          <span>Telegram Info</span>
+        </a>
+      <% } %>
+
+      <% if (settings.maintenanceWhatsApp || settings.channelWhatsApp) { %>
+        <a href="<%= settings.maintenanceWhatsApp || settings.channelWhatsApp %>" target="_blank"
+           class="px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl font-semibold text-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 sm:gap-2">
+          <i class="fa-brands fa-whatsapp text-xs"></i>
+          <span>WhatsApp CS</span>
+        </a>
+      <% } %>
+    </div>
+
+    <!-- Go Back Home Option -->
+    <div class="pt-2">
+      <a href="/home" class="text-xs text-slate-400 hover:text-slate-700 transition-colors">
+        &larr; Kembali ke Beranda
+      </a>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  (function() {
+    let targetDate = null;
+    <% if (settings.maintenanceCountdown) { %>
+      targetDate = new Date("<%= settings.maintenanceCountdown %>").getTime();
+    <% } %>
+
+    function checkStatus() {
+      fetch('/api/maintenance/status')
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.maintenanceEnabled === false) {
+            window.location.href = '/dashboard';
+          }
+        })
+        .catch(() => {});
+    }
+
+    // Poll status every 5 seconds
+    setInterval(checkStatus, 5000);
+
+    if (targetDate && !isNaN(targetDate)) {
+      function updateCountdown() {
+        const now = new Date().getTime();
+        const diff = targetDate - now;
+
+        if (diff <= 0) {
+          const cdDays = document.getElementById('cdDays');
+          if (cdDays) {
+            document.getElementById('cdDays').textContent = '00';
+            document.getElementById('cdHours').textContent = '00';
+            document.getElementById('cdMins').textContent = '00';
+            document.getElementById('cdSecs').textContent = '00';
+          }
+          // Maintenance expired - perform immediate check & redirect
+          setTimeout(checkStatus, 1000);
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        if (document.getElementById('cdDays')) {
+          document.getElementById('cdDays').textContent = String(days).padStart(2, '0');
+          document.getElementById('cdHours').textContent = String(hours).padStart(2, '0');
+          document.getElementById('cdMins').textContent = String(mins).padStart(2, '0');
+          document.getElementById('cdSecs').textContent = String(secs).padStart(2, '0');
+        }
+      }
+
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
+    }
+  })();
+</script>
+
+<%- include('partials/footer') %>

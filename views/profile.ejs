@@ -1,0 +1,1479 @@
+<%- include('partials/header', { title: 'Profil Saya' }) %>
+
+<div class="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-5 md:py-5 sm:py-6 w-full min-w-0 space-y-6">
+
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg sm:rounded-2xl text-xs font-semibold flex items-center gap-2 sm:gap-3 shadow-xs">
+      <i class="fa-solid fa-circle-check text-emerald-600 text-sm shrink-0"></i>
+      <p><%= success %></p>
+    </div>
+  <% } %>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-lg sm:rounded-2xl text-xs font-semibold flex items-center gap-2 sm:gap-3 shadow-xs">
+      <i class="fa-solid fa-circle-exclamation text-rose-600 text-sm shrink-0"></i>
+      <p><%= error %></p>
+    </div>
+  <% } %>
+
+  <!-- Page Title Header -->
+  <div>
+    <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl font-black text-slate-900 tracking-tight font-outfit">Pengaturan Profil & Akun</h1>
+    <p class="text-xs text-slate-500 font-sans mt-0.5">Kelola identitas akun, kredensial API, dan informasi rekening pencairan dana Anda.</p>
+  </div>
+
+  <!-- Avatar & User Header Card -->
+  <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-xs">
+    <div class="flex flex-col sm:flex-row sm:items-center items-center gap-5 sm:gap-6">
+      <div class="relative shrink-0">
+        <div id="avatarContainer" class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-lg sm:rounded-2xl overflow-hidden border border-slate-200 shadow-xs">
+          <% if (user.profilePicture) { %>
+            <img src="<%= user.profilePicture %>" alt="Foto Profil" class="w-full h-full object-cover" id="profileImagePreview">
+          <% } else { %>
+            <div id="profileInitial" class="w-full h-full flex items-center justify-center text-white text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-black font-outfit bg-gradient-to-tr from-blue-600 to-indigo-600" style="<%= user.profileColor ? 'background:' + user.profileColor : '' %>">
+              <%= user.username.charAt(0).toUpperCase() %>
+            </div>
+          <% } %>
+        </div>
+        <label for="profileImageInput" class="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center justify-center cursor-pointer shadow-btn active:scale-95 transition-all border-2 border-white" title="Ganti Foto">
+          <i class="fas fa-camera text-xs"></i>
+        </label>
+        <input type="file" id="profileImageInput" accept="image/*" class="hidden" />
+      </div>
+
+      <div class="text-center sm:text-left lg:text-left flex-1">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-semibold border border-blue-100 mb-2">
+          <i class="fa-solid fa-shield-halved text-xs"></i>
+          <span>Pengguna Terverifikasi</span>
+        </div>
+        <h2 class="text-xl font-bold text-slate-900 font-outfit"><%= user.username %></h2>
+        <p class="text-xs text-slate-500 font-sans mt-0.5"><%= user.email %></p>
+        <p id="uploadStatus" class="text-xs font-medium text-slate-600 mt-2 hidden"></p>
+      </div>
+    </div>
+  </div>
+
+  <% 
+    let is2FaActive = !!(user && user.twoFactorEnabled);
+    let rawApiKey = '';
+    if (is2FaActive && typeof apiKeys !== 'undefined' && apiKeys.length > 0) {
+      rawApiKey = apiKeys[0].key;
+    }
+  %>
+
+  <!-- Informasi Akun Section -->
+  <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-base font-bold text-slate-900 font-outfit">Informasi Data Akun</h2>
+        <p class="text-xs text-slate-500 font-sans mt-0.5">Informasi utama akun & akses API merchant integration.</p>
+      </div>
+      <button onclick="openEditInfoModal()" class="inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold font-sans shadow-btn active:scale-95 transition-all cursor-pointer shrink-0">
+        <i class="fas fa-pen-to-square text-xs"></i>
+        <span>Edit Informasi</span>
+      </button>
+    </div>
+
+    <div class="border border-slate-200 rounded-lg sm:rounded-2xl overflow-hidden shadow-xs">
+      <table class="w-full text-xs text-left divide-y divide-slate-100 font-sans text-slate-800">
+        <tbody class="divide-y divide-slate-100">
+          <tr>
+            <td class="w-1/3 py-3 px-4 sm:px-5 text-slate-500 bg-slate-50 font-medium">Nama Lengkap</td>
+            <td class="py-3 px-4 sm:px-5 font-semibold text-slate-900"><%= user.fullName || user.googleName || '-' %></td>
+          </tr>
+          <tr>
+            <td class="w-1/3 py-3 px-4 sm:px-5 text-slate-500 bg-slate-50 font-medium">Username</td>
+            <td class="py-3 px-4 sm:px-5 font-semibold text-slate-900 font-mono"><%= user.username %></td>
+          </tr>
+          <tr>
+            <td class="py-3 px-4 sm:px-5 text-slate-500 bg-slate-50 font-medium">Alamat Email</td>
+            <td class="py-3 px-4 sm:px-5 font-semibold text-slate-900"><%= user.email %></td>
+          </tr>
+          <tr>
+            <td class="py-3 px-4 sm:px-5 text-slate-500 bg-slate-50 font-medium">Telegram ID</td>
+            <td class="py-3 px-4 sm:px-5 font-semibold text-slate-900"><%= user.telegramId || '-' %></td>
+          </tr>
+          <tr>
+            <td class="py-3 px-4 sm:px-5 text-slate-500 bg-slate-50 font-medium">Nomor WhatsApp/HP</td>
+            <td class="py-3 px-4 sm:px-5 font-semibold text-slate-900"><%= user.phoneNumber || '-' %></td>
+          </tr>
+          <tr>
+            <td class="py-3 px-4 sm:px-5 text-slate-500 bg-slate-50 font-medium">API Key Merchant</td>
+            <td class="py-3 px-4 sm:px-5 font-mono font-semibold text-slate-900">
+              <% if (!is2FaActive) { %>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 py-0.5">
+                  <div class="flex items-center gap-1.5 sm:gap-2 text-rose-600 font-sans text-xs">
+                    <i class="fa-solid fa-lock text-rose-500"></i>
+                    <span>Terkunci &mdash; Aktifkan 2FA terlebih dahulu untuk mendapatkan API Key</span>
+                  </div>
+                  <a href="#keamanan-2fa" class="text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-2.5 py-1 text-xs font-semibold shrink-0 transition-colors w-fit font-sans">
+                    Aktifkan 2FA
+                  </a>
+                </div>
+              <% } else { %>
+                <div class="flex items-center justify-between gap-1.5 sm:gap-2">
+                  <span id="tableApiKeyDisplay" class="truncate max-w-[200px] sm:max-w-md"><%= rawApiKey ? '••••••••••••••••' : 'Belum ada API Key' %></span>
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <% if (rawApiKey) { %>
+                      <button type="button" onclick="promptApiKey2FaAction('reveal')" class="text-slate-700 bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1 text-xs hover:bg-slate-200 transition-colors cursor-pointer flex items-center gap-1 font-semibold" title="Tampilkan / Sembunyikan API Key">
+                        <i id="tableApiKeyIcon" class="far fa-eye text-xs"></i>
+                        <span id="tableApiKeyBtnText" class="text-[11px]">Lihat</span>
+                      </button>
+                      <button type="button" onclick="promptApiKey2FaAction('regenerate')" class="text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-2.5 py-1 text-xs hover:bg-blue-100 transition-colors cursor-pointer flex items-center gap-1 font-semibold" title="Generate Ulang API Key">
+                        <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+                        <span class="text-[11px]">Ganti</span>
+                      </button>
+                    <% } else { %>
+                      <button type="button" onclick="promptApiKey2FaAction('create')" class="text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-2.5 py-1 text-xs hover:bg-blue-100 transition-colors cursor-pointer flex items-center gap-1 font-semibold">
+                        <i class="fa-solid fa-plus text-[10px]"></i>
+                        <span class="text-[11px]">Buat API Key</span>
+                      </button>
+                    <% } %>
+                  </div>
+                </div>
+              <% } %>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ==================== PENGATURAN KEAMANAN & 2FA ==================== -->
+  <div id="keamanan-2fa" class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-xs space-y-5 scroll-mt-24">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-1.5 sm:gap-2.5 flex-wrap">
+          <h2 class="text-base font-bold text-slate-900 font-outfit">Keamanan & Two-Factor Authentication (2FA)</h2>
+          <% if (is2FaActive) { %>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>🟢 2FA Aktif</span>
+            </span>
+          <% } else { %>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200">
+              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+              <span>🔴 2FA Belum Aktif</span>
+            </span>
+          <% } %>
+        </div>
+        <p class="text-xs text-slate-500 font-sans mt-1">
+          Pengaturan autentikasi dua faktor berbasis waktu (TOTP) standar Google Authenticator untuk keamanan akun dan akses API.
+        </p>
+      </div>
+
+      <div>
+        <% if (!is2FaActive) { %>
+          <button type="button" onclick="open2FaSetupModal()" class="inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold font-sans shadow-btn active:scale-95 transition-all cursor-pointer">
+            <i class="fa-solid fa-shield-halved text-xs"></i>
+            <span>Aktifkan 2FA</span>
+          </button>
+        <% } else { %>
+          <button type="button" onclick="open2FaDisableModal()" class="inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-4 py-2.5 rounded-xl text-xs font-bold font-sans active:scale-95 transition-all cursor-pointer">
+            <i class="fa-solid fa-shield-xmark text-xs"></i>
+            <span>Nonaktifkan 2FA</span>
+          </button>
+        <% } %>
+      </div>
+    </div>
+
+    <% if (!is2FaActive) { %>
+      <div class="bg-amber-50/70 border border-amber-200 rounded-lg sm:rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center items-start sm:items-center justify-between gap-4">
+        <div class="flex items-start gap-2 sm:gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
+            <i class="fa-solid fa-triangle-exclamation text-sm"></i>
+          </div>
+          <div class="text-xs font-sans text-amber-900 leading-relaxed">
+            <p class="font-bold text-slate-900">🔒 Aktifkan 2FA terlebih dahulu untuk mendapatkan API Key.</p>
+            <p class="text-slate-600 mt-0.5">
+              Untuk melindungi dana dan data transaksi Anda, PutzPay menerapkan standar keamanan tinggi: setiap akun wajib mengaktifkan <strong>Google Authenticator (TOTP)</strong> untuk dapat membuat dan menggunakan API Key.
+            </p>
+          </div>
+        </div>
+        <button type="button" onclick="open2FaSetupModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold font-sans shrink-0 shadow-btn transition-all cursor-pointer">
+          Aktifkan 2FA Sekarang
+        </button>
+      </div>
+    <% } else { %>
+      <div class="border border-slate-200 rounded-lg sm:rounded-2xl overflow-hidden shadow-xs">
+        <table class="w-full text-xs text-left divide-y divide-slate-100 font-sans text-slate-800">
+          <tbody class="divide-y divide-slate-100">
+            <tr>
+              <td class="w-1/3 py-3 px-4 sm:px-5 text-slate-500 bg-slate-50 font-medium">Metode Verifikasi</td>
+              <td class="py-3 px-4 sm:px-5 font-semibold text-slate-900 flex items-center gap-1.5 sm:gap-2">
+                <i class="fa-brands fa-google text-blue-600"></i>
+                <span>TOTP (Google Authenticator)</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="w-1/3 py-3 px-4 sm:px-5 text-slate-500 bg-slate-50 font-medium">Status Proteksi</td>
+              <td class="py-3 px-4 sm:px-5 font-semibold text-emerald-700">
+                <i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> Aktif untuk Login & Kredensial API Key
+              </td>
+            </tr>
+            <tr>
+              <td class="w-1/3 py-3 px-4 sm:px-5 text-slate-500 bg-slate-50 font-medium">Waktu Diaktifkan</td>
+              <td class="py-3 px-4 sm:px-5 font-medium text-slate-700">
+                <%= user.twoFactorEnabledAt ? new Date(user.twoFactorEnabledAt).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' }) : 'Sudah Aktif' %>
+              </td>
+            </tr>
+            <tr>
+              <td class="w-1/3 py-3 px-4 sm:px-5 text-slate-500 bg-slate-50 font-medium">Kode Pemulihan Cadangan</td>
+              <td class="py-3 px-4 sm:px-5 font-medium text-slate-700">
+                <span class="font-bold text-slate-900"><%= typeof activeRecoveryCount !== 'undefined' ? activeRecoveryCount : 8 %></span> dari <%= typeof totalRecoveryCount !== 'undefined' ? totalRecoveryCount : 8 %> kode cadangan tersisa
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- ==================== WEBHOOK MERCHANT ==================== -->
+  <div id="webhook-merchant" class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-xs space-y-5 scroll-mt-24">
+    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+      <div>
+        <h3 class="text-sm sm:text-base font-bold text-slate-900 font-outfit flex items-center gap-2">
+          <i class="fa-solid fa-satellite-dish text-blue-600"></i> Webhook Merchant
+        </h3>
+        <p class="text-xs text-slate-500 font-sans mt-1 max-w-lg">Terima notifikasi otomatis ke server Anda setiap kali ada pembayaran QRIS yang berhasil (event <code class="bg-slate-100 px-1 py-0.5 rounded text-[11px] font-mono">invoice.paid</code>), tanpa perlu polling API berulang kali.</p>
+      </div>
+      <label class="inline-flex items-center gap-2 cursor-pointer select-none shrink-0">
+        <span class="text-xs font-semibold text-slate-600">Aktif</span>
+        <span class="relative">
+          <input type="checkbox" id="webhookEnabledToggle" class="sr-only peer">
+          <span class="block w-10 h-5.5 h-6 bg-slate-300 peer-checked:bg-emerald-500 rounded-full transition-all"></span>
+          <span class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all peer-checked:translate-x-4"></span>
+        </span>
+      </label>
+    </div>
+
+    <!-- URL Webhook -->
+    <div>
+      <label class="block text-xs font-semibold text-slate-700 mb-1.5">URL Endpoint Webhook</label>
+      <div class="flex flex-col sm:flex-row gap-2">
+        <input id="webhookUrlInput" type="url" placeholder="https://tokoanda.com/callback/putzpay"
+               class="flex-1 bg-white border border-slate-300 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 text-xs font-sans font-medium text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-400">
+        <button id="webhookSaveBtn" onclick="saveWebhookConfig()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg sm:rounded-xl text-xs font-bold shadow-btn transition-all active:scale-95 shrink-0">
+          <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan
+        </button>
+      </div>
+      <p id="webhookConfigStatus" class="mt-1.5 text-[11px] font-mono min-h-[16px]"></p>
+    </div>
+
+    <!-- Signing Secret -->
+    <div>
+      <label class="block text-xs font-semibold text-slate-700 mb-1.5">Signing Secret (untuk verifikasi HMAC-SHA256)</label>
+      <div class="flex items-center gap-2">
+        <input id="webhookSecretInput" type="password" readonly value="••••••••••••••••••••••••••••"
+               class="flex-1 bg-slate-50 border border-slate-300 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 text-xs font-mono font-medium text-slate-700">
+        <button type="button" onclick="toggleWebhookSecretVisibility()" id="webhookSecretToggleBtn" class="w-10 h-10 rounded-lg sm:rounded-xl border border-slate-300 text-slate-500 hover:text-slate-800 hover:bg-slate-50 flex items-center justify-center shrink-0 transition-all">
+          <i class="fa-solid fa-eye text-xs"></i>
+        </button>
+        <button type="button" onclick="copyWebhookSecret()" class="w-10 h-10 rounded-lg sm:rounded-xl border border-slate-300 text-slate-500 hover:text-slate-800 hover:bg-slate-50 flex items-center justify-center shrink-0 transition-all">
+          <i class="fa-solid fa-copy text-xs"></i>
+        </button>
+      </div>
+      <div class="flex items-center justify-between mt-1.5">
+        <p class="text-[11px] text-slate-400 font-sans">Header dikirim: <code class="bg-slate-100 px-1 py-0.5 rounded font-mono">X-PutzPay-Signature</code></p>
+        <button type="button" onclick="regenerateWebhookSecret()" class="text-[11px] font-semibold text-rose-600 hover:underline">Generate Ulang Secret</button>
+      </div>
+    </div>
+
+    <!-- Tombol Test -->
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1">
+      <button onclick="testWebhook()" id="webhookTestBtn" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-lg sm:rounded-xl text-xs font-bold shadow-btn transition-all active:scale-95 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-paper-plane text-xs"></i> Kirim Uji Coba Webhook
+      </button>
+      <p id="webhookTestResult" class="text-[11px] font-mono"></p>
+    </div>
+
+    <!-- Riwayat Pengiriman -->
+    <div class="pt-3 border-t border-slate-100">
+      <div class="flex items-center justify-between mb-2.5">
+        <h4 class="text-xs font-bold text-slate-700">Riwayat Pengiriman Terakhir</h4>
+        <button onclick="loadWebhookLogs()" class="text-[11px] font-semibold text-blue-600 hover:underline"><i class="fa-solid fa-rotate-right mr-1"></i>Refresh</button>
+      </div>
+      <div id="webhookLogsContainer" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+        <p class="text-[11px] text-slate-400 font-sans py-4 text-center">Memuat riwayat webhook...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Pencairan (E-Wallet / Rekening Bank) -->
+  <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-base font-bold text-slate-900 font-outfit">Data Pencairan Dana (E-Wallet / Rekening)</h2>
+        <p class="text-xs text-slate-500 font-sans mt-0.5">Tujuan transfer saat pengajuan pencairan saldo.</p>
+      </div>
+      <button onclick="openEditWalletModal()" class="inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-xs font-bold font-sans shadow-btn active:scale-95 transition-all cursor-pointer shrink-0">
+        <i class="fas fa-pen-to-square text-xs"></i>
+        <span>Edit Rekening</span>
+      </button>
+    </div>
+
+    <div class="border border-slate-200 rounded-lg sm:rounded-2xl overflow-hidden shadow-xs">
+      <table class="w-full text-xs text-left divide-y divide-slate-100 font-sans text-slate-800">
+        <tbody class="divide-y divide-slate-100">
+          <tr>
+            <td class="w-1/3 py-3 px-4 sm:px-5 text-slate-500 bg-slate-50 font-medium">Metode Pencairan</td>
+            <td class="py-3 px-4 sm:px-5 font-bold text-slate-900 uppercase"><%= user.ewallet || '-' %></td>
+          </tr>
+          <tr>
+            <td class="py-3 px-4 sm:px-5 text-slate-500 bg-slate-50 font-medium">Nomor Rekening / Akun</td>
+            <td class="py-3 px-4 sm:px-5 font-mono font-bold text-blue-600"><%= user.accountNumber || '-' %></td>
+          </tr>
+          <tr>
+            <td class="py-3 px-4 sm:px-5 text-slate-500 bg-slate-50 font-medium">Atas Nama Pemilik Rekening</td>
+            <td class="py-3 px-4 sm:px-5 font-semibold text-slate-900 uppercase"><%= user.accountName || '-' %></td>
+          </tr>
+          <% 
+            let currentFee = 0;
+            if (typeof settings !== 'undefined' && settings.withdrawMethods && settings.withdrawMethods.length > 0) {
+              const found = settings.withdrawMethods.find(m => m.name === user.ewallet);
+              if (found) currentFee = found.fee || 0;
+            }
+          %>
+          <tr>
+            <td class="py-3 px-4 sm:px-5 text-slate-500 bg-slate-50 font-medium">Biaya Admin Penarikan</td>
+            <td class="py-3 px-4 sm:px-5 font-bold text-slate-900 font-outfit">Rp <%= currentFee.toLocaleString('id-ID') %></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Notification Settings Card -->
+  <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          <h2 class="text-base font-bold text-slate-900 font-outfit">Notifikasi Web Push</h2>
+          <span id="profilePushBadge" class="text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-0.5 rounded-full">
+            <span id="pushNotifStatusText">Memeriksa...</span>
+          </span>
+        </div>
+        <p class="text-xs text-slate-500 font-sans mt-0.5">Atur preferensi event notifikasi yang ingin dikirimkan ke perangkat Anda.</p>
+      </div>
+
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        <button id="pushNotifEnableBtn" onclick="PutzPush.subscribe()" class="inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold font-sans shadow-btn active:scale-95 transition-all cursor-pointer">
+          <i class="fa-solid fa-bell text-xs"></i>
+          <span>Aktifkan Notifikasi</span>
+        </button>
+        <button id="pushNotifDisableBtn" onclick="PutzPush.unsubscribe()" class="hidden inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold font-sans shadow-btn active:scale-95 transition-all cursor-pointer">
+          <i class="fa-solid fa-bell-slash text-xs"></i>
+          <span>Matikan Notifikasi</span>
+        </button>
+        <button id="pushNotifTestBtn" onclick="PutzPush.sendTestNotification()" class="hidden inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-3.5 py-2 rounded-xl text-xs font-semibold font-sans active:scale-95 transition-all cursor-pointer">
+          <i class="fa-solid fa-paper-plane text-xs"></i>
+          <span>Kirim Test</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Toggle Preferences Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-2">
+      <label class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl text-xs font-medium text-slate-800 cursor-pointer hover:bg-slate-100/70 transition-all">
+        <span class="flex items-center gap-1.5 sm:gap-2">💰 Pembayaran Berhasil</span>
+        <input type="checkbox" id="notif_pref_paymentSuccess" class="w-3 h-3 sm:w-4 sm:h-4 accent-blue-600 cursor-pointer" checked onchange="PutzPush.saveSettings()">
+      </label>
+
+      <label class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl text-xs font-medium text-slate-800 cursor-pointer hover:bg-slate-100/70 transition-all">
+        <span class="flex items-center gap-1.5 sm:gap-2">⏳ Pembayaran Pending</span>
+        <input type="checkbox" id="notif_pref_paymentPending" class="w-3 h-3 sm:w-4 sm:h-4 accent-blue-600 cursor-pointer" checked onchange="PutzPush.saveSettings()">
+      </label>
+
+      <label class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl text-xs font-medium text-slate-800 cursor-pointer hover:bg-slate-100/70 transition-all">
+        <span class="flex items-center gap-1.5 sm:gap-2">❌ Pembayaran Gagal</span>
+        <input type="checkbox" id="notif_pref_paymentFailed" class="w-3 h-3 sm:w-4 sm:h-4 accent-blue-600 cursor-pointer" checked onchange="PutzPush.saveSettings()">
+      </label>
+
+      <label class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl text-xs font-medium text-slate-800 cursor-pointer hover:bg-slate-100/70 transition-all">
+        <span class="flex items-center gap-1.5 sm:gap-2">⌛ Invoice Expired</span>
+        <input type="checkbox" id="notif_pref_paymentExpired" class="w-3 h-3 sm:w-4 sm:h-4 accent-blue-600 cursor-pointer" checked onchange="PutzPush.saveSettings()">
+      </label>
+
+      <label class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl text-xs font-medium text-slate-800 cursor-pointer hover:bg-slate-100/70 transition-all">
+        <span class="flex items-center gap-1.5 sm:gap-2">💸 Withdraw Berhasil</span>
+        <input type="checkbox" id="notif_pref_withdrawSuccess" class="w-3 h-3 sm:w-4 sm:h-4 accent-blue-600 cursor-pointer" checked onchange="PutzPush.saveSettings()">
+      </label>
+
+      <label class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl text-xs font-medium text-slate-800 cursor-pointer hover:bg-slate-100/70 transition-all">
+        <span class="flex items-center gap-1.5 sm:gap-2">❌ Withdraw Gagal</span>
+        <input type="checkbox" id="notif_pref_withdrawFailed" class="w-3 h-3 sm:w-4 sm:h-4 accent-blue-600 cursor-pointer" checked onchange="PutzPush.saveSettings()">
+      </label>
+
+      <label class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl text-xs font-medium text-slate-800 cursor-pointer hover:bg-slate-100/70 transition-all">
+        <span class="flex items-center gap-1.5 sm:gap-2">💳 Perubahan Saldo</span>
+        <input type="checkbox" id="notif_pref_balanceUpdated" class="w-3 h-3 sm:w-4 sm:h-4 accent-blue-600 cursor-pointer" checked onchange="PutzPush.saveSettings()">
+      </label>
+
+      <label class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl text-xs font-medium text-slate-800 cursor-pointer hover:bg-slate-100/70 transition-all">
+        <span class="flex items-center gap-1.5 sm:gap-2">🔐 Security Alert</span>
+        <input type="checkbox" id="notif_pref_securityAlert" class="w-3 h-3 sm:w-4 sm:h-4 accent-blue-600 cursor-pointer" checked onchange="PutzPush.saveSettings()">
+      </label>
+    </div>
+  </div>
+
+  <!-- Modal Edit Informasi -->
+  <div id="editInfoModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeEditInfoModal()"></div>
+    <div class="relative bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden z-10 my-8 animate-fade-in">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div class="flex items-center gap-1.5 sm:gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center font-bold text-xs text-blue-600">
+            <i class="fa-solid fa-user-pen"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-900 font-sans">Edit Informasi Akun</h3>
+        </div>
+        <button onclick="closeEditInfoModal()" class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+          <i class="fas fa-times text-xs"></i>
+        </button>
+      </div>
+
+      <div class="p-6">
+        <form method="POST" action="/profile" class="flex flex-col gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Nama Lengkap</label>
+            <input name="fullName" type="text" value="<%= user.fullName || '' %>" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs font-sans font-medium text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Masukkan nama lengkap">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Alamat Email</label>
+            <input name="email" type="email" value="<%= user.email %>" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs font-sans font-medium text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" required>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Telegram ID <span class="text-slate-400 font-normal">(Opsional)</span></label>
+            <input name="telegramId" type="text" value="<%= user.telegramId || '' %>" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs font-sans font-medium text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Contoh: @username">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Nomor WhatsApp/HP <span class="text-slate-400 font-normal">(Opsional)</span></label>
+            <input name="phoneNumber" type="tel" value="<%= user.phoneNumber || '' %>" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs font-sans font-medium text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Contoh: 081234567890">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Password Baru <span class="text-slate-400 font-normal">(Kosongkan jika tidak diganti)</span></label>
+            <div class="relative">
+              <input id="newPassword" name="newPassword" type="password" class="w-full bg-white border border-slate-300 rounded-xl pl-4 pr-10 py-2.5 text-xs font-sans font-medium text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Masukkan password baru...">
+              <button type="button" id="togglePassword" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 text-slate-400 hover:text-slate-700 flex items-center justify-center">
+                <i id="toggleIcon" class="far fa-eye text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-xs font-semibold text-slate-700">API Key Kredensial</label>
+              <% if (is2FaActive) { %>
+                <button type="button" onclick="promptApiKey2FaAction('regenerate')" class="text-[11px] font-bold text-blue-600 hover:underline bg-transparent border-0 cursor-pointer flex items-center gap-1">
+                  <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+                  <span>Generate Ulang</span>
+                </button>
+              <% } %>
+            </div>
+            <% if (!is2FaActive) { %>
+              <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 flex items-start gap-1.5 sm:gap-2.5">
+                <i class="fa-solid fa-lock text-amber-600 mt-0.5 shrink-0"></i>
+                <div>
+                  <p class="font-bold">2FA Belum Aktif</p>
+                  <p class="text-[11px] text-amber-700 mt-0.5">Aktifkan 2FA terlebih dahulu di menu Keamanan untuk membuat dan mengelola API Key.</p>
+                </div>
+              </div>
+            <% } else { %>
+              <div class="flex gap-1.5 sm:gap-2">
+                <div class="relative flex-1">
+                  <input id="modalApiKeyInput" type="password" readonly value="<%= rawApiKey %>" class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-4 pr-10 py-2.5 text-xs font-mono font-semibold text-slate-900 outline-none">
+                  <button type="button" id="toggleModalApiKey" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 text-slate-400 hover:text-slate-700 flex items-center justify-center">
+                    <i id="modalApiKeyToggleIcon" class="far fa-eye text-xs"></i>
+                  </button>
+                </div>
+                <button type="button" onclick="copyApiKeyFromModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer" title="Salin API Key">
+                  <i class="far fa-copy text-xs"></i>
+                </button>
+              </div>
+            <% } %>
+          </div>
+
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-xs font-sans uppercase shadow-btn active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 mt-2 cursor-pointer">
+            <i class="fas fa-save text-xs"></i>
+            <span>Simpan Perubahan Profil</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Edit Ewallet -->
+  <div id="editWalletModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeEditWalletModal()"></div>
+    <div class="relative bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden z-10 my-8 animate-fade-in">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div class="flex items-center gap-1.5 sm:gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center font-bold text-xs text-blue-600">
+            <i class="fa-solid fa-wallet"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-900 font-sans">Edit Rekening Pencairan</h3>
+        </div>
+        <button onclick="closeEditWalletModal()" class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+          <i class="fas fa-times text-xs"></i>
+        </button>
+      </div>
+
+      <div class="p-6">
+        <form method="POST" action="/profile" class="flex flex-col gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Pilih Metode Pencairan</label>
+            <select id="ewalletSelect" name="ewallet" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs font-sans font-medium text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 cursor-pointer">
+              <option value="" data-fee="0" <%= !user.ewallet ? 'selected' : '' %>>-- Pilih Metode Pencairan --</option>
+              <% if (typeof settings !== 'undefined' && settings.withdrawMethods && settings.withdrawMethods.length > 0) { %>
+                <% settings.withdrawMethods.forEach(function(method) { %>
+                  <option value="<%= method.name %>" data-fee="<%= method.fee %>" <%= user.ewallet === method.name ? 'selected' : '' %>><%= method.name %></option>
+                <% }); %>
+              <% } %>
+            </select>
+            <p id="feeHelperText" class="text-xs text-slate-500 mt-1.5 flex items-center gap-1.5 font-sans">
+              <i class="fas fa-info-circle text-blue-600 text-xs"></i>
+              <span>Biaya Admin: <strong id="feeAmount" class="text-slate-900 font-semibold font-outfit">Rp 0</strong></span>
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Nomor Rekening / HP E-Wallet</label>
+            <input name="accountNumber" value="<%= user.accountNumber || '' %>" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs font-sans font-medium text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-mono" placeholder="Contoh: 081234567890">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Nama Pemilik Rekening</label>
+            <input name="accountName" value="<%= user.accountName || '' %>" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs font-sans font-medium text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 uppercase" placeholder="Sesuai nama terdaftar di bank/app">
+          </div>
+
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-xs font-sans uppercase shadow-btn active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 mt-2 cursor-pointer">
+            <i class="fas fa-credit-card text-xs"></i>
+            <span>Simpan Data Rekening</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL SETUP 2FA (GOOGLE AUTHENTICATOR) ==================== -->
+  <div id="modal2FaSetup" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="close2FaSetupModal()"></div>
+    <div class="relative bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden z-10 my-8 animate-fade-in">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div class="flex items-center gap-1.5 sm:gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center font-bold text-xs text-blue-600">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 font-sans">Setup Two-Factor Authentication (2FA)</h3>
+            <p class="text-[11px] text-slate-500 font-sans">Google Authenticator (TOTP Standard)</p>
+          </div>
+        </div>
+        <button type="button" onclick="close2FaSetupModal()" class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+          <i class="fas fa-times text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Step 1 & 2: Setup Container -->
+      <div id="setup2FaStepContainer" class="p-6 space-y-5">
+        <!-- Step 1 Notice -->
+        <div class="space-y-1 text-xs font-sans text-slate-600">
+          <p class="font-bold text-slate-900 flex items-center gap-1.5">
+            <span class="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center font-mono">1</span>
+            <span>Pindai QR Code menggunakan Google Authenticator</span>
+          </p>
+          <p class="pl-5 text-slate-500">
+            Buka aplikasi Google Authenticator di ponsel Anda, tap ikon (+), lalu pindai QR Code berikut:
+          </p>
+        </div>
+
+        <!-- QR Code Display Box -->
+        <div class="flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl">
+          <div id="setup2FaQrLoading" class="w-48 h-48 flex flex-col items-center justify-center text-slate-400 gap-1.5 sm:gap-2">
+            <i class="fa-solid fa-circle-notch fa-spin text-2xl text-blue-600"></i>
+            <span class="text-xs font-medium">Membuat QR Code...</span>
+          </div>
+          <img id="setup2FaQrImage" class="hidden w-48 h-48 rounded-xl border border-slate-200 bg-white p-2 shadow-xs" alt="QR Code 2FA">
+          
+          <!-- Manual Secret Key -->
+          <div class="w-full mt-4 pt-3 border-t border-slate-200 text-center">
+            <p class="text-[11px] font-semibold text-slate-500 mb-1">Atau masukkan kode konfigurasi manual:</p>
+            <div class="flex items-center justify-center gap-1.5 sm:gap-2 max-w-sm mx-auto">
+              <code id="setup2FaManualSecret" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-mono font-bold text-slate-900 tracking-wider select-all truncate">
+                ...
+              </code>
+              <button type="button" onclick="copy2FaManualSecret()" class="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-2 py-1 flex items-center gap-1 shrink-0 cursor-pointer" title="Salin Secret">
+                <i class="far fa-copy text-xs"></i>
+                <span id="copySecretBtnText">Salin</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Verification Input -->
+        <div class="space-y-2">
+          <label for="setup2FaToken" class="block text-xs font-bold text-slate-900 flex items-center gap-1.5">
+            <span class="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center font-mono">2</span>
+            <span>Masukkan 6-Digit Kode dari Google Authenticator</span>
+          </label>
+          <div class="relative">
+            <input id="setup2FaToken" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+                   placeholder="000000"
+                   class="w-full text-center tracking-[0.4em] font-mono text-xl font-bold py-3 px-4 bg-white border border-slate-300 rounded-xl text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-300"
+                   autocomplete="one-time-code">
+          </div>
+          <div id="setup2FaError" class="hidden text-xs text-rose-600 font-semibold flex items-center gap-1.5 pt-1">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="setup2FaErrorText">Kode 2FA tidak valid.</span>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="button" id="setup2FaSubmitBtn" onclick="submit2FaSetup()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-xs font-sans uppercase shadow-btn active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer">
+          <i class="fa-solid fa-shield-check text-xs"></i>
+          <span>Verifikasi & Aktifkan 2FA</span>
+        </button>
+      </div>
+
+      <!-- Step 3: Success & Recovery Codes Container (hidden initially) -->
+      <div id="setup2FaSuccessContainer" class="hidden p-6 space-y-4 text-center">
+        <div class="w-12 h-12 rounded-lg sm:rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center text-xl mx-auto">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+          <h4 class="text-base font-bold text-slate-900 font-outfit">2FA Berhasil Diaktifkan!</h4>
+          <p class="text-xs text-slate-500 font-sans mt-0.5">
+            Simpan 8 kode pemulihan berikut di tempat aman. Setiap kode hanya dapat digunakan 1 kali jika Anda kehilangan akses ke aplikasi Google Authenticator.
+          </p>
+        </div>
+
+        <!-- 8 Recovery Codes Grid -->
+        <div id="recoveryCodesGrid" class="grid grid-cols-2 gap-1.5 sm:gap-2 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl p-4 font-mono font-bold text-xs text-slate-800 text-center select-all">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div class="flex items-center justify-center gap-1.5 sm:gap-2 pt-1">
+          <button type="button" onclick="copyAllRecoveryCodes()" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-2 rounded-xl text-xs font-bold font-sans transition-all flex items-center gap-1.5 cursor-pointer">
+            <i class="far fa-copy text-xs"></i>
+            <span id="copyRecoveryBtnText">Salin Semua Kode</span>
+          </button>
+          <button type="button" onclick="downloadRecoveryCodes()" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-2 rounded-xl text-xs font-bold font-sans transition-all flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-download text-xs"></i>
+            <span>Unduh File (.txt)</span>
+          </button>
+        </div>
+
+        <button type="button" onclick="finish2FaSetup()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs font-sans uppercase shadow-btn active:scale-95 transition-all mt-3 cursor-pointer">
+          Selesai & Muat Ulang
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== MODAL NONAKTIFKAN 2FA ==================== -->
+  <div id="modal2FaDisable" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="close2FaDisableModal()"></div>
+    <div class="relative bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden z-10 my-8 animate-fade-in">
+      
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-rose-50/50">
+        <div class="flex items-center gap-1.5 sm:gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-xs">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 font-sans">Nonaktifkan 2FA</h3>
+            <p class="text-[11px] text-rose-600 font-sans font-semibold">Tindakan Keamanan Sensitif</p>
+          </div>
+        </div>
+        <button type="button" onclick="close2FaDisableModal()" class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+          <i class="fas fa-times text-xs"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div class="bg-rose-50 border border-rose-200 rounded-lg sm:rounded-2xl p-4 text-xs font-sans text-rose-900 leading-relaxed">
+          <p class="font-bold flex items-center gap-1.5 text-rose-700 mb-1">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>Peringatan Penting:</span>
+          </p>
+          <p>
+            Menonaktifkan 2FA akan <strong>mencabut dan menghapus seluruh API Key merchant Anda secara permanen</strong> karena API Key hanya dapat digunakan pada akun dengan 2FA aktif.
+          </p>
+        </div>
+
+        <form id="disable2FaForm" onsubmit="submit2FaDisable(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Kata Sandi Akun</label>
+            <input id="disable2FaPassword" type="password" placeholder="Masukkan kata sandi akun PutzPay Anda"
+                   class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs font-sans text-slate-900 outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
+                   required autocomplete="current-password">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Kode 2FA atau Recovery Code</label>
+            <input id="disable2FaToken" type="text" placeholder="6-digit TOTP atau kode cadangan"
+                   class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs font-mono font-semibold text-slate-900 outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
+                   required autocomplete="off">
+          </div>
+
+          <div id="disable2FaError" class="hidden text-xs text-rose-600 font-semibold flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="disable2FaErrorText">Gagal menonaktifkan 2FA.</span>
+          </div>
+
+          <button type="submit" id="disable2FaSubmitBtn" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl text-xs font-sans uppercase shadow-btn active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer">
+            <i class="fa-solid fa-shield-xmark text-xs"></i>
+            <span>Konfirmasi Nonaktifkan 2FA</span>
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== MODAL VERIFIKASI 2FA UNTUK API KEY ==================== -->
+  <div id="modalApiKey2Fa" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeApiKey2FaModal()"></div>
+    <div class="relative bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden z-10 my-8 animate-fade-in">
+      
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div class="flex items-center gap-1.5 sm:gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center font-bold text-xs text-blue-600">
+            <i class="fa-solid fa-key"></i>
+          </div>
+          <div>
+            <h3 id="apiKey2FaModalTitle" class="text-sm font-bold text-slate-900 font-sans">Verifikasi 2FA API Key</h3>
+            <p id="apiKey2FaModalSubtitle" class="text-[11px] text-slate-500 font-sans">Konfirmasi keamanan untuk akses kredensial</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeApiKey2FaModal()" class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+          <i class="fas fa-times text-xs"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <p id="apiKey2FaDescription" class="text-xs text-slate-600 font-sans leading-relaxed">
+          Masukkan 6 digit kode dari Google Authenticator Anda untuk mengonfirmasi tindakan ini.
+        </p>
+
+        <form id="apiKey2FaForm" onsubmit="submitApiKey2FaAction(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5 text-center">
+              Kode 6-Digit Authenticator (atau Recovery Code)
+            </label>
+            <input id="apiKey2FaToken" type="text" maxlength="12" placeholder="000000"
+                   class="w-full text-center tracking-[0.3em] font-mono text-xl font-bold py-3 px-4 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 outline-none focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-300"
+                   required autofocus autocomplete="one-time-code">
+          </div>
+
+          <div id="apiKey2FaError" class="hidden text-xs text-rose-600 font-semibold flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="apiKey2FaErrorText">Kode 2FA tidak valid.</span>
+          </div>
+
+          <!-- Revealed API Key Container (on success reveal) -->
+          <div id="apiKeyRevealedBox" class="hidden p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
+            <p class="text-[11px] font-bold text-emerald-800">API Key Merchant Anda:</p>
+            <div class="flex gap-1.5 sm:gap-2">
+              <input id="revealedApiKeyInput" type="text" readonly class="w-full bg-white border border-emerald-300 rounded-lg px-3 py-1.5 font-mono text-xs font-bold text-slate-900 select-all">
+              <button type="button" onclick="copyRevealedApiKey()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer">
+                Salin
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="apiKey2FaSubmitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-xs font-sans uppercase shadow-btn active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer">
+            <i class="fa-solid fa-check text-xs"></i>
+            <span id="apiKey2FaSubmitText">Verifikasi & Lanjutkan</span>
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+  let rawUserApiKey = '<%= rawApiKey.replace(/'/g, "\\'") %>';
+  let isTableApiKeyRevealed = false;
+  let currentApiKeyAction = 'reveal'; // 'reveal', 'regenerate', 'create'
+  let latestRecoveryCodes = [];
+
+  function toggleTableApiKey() {
+    const display = document.getElementById('tableApiKeyDisplay');
+    const icon = document.getElementById('tableApiKeyIcon');
+    const btnText = document.getElementById('tableApiKeyBtnText');
+    if (!display) return;
+
+    if (isTableApiKeyRevealed) {
+      display.textContent = '••••••••••••••••';
+      if (icon) icon.className = 'far fa-eye text-xs';
+      if (btnText) btnText.textContent = 'Lihat';
+      isTableApiKeyRevealed = false;
+    } else {
+      if (!rawUserApiKey) {
+        promptApiKey2FaAction('reveal');
+        return;
+      }
+      display.textContent = rawUserApiKey;
+      if (icon) icon.className = 'far fa-eye-slash text-xs';
+      if (btnText) btnText.textContent = 'Sembunyikan';
+      isTableApiKeyRevealed = true;
+    }
+  }
+
+  function promptApiKey2FaAction(action) {
+    currentApiKeyAction = action;
+    const modal = document.getElementById('modalApiKey2Fa');
+    const title = document.getElementById('apiKey2FaModalTitle');
+    const desc = document.getElementById('apiKey2FaDescription');
+    const submitText = document.getElementById('apiKey2FaSubmitText');
+    const tokenInput = document.getElementById('apiKey2FaToken');
+    const errorBox = document.getElementById('apiKey2FaError');
+    const revealedBox = document.getElementById('apiKeyRevealedBox');
+
+    tokenInput.value = '';
+    errorBox.classList.add('hidden');
+    revealedBox.classList.add('hidden');
+    document.getElementById('apiKey2FaSubmitBtn').classList.remove('hidden');
+
+    if (action === 'reveal') {
+      title.textContent = 'Lihat API Key Kredensial';
+      desc.textContent = 'Demi keamanan dana & akun, masukkan 6 digit kode dari Google Authenticator untuk menampilkan API Key.';
+      submitText.textContent = 'Verifikasi & Tampilkan';
+    } else if (action === 'regenerate') {
+      title.textContent = 'Generate Ulang API Key';
+      desc.textContent = 'Kunci API lama akan langsung dibatalkan. Masukkan 6 digit kode Google Authenticator untuk mengonfirmasi.';
+      submitText.textContent = 'Konfirmasi Buat Kunci Baru';
+    } else if (action === 'create') {
+      title.textContent = 'Buat API Key Baru';
+      desc.textContent = 'Masukkan 6 digit kode Google Authenticator untuk mengotorisasi pembuatan API Key pertama Anda.';
+      submitText.textContent = 'Buat Kunci Sekarang';
+    }
+
+    modal.classList.remove('hidden');
+    setTimeout(() => tokenInput.focus(), 100);
+  }
+
+  function closeApiKey2FaModal() {
+    document.getElementById('modalApiKey2Fa').classList.add('hidden');
+  }
+
+  async function submitApiKey2FaAction(e) {
+    if (e) e.preventDefault();
+    const token = document.getElementById('apiKey2FaToken').value.trim();
+    const errorBox = document.getElementById('apiKey2FaError');
+    const errorText = document.getElementById('apiKey2FaErrorText');
+    const submitBtn = document.getElementById('apiKey2FaSubmitBtn');
+
+    if (!token) {
+      errorText.textContent = 'Silakan masukkan kode 2FA.';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.classList.add('opacity-70');
+
+    try {
+      const res = await fetch('/api/user/api-key/verify-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: currentApiKeyAction, token }),
+        credentials: 'include'
+      });
+      const data = await res.json();
+
+      if (data.success && data.apiKey) {
+        rawUserApiKey = data.apiKey;
+        const display = document.getElementById('tableApiKeyDisplay');
+        if (display) {
+          display.textContent = data.apiKey;
+          isTableApiKeyRevealed = true;
+          const icon = document.getElementById('tableApiKeyIcon');
+          const btnText = document.getElementById('tableApiKeyBtnText');
+          if (icon) icon.className = 'far fa-eye-slash text-xs';
+          if (btnText) btnText.textContent = 'Sembunyikan';
+        }
+        const modalInput = document.getElementById('modalApiKeyInput');
+        if (modalInput) modalInput.value = data.apiKey;
+
+        if (currentApiKeyAction === 'reveal') {
+          document.getElementById('revealedApiKeyInput').value = data.apiKey;
+          document.getElementById('apiKeyRevealedBox').classList.remove('hidden');
+          errorBox.classList.add('hidden');
+          submitBtn.classList.add('hidden');
+        } else {
+          alert('API Key berhasil diperbarui!');
+          closeApiKey2FaModal();
+          window.location.reload();
+        }
+      } else {
+        errorText.textContent = data.error || 'Verifikasi gagal.';
+        errorBox.classList.remove('hidden');
+      }
+    } catch (err) {
+      errorText.textContent = 'Terjadi gangguan koneksi jaringan.';
+      errorBox.classList.remove('hidden');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('opacity-70');
+    }
+  }
+
+  function copyRevealedApiKey() {
+    const val = document.getElementById('revealedApiKeyInput').value;
+    if (!val) return;
+    navigator.clipboard.writeText(val).then(() => {
+      alert('API Key berhasil disalin!');
+    });
+  }
+
+  // ================= 2FA SETUP MODAL LOGIC =================
+  async function open2FaSetupModal() {
+    const modal = document.getElementById('modal2FaSetup');
+    const stepContainer = document.getElementById('setup2FaStepContainer');
+    const successContainer = document.getElementById('setup2FaSuccessContainer');
+    const qrLoading = document.getElementById('setup2FaQrLoading');
+    const qrImage = document.getElementById('setup2FaQrImage');
+    const secretCode = document.getElementById('setup2FaManualSecret');
+    const tokenInput = document.getElementById('setup2FaToken');
+    const errorBox = document.getElementById('setup2FaError');
+
+    stepContainer.classList.remove('hidden');
+    successContainer.classList.add('hidden');
+    qrLoading.classList.remove('hidden');
+    qrImage.classList.add('hidden');
+    secretCode.textContent = '...';
+    tokenInput.value = '';
+    errorBox.classList.add('hidden');
+
+    modal.classList.remove('hidden');
+
+    try {
+      const res = await fetch('/api/2fa/setup', {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        credentials: 'include'
+      });
+      const data = await res.json();
+
+      if (data.success && data.qrCode) {
+        qrImage.src = data.qrCode;
+        qrImage.classList.remove('hidden');
+        qrLoading.classList.add('hidden');
+        secretCode.textContent = data.secret || data.secretManual || '...';
+      } else {
+        alert(data.message || data.error || 'Gagal memuat konfigurasi 2FA.');
+        close2FaSetupModal();
+      }
+    } catch (err) {
+      alert('Terjadi kesalahan koneksi server.');
+      close2FaSetupModal();
+    }
+  }
+
+  function close2FaSetupModal() {
+    document.getElementById('modal2FaSetup').classList.add('hidden');
+  }
+
+  function copy2FaManualSecret() {
+    const secret = document.getElementById('setup2FaManualSecret').textContent.trim();
+    if (!secret || secret === '...') return;
+    navigator.clipboard.writeText(secret).then(() => {
+      const btnText = document.getElementById('copySecretBtnText');
+      btnText.textContent = 'Tersalin!';
+      setTimeout(() => { btnText.textContent = 'Salin'; }, 2000);
+    });
+  }
+
+  async function submit2FaSetup() {
+    const token = document.getElementById('setup2FaToken').value.trim();
+    const errorBox = document.getElementById('setup2FaError');
+    const errorText = document.getElementById('setup2FaErrorText');
+    const btn = document.getElementById('setup2FaSubmitBtn');
+
+    if (!token || token.length !== 6) {
+      errorText.textContent = 'Masukkan 6 digit angka dari Google Authenticator.';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.classList.add('opacity-70');
+
+    try {
+      const res = await fetch('/api/2fa/verify-setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+        credentials: 'include'
+      });
+      const data = await res.json();
+
+      if (data.success && data.recoveryCodes) {
+        latestRecoveryCodes = data.recoveryCodes;
+        const grid = document.getElementById('recoveryCodesGrid');
+        grid.innerHTML = '';
+        data.recoveryCodes.forEach(code => {
+          const item = document.createElement('div');
+          item.className = 'bg-white border border-slate-200 rounded-lg py-2 px-3 sm:py-2.5 sm:px-4 tracking-widest text-slate-800 text-center font-mono font-bold text-xs';
+          item.textContent = code;
+          grid.appendChild(item);
+        });
+
+        document.getElementById('setup2FaStepContainer').classList.add('hidden');
+        document.getElementById('setup2FaSuccessContainer').classList.remove('hidden');
+      } else {
+        errorText.textContent = data.message || data.error || 'Kode verifikasi tidak valid atau telah kedaluwarsa.';
+        errorBox.classList.remove('hidden');
+      }
+    } catch (err) {
+      errorText.textContent = 'Terjadi kesalahan sistem.';
+      errorBox.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('opacity-70');
+    }
+  }
+
+  function copyAllRecoveryCodes() {
+    if (!latestRecoveryCodes || latestRecoveryCodes.length === 0) return;
+    const text = "PUTZPAY 2FA RECOVERY CODES\n=========================\n" + latestRecoveryCodes.join("\n");
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyRecoveryBtnText');
+      btn.textContent = 'Semua Tersalin!';
+      setTimeout(() => { btn.textContent = 'Salin Semua Kode'; }, 2000);
+    });
+  }
+
+  function downloadRecoveryCodes() {
+    if (!latestRecoveryCodes || latestRecoveryCodes.length === 0) return;
+    const text = "PUTZPAY 2FA RECOVERY CODES\n=========================\nAkun: <%= user.email %>\nTanggal: " + new Date().toISOString() + "\n\n" + latestRecoveryCodes.join("\n") + "\n\nSimpan kode ini di tempat aman. Masing-masing hanya dapat digunakan 1 kali jika Anda kehilangan akses Google Authenticator.";
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'putzpay-recovery-codes.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function finish2FaSetup() {
+    window.location.reload();
+  }
+
+  // ================= 2FA DISABLE MODAL LOGIC =================
+  function open2FaDisableModal() {
+    document.getElementById('disable2FaPassword').value = '';
+    document.getElementById('disable2FaToken').value = '';
+    document.getElementById('disable2FaError').classList.add('hidden');
+    document.getElementById('modal2FaDisable').classList.remove('hidden');
+  }
+
+  function close2FaDisableModal() {
+    document.getElementById('modal2FaDisable').classList.add('hidden');
+  }
+
+  async function submit2FaDisable(e) {
+    if (e) e.preventDefault();
+    const password = document.getElementById('disable2FaPassword').value;
+    const token = document.getElementById('disable2FaToken').value.trim();
+    const errorBox = document.getElementById('disable2FaError');
+    const errorText = document.getElementById('disable2FaErrorText');
+    const btn = document.getElementById('disable2FaSubmitBtn');
+
+    if (!password || !token) {
+      errorText.textContent = 'Harap isi password dan kode 2FA.';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.classList.add('opacity-70');
+
+    try {
+      const res = await fetch('/api/2fa/disable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, token }),
+        credentials: 'include'
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        alert('2FA berhasil dinonaktifkan. Sesuai standar keamanan, semua API Key telah dicabut.');
+        window.location.reload();
+      } else {
+        errorText.textContent = data.message || data.error || 'Gagal menonaktifkan 2FA.';
+        errorBox.classList.remove('hidden');
+      }
+    } catch (err) {
+      errorText.textContent = 'Terjadi kesalahan sistem.';
+      errorBox.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('opacity-70');
+    }
+  }
+
+  // ================= EDIT INFO & EWALLET MODAL LOGIC =================
+  function openEditInfoModal() {
+    document.getElementById('editInfoModal').classList.remove('hidden');
+    const modalInput = document.getElementById('modalApiKeyInput');
+    if (modalInput) {
+      modalInput.value = rawUserApiKey;
+      modalInput.type = 'password';
+      const modalApiKeyToggleIcon = document.getElementById('modalApiKeyToggleIcon');
+      if (modalApiKeyToggleIcon) modalApiKeyToggleIcon.className = 'far fa-eye text-xs';
+    }
+
+    const newPassInput = document.getElementById('newPassword');
+    if (newPassInput) {
+      newPassInput.value = '';
+      newPassInput.type = 'password';
+      const toggleIcon = document.getElementById('toggleIcon');
+      if (toggleIcon) toggleIcon.className = 'far fa-eye text-xs';
+    }
+  }
+
+  function closeEditInfoModal() {
+    document.getElementById('editInfoModal').classList.add('hidden');
+  }
+
+  function openEditWalletModal() {
+    document.getElementById('editWalletModal').classList.remove('hidden');
+    updateFeeDisplay();
+  }
+
+  function closeEditWalletModal() {
+    document.getElementById('editWalletModal').classList.add('hidden');
+  }
+
+  const ewalletSelect = document.getElementById('ewalletSelect');
+  const feeAmount = document.getElementById('feeAmount');
+  
+  function updateFeeDisplay() {
+    if (!ewalletSelect) return;
+    const selectedOption = ewalletSelect.options[ewalletSelect.selectedIndex];
+    const fee = selectedOption.getAttribute('data-fee');
+    if (fee && ewalletSelect.value !== "") {
+      feeAmount.textContent = 'Rp ' + parseInt(fee).toLocaleString('id-ID');
+    } else {
+      feeAmount.textContent = 'Rp 0';
+    }
+  }
+
+  if (ewalletSelect) {
+    ewalletSelect.addEventListener('change', updateFeeDisplay);
+  }
+
+  const profileImageInput = document.getElementById('profileImageInput');
+  const avatarContainer = document.getElementById('avatarContainer');
+  const uploadStatus = document.getElementById('uploadStatus');
+
+  if (profileImageInput) {
+    profileImageInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Ukuran file maksimal 2 MB.');
+        profileImageInput.value = '';
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        alert('Hanya file gambar yang diizinkan.');
+        profileImageInput.value = '';
+        return;
+      }
+
+      uploadStatus.textContent = 'Mengunggah foto...';
+      uploadStatus.classList.remove('hidden');
+
+      const formData = new FormData();
+      formData.append('profileImage', file);
+
+      try {
+        const res = await fetch('/profile/upload', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          avatarContainer.innerHTML = `<img src="${data.profilePicture}?t=${Date.now()}" alt="Foto Profil" class="w-full h-full object-cover" id="profileImagePreview">`;
+          uploadStatus.textContent = 'Foto profil berhasil diperbarui!';
+          uploadStatus.className = 'text-xs font-semibold text-emerald-600 mt-2';
+        } else {
+          uploadStatus.textContent = data.error || 'Gagal mengunggah foto.';
+          uploadStatus.className = 'text-xs font-semibold text-rose-600 mt-2';
+        }
+      } catch (err) {
+        uploadStatus.textContent = 'Terjadi kesalahan saat mengunggah.';
+        uploadStatus.className = 'text-xs font-semibold text-rose-600 mt-2';
+      } finally {
+        setTimeout(() => {
+          uploadStatus.classList.add('hidden');
+        }, 3000);
+        profileImageInput.value = '';
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('newPassword');
+    const toggleIcon = document.getElementById('toggleIcon');
+
+    if (togglePassword && passwordInput) {
+      togglePassword.addEventListener('click', function (e) {
+        e.preventDefault();
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        if (type === 'text') {
+          toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+          toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+      });
+    }
+
+    const toggleModalApiKey = document.getElementById('toggleModalApiKey');
+    const modalApiKeyInput = document.getElementById('modalApiKeyInput');
+    const modalApiKeyToggleIcon = document.getElementById('modalApiKeyToggleIcon');
+
+    if (toggleModalApiKey && modalApiKeyInput) {
+      toggleModalApiKey.addEventListener('click', function (e) {
+        e.preventDefault();
+        const type = modalApiKeyInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        modalApiKeyInput.setAttribute('type', type);
+        
+        if (type === 'text') {
+          modalApiKeyToggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+          modalApiKeyToggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+      });
+    }
+  });
+
+  function copyApiKeyFromModal() {
+    const input = document.getElementById('modalApiKeyInput');
+    if (!input || !input.value) return;
+    navigator.clipboard.writeText(input.value).then(() => {
+      alert('API Key disalin ke clipboard');
+    }).catch(() => {
+      alert('Gagal menyalin');
+    });
+  }
+
+  // ==================== WEBHOOK MERCHANT ====================
+  let _webhookSecretValue = '';
+  let _webhookSecretVisible = false;
+
+  async function loadWebhookConfig() {
+    try {
+      const res = await fetch('/api/webhook/config', { credentials: 'include' });
+      const data = await res.json();
+      if (!data.success) return;
+
+      const urlInput = document.getElementById('webhookUrlInput');
+      const toggle = document.getElementById('webhookEnabledToggle');
+      if (urlInput) urlInput.value = data.url || '';
+      if (toggle) toggle.checked = !!data.enabled;
+      _webhookSecretValue = data.secret || '';
+    } catch (err) {
+      console.error('Gagal memuat konfigurasi webhook:', err);
+    }
+  }
+
+  async function saveWebhookConfig() {
+    const urlInput = document.getElementById('webhookUrlInput');
+    const toggle = document.getElementById('webhookEnabledToggle');
+    const statusEl = document.getElementById('webhookConfigStatus');
+    const btn = document.getElementById('webhookSaveBtn');
+    if (!urlInput || !toggle || !statusEl) return;
+
+    const url = urlInput.value.trim();
+    const enabled = toggle.checked;
+
+    if (btn) { btn.disabled = true; btn.classList.add('opacity-60'); }
+    statusEl.innerHTML = '<span class="text-slate-400">Menyimpan...</span>';
+
+    try {
+      const res = await fetch('/api/webhook/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ url, enabled })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        statusEl.innerHTML = '<span class="text-emerald-600 font-semibold">✓ ' + (data.message || 'Berhasil disimpan') + '</span>';
+        _webhookSecretValue = data.secret || _webhookSecretValue;
+        if (_webhookSecretVisible) {
+          const secretInput = document.getElementById('webhookSecretInput');
+          if (secretInput) secretInput.value = _webhookSecretValue;
+        }
+      } else {
+        statusEl.innerHTML = '<span class="text-rose-600 font-semibold">✗ ' + (data.error || 'Gagal menyimpan') + '</span>';
+      }
+    } catch (err) {
+      statusEl.innerHTML = '<span class="text-rose-600 font-semibold">✗ Terjadi kesalahan jaringan</span>';
+    } finally {
+      if (btn) { btn.disabled = false; btn.classList.remove('opacity-60'); }
+    }
+  }
+
+  function toggleWebhookSecretVisibility() {
+    const secretInput = document.getElementById('webhookSecretInput');
+    const btn = document.getElementById('webhookSecretToggleBtn');
+    if (!secretInput) return;
+
+    _webhookSecretVisible = !_webhookSecretVisible;
+    if (_webhookSecretVisible) {
+      secretInput.type = 'text';
+      secretInput.value = _webhookSecretValue || '(belum tersedia, simpan konfigurasi dahulu)';
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-eye-slash text-xs"></i>';
+    } else {
+      secretInput.type = 'password';
+      secretInput.value = '••••••••••••••••••••••••••••';
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-eye text-xs"></i>';
+    }
+  }
+
+  function copyWebhookSecret() {
+    if (!_webhookSecretValue) {
+      alert('Secret belum tersedia. Simpan konfigurasi webhook terlebih dahulu.');
+      return;
+    }
+    navigator.clipboard.writeText(_webhookSecretValue).then(() => {
+      alert('Signing secret disalin ke clipboard');
+    }).catch(() => {
+      alert('Gagal menyalin');
+    });
+  }
+
+  async function regenerateWebhookSecret() {
+    if (!confirm('Yakin ingin generate ulang secret? Secret lama tidak akan berfungsi lagi dan Anda harus memperbarui verifikasi signature di server Anda.')) return;
+
+    try {
+      const res = await fetch('/api/webhook/secret/regenerate', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (data.success) {
+        _webhookSecretValue = data.secret;
+        if (_webhookSecretVisible) {
+          const secretInput = document.getElementById('webhookSecretInput');
+          if (secretInput) secretInput.value = _webhookSecretValue;
+        }
+        alert('Secret berhasil diperbarui.');
+      } else {
+        alert(data.error || 'Gagal generate ulang secret');
+      }
+    } catch (err) {
+      alert('Terjadi kesalahan jaringan');
+    }
+  }
+
+  async function testWebhook() {
+    const resultEl = document.getElementById('webhookTestResult');
+    const btn = document.getElementById('webhookTestBtn');
+    if (!resultEl) return;
+
+    if (btn) { btn.disabled = true; btn.classList.add('opacity-60'); }
+    resultEl.innerHTML = '<span class="text-slate-400">Mengirim...</span>';
+
+    try {
+      const res = await fetch('/api/webhook/test', { method: 'POST', credentials: 'include' });
+      const data = await res.json();
+
+      if (data.success) {
+        resultEl.innerHTML = '<span class="text-emerald-600 font-semibold">✓ Berhasil dikirim (HTTP ' + data.httpStatus + ')</span>';
+      } else {
+        resultEl.innerHTML = '<span class="text-rose-600 font-semibold">✗ ' + (data.errorMessage || data.error || 'Gagal terkirim') + (data.httpStatus ? ' (HTTP ' + data.httpStatus + ')' : '') + '</span>';
+      }
+      loadWebhookLogs();
+    } catch (err) {
+      resultEl.innerHTML = '<span class="text-rose-600 font-semibold">✗ Terjadi kesalahan jaringan</span>';
+    } finally {
+      if (btn) { btn.disabled = false; btn.classList.remove('opacity-60'); }
+    }
+  }
+
+  function formatWebhookTime(dateStr) {
+    try {
+      return new Date(dateStr).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    } catch (e) { return dateStr; }
+  }
+
+  async function loadWebhookLogs() {
+    const container = document.getElementById('webhookLogsContainer');
+    if (!container) return;
+    container.innerHTML = '<p class="text-[11px] text-slate-400 font-sans py-4 text-center">Memuat riwayat webhook...</p>';
+
+    try {
+      const res = await fetch('/api/webhook/logs', { credentials: 'include' });
+      const data = await res.json();
+
+      if (!data.success || !data.logs || data.logs.length === 0) {
+        container.innerHTML = '<p class="text-[11px] text-slate-400 font-sans py-4 text-center">Belum ada riwayat pengiriman webhook.</p>';
+        return;
+      }
+
+      container.innerHTML = data.logs.map(function(log) {
+        const badgeClass = log.success ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200';
+        const badgeText = log.success ? 'Berhasil' : 'Gagal';
+        const statusCode = log.httpStatus ? ('HTTP ' + log.httpStatus) : (log.errorMessage || 'Error');
+        return '<div class="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-slate-100 bg-slate-50/60">' +
+          '<div class="min-w-0 flex-1">' +
+            '<div class="flex items-center gap-1.5 flex-wrap">' +
+              '<span class="inline-flex items-center px-1.5 py-0.5 rounded-full border text-[10px] font-bold ' + badgeClass + '">' + badgeText + '</span>' +
+              '<span class="text-[11px] font-mono text-slate-600">' + log.event + '</span>' +
+            '</div>' +
+            '<p class="text-[10px] text-slate-400 font-mono mt-0.5">' + statusCode + ' • ' + formatWebhookTime(log.createdAt) + '</p>' +
+          '</div>' +
+          '<button onclick="retryWebhookLog(\'' + log._id + '\', this)" class="shrink-0 text-[10px] font-bold text-blue-600 hover:underline px-1.5 py-1">Kirim Ulang</button>' +
+        '</div>';
+      }).join('');
+    } catch (err) {
+      container.innerHTML = '<p class="text-[11px] text-rose-500 font-sans py-4 text-center">Gagal memuat riwayat webhook.</p>';
+    }
+  }
+
+  async function retryWebhookLog(logId, btnEl) {
+    if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Mengirim...'; }
+    try {
+      const res = await fetch('/api/webhook/logs/' + logId + '/retry', { method: 'POST', credentials: 'include' });
+      const data = await res.json();
+      alert(data.success ? 'Webhook berhasil dikirim ulang (HTTP ' + data.httpStatus + ')' : 'Gagal: ' + (data.errorMessage || data.error || 'Tidak diketahui'));
+      loadWebhookLogs();
+    } catch (err) {
+      alert('Terjadi kesalahan jaringan');
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Kirim Ulang'; }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    loadWebhookConfig();
+    loadWebhookLogs();
+  });
+</script>

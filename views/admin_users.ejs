@@ -1,0 +1,832 @@
+<%- include('partials/header', { title: 'Kelola Pengguna - Admin' }) %>
+
+<div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-8 space-y-6 sm:space-y-8 w-full min-w-0 font-sans">
+
+  <!-- Header Section -->
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-white shadow-sm sm:shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+    <div class="space-y-1.5 z-10">
+      <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider border border-blue-500/30">
+        <i class="fa-solid fa-users text-xs"></i>
+        <span>User Management</span>
+      </div>
+      <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-bold tracking-tight text-white font-outfit">Kelola Data Pengguna</h1>
+      <p class="text-xs sm:text-sm text-slate-400 max-w-2xl">Kelola data saldo, status akun (Aktif/Banned), perangkat, IP, dan hak akses pengguna PutzPay.</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 sm:gap-3 z-10">
+      <a href="/admin/access-control" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-semibold text-xs transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-xs active:scale-95">
+        <i class="fa-solid fa-shield-halved text-rose-400 text-sm"></i>
+        <span>Access Control & Ban</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Metric Summary Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 shadow-sm sm:shadow-card">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Pengguna</span>
+        <div class="w-10 h-10 rounded-lg sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-users text-sm"></i>
+        </div>
+      </div>
+      <p class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-bold text-slate-900 font-outfit"><%= users.length %></p>
+      <span class="text-[11px] text-slate-400 font-medium block mt-1">Akun terdaftar</span>
+    </div>
+
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 shadow-sm sm:shadow-card">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Akun Aktif</span>
+        <div class="w-10 h-10 rounded-lg sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-user-check text-sm"></i>
+        </div>
+      </div>
+      <p class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-bold text-emerald-600 font-outfit">
+        <%= users.filter(u => !u.suspended && u.accountStatus !== 'banned').length %>
+      </p>
+      <span class="text-[11px] text-slate-400 font-medium block mt-1">Dapat bertransaksi</span>
+    </div>
+
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 shadow-sm sm:shadow-card">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Akun Diblokir</span>
+        <div class="w-10 h-10 rounded-lg sm:rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-user-slash text-sm"></i>
+        </div>
+      </div>
+      <p class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-bold text-rose-600 font-outfit">
+        <%= users.filter(u => u.suspended || u.accountStatus === 'banned').length %>
+      </p>
+      <span class="text-[11px] text-slate-400 font-medium block mt-1">Status BANNED</span>
+    </div>
+
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 shadow-sm sm:shadow-card">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Saldo Member</span>
+        <div class="w-10 h-10 rounded-lg sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-wallet text-sm"></i>
+        </div>
+      </div>
+      <% const totalBalance = users.reduce((acc, u) => acc + (u.balance || 0), 0); %>
+      <p class="text-base sm:text-lg lg:text-xl lg:text-2xl font-bold text-slate-900 font-outfit truncate">
+        Rp <%= totalBalance.toLocaleString('id-ID') %>
+      </p>
+      <span class="text-[11px] text-slate-400 font-medium block mt-1">Simpanan saldo di platform</span>
+    </div>
+  </div>
+
+  <!-- Search & Bulk Action Bar -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm sm:shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
+    <div class="relative w-full max-w-md">
+      <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+      <input id="searchInput" type="text" placeholder="Cari username, email, atau IP pengguna..." 
+             class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-mono"
+             value="<%= typeof search !== 'undefined' ? search : '' %>">
+    </div>
+
+    <!-- Bulk Ban Action -->
+    <div id="bulkActionBar" class="hidden flex items-center gap-2 sm:gap-3">
+      <span class="text-xs font-semibold text-slate-700">
+        <span id="selectedCountBadge" class="px-2 py-0.5 bg-slate-900 text-white rounded font-mono font-bold">0</span> dipilih
+      </span>
+      <button type="button" onclick="openBulkBanModal()" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95">
+        <i class="fa-solid fa-ban text-xs"></i>
+        <span>Blokir Terpilih</span>
+      </button>
+    </div>
+
+    <div class="text-xs text-slate-500">
+      Total <span class="font-bold text-slate-900"><%= users.length %></span> Pengguna
+    </div>
+  </div>
+
+  <!-- Table Users -->
+  <% if (users.length === 0) { %>
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-12 text-center shadow-sm sm:shadow-card">
+      <div class="w-14 h-14 rounded-lg sm:rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-2xl">
+        <i class="fa-solid fa-user-xmark"></i>
+      </div>
+      <h3 class="text-base font-bold text-slate-900 font-outfit">Pengguna Tidak Ditemukan</h3>
+      <p class="text-xs text-slate-500 mt-1">Coba gunakan kata kunci pencarian yang lain.</p>
+    </div>
+  <% } else { %>
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm sm:shadow-card">
+      <div class="overflow-x-auto custom-scroll" style="max-height: 650px;">
+        <table class="w-full text-xs text-left whitespace-nowrap">
+          <thead class="bg-slate-50 text-xs text-slate-600 font-semibold border-b border-slate-200 uppercase tracking-wider sticky top-0 z-10">
+            <tr>
+              <th class="px-4 py-3.5 w-10 text-center">
+                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAllUsers(this)" class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer">
+              </th>
+              <th class="px-5 py-3.5">Pengguna</th>
+              <th class="px-5 py-3.5">Status Akun</th>
+              <th class="px-5 py-3.5">IP & Perangkat</th>
+              <th class="px-5 py-3.5">Terakhir Aktif</th>
+              <th class="px-5 py-3.5">Saldo Akun</th>
+              <th class="px-5 py-3.5">Role</th>
+              <th class="px-5 py-3.5 text-center">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-800">
+            <% users.forEach(u => { 
+                const userIp = u.lastIp || u.registerIp || '';
+                const isIpBanned = (typeof bannedIpsSet !== 'undefined' && userIp && bannedIpsSet.has(userIp)) || (typeof bannedUserIdsSet !== 'undefined' && bannedUserIdsSet.has(String(u._id)));
+                const isAccountBanned = u.suspended || u.accountStatus === 'banned';
+                const userRole = u.role || 'user';
+                const userPerms = (u.permissions || []).join(',');
+            %>
+            <tr class="hover:bg-slate-50/70 transition-colors user-row <%= isAccountBanned ? 'bg-rose-50/30' : '' %>"
+                data-id="<%= u._id %>"
+                data-username="<%= u.username %>"
+                data-email="<%= u.email %>"
+                data-balance="<%= u.balance %>"
+                data-suspended="<%= isAccountBanned %>"
+                data-role="<%= userRole %>"
+                data-permissions="<%= userPerms %>"
+                data-ip="<%= userIp %>"
+                data-device="<%= u.lastDevice || 'Desktop / Mobile' %>"
+                data-ipbanned="<%= isIpBanned %>"
+                data-created="<%= u.createdAt.toISOString() %>">
+              
+              <td class="px-4 py-3.5 text-center">
+                <% if (userRole !== 'owner') { %>
+                  <input type="checkbox" value="<%= u._id %>" onchange="updateSelectedUsers()" class="user-select-box w-3 h-3 sm:w-4 sm:h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer">
+                <% } %>
+              </td>
+
+              <td class="px-5 py-3.5">
+                <div class="flex items-center gap-2 sm:gap-3">
+                  <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-white text-xs font-outfit uppercase shrink-0" style="background-color: <%= u.profileColor || '#3b82f6' %>;">
+                    <%= u.username.charAt(0) %>
+                  </div>
+                  <div>
+                    <div class="font-bold text-slate-900 text-xs">@<%= u.username %></div>
+                    <div class="text-[11px] text-slate-500 font-mono"><%= u.email %></div>
+                  </div>
+                </div>
+              </td>
+
+              <td class="px-5 py-3.5">
+                <% if (isAccountBanned) { %>
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                    <i class="fa-solid fa-lock text-[9px]"></i> BANNED
+                  </span>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <i class="fa-solid fa-check text-[9px]"></i> AKTIF
+                  </span>
+                <% } %>
+                <div class="mt-1">
+                  <% if (u.emailVerified === true || userRole === 'admin' || userRole === 'owner') { %>
+                    <span class="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      <i class="fa-solid fa-envelope-circle-check text-[9px]"></i> Email Terverifikasi
+                    </span>
+                  <% } else { %>
+                    <span class="inline-flex items-center gap-1 text-[10px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                      <i class="fa-solid fa-clock text-[9px]"></i> Menunggu OTP
+                    </span>
+                  <% } %>
+                </div>
+              </td>
+
+              <td class="px-5 py-3.5">
+                <div class="space-y-1">
+                  <% if (userIp) { %>
+                    <div class="flex items-center gap-1.5">
+                      <span class="px-2 py-0.5 bg-slate-100 text-slate-800 rounded font-mono text-[10px] font-semibold">
+                        <%= userIp %>
+                      </span>
+                      <% if (isIpBanned) { %>
+                        <span class="px-1.5 py-0.5 bg-rose-50 text-rose-600 border border-rose-200 rounded text-[9px] font-bold">IP BAN</span>
+                      <% } %>
+                    </div>
+                  <% } else { %>
+                    <span class="text-slate-400 font-mono text-[11px]">Belum tersedia</span>
+                  <% } %>
+                  <span class="text-[10px] text-slate-400 block">
+                    <%= u.lastDevice || 'Belum tersedia' %>
+                  </span>
+                </div>
+              </td>
+
+              <td class="px-5 py-3.5">
+                <% if (u.lastSeen) { %>
+                  <span class="font-mono text-[11px] text-slate-600"><%= new Date(u.lastSeen).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) %></span>
+                <% } else { %>
+                  <span class="text-slate-400 text-[11px]">Belum tersedia</span>
+                <% } %>
+              </td>
+
+              <td class="px-5 py-3.5 text-slate-900 font-bold font-outfit text-sm">
+                Rp <%= (u.balance || 0).toLocaleString('id-ID') %>
+              </td>
+
+              <td class="px-5 py-3.5">
+                <% if (userRole === 'owner') { %>
+                  <span class="px-2.5 py-0.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold uppercase font-mono">
+                    <i class="fa-solid fa-crown text-[9px]"></i> OWNER
+                  </span>
+                <% } else if (userRole === 'admin') { %>
+                  <span class="px-2.5 py-0.5 rounded-lg bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold uppercase font-mono">
+                    <i class="fa-solid fa-shield-halved text-[9px]"></i> ADMIN
+                  </span>
+                <% } else { %>
+                  <span class="px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-semibold uppercase font-mono">
+                    MEMBER
+                  </span>
+                <% } %>
+              </td>
+
+              <td class="px-5 py-3.5 text-center">
+                <div class="flex items-center justify-center gap-1.5">
+                  <button type="button" onclick="event.stopPropagation(); window.location.hash = 'edit-user-' + this.closest('tr').dataset.id;" class="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 font-semibold text-[11px] transition-all cursor-pointer" title="Edit Data Pengguna">
+                    <i class="fas fa-pen-to-square text-xs"></i>
+                    <span>Edit</span>
+                  </button>
+
+                  <!-- Manual Verify Email / Resend OTP Action -->
+                  <% if (u.emailVerified === false && userRole !== 'admin' && userRole !== 'owner') { %>
+                    <form method="POST" action="/admin/users/verify-email/<%= u._id %>" class="m-0 inline">
+                      <button type="submit" onclick="return confirm('Verifikasi alamat email <%= u.email %> secara manual untuk akun @<%= u.username %>?')" class="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-[11px] transition-all cursor-pointer" title="Verifikasi Email Manual">
+                        <i class="fa-solid fa-envelope-circle-check text-xs"></i>
+                        <span>Verif</span>
+                      </button>
+                    </form>
+                    <form method="POST" action="/admin/users/resend-verification/<%= u._id %>" class="m-0 inline">
+                      <button type="submit" onclick="return confirm('Kirim ulang email OTP verifikasi ke <%= u.email %>?')" class="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-[11px] transition-all cursor-pointer" title="Kirim Ulang OTP">
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                        <span>Kirim OTP</span>
+                      </button>
+                    </form>
+                  <% } %>
+
+                  <!-- Ban / Unban Account Direct Button -->
+                  <% if (userRole !== 'owner') { %>
+                    <% if (isAccountBanned) { %>
+                      <form method="POST" action="/admin/access-control/unban-user" class="m-0 inline">
+                        <input type="hidden" name="username" value="<%= u.username %>">
+                        <button type="submit" onclick="return confirm('Buka blokir akun @<%= u.username %>?')" class="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-[11px] transition-all cursor-pointer" title="Buka Blokir Akun">
+                          <i class="fa-solid fa-lock-open text-[10px]"></i>
+                          <span>Unban</span>
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <button type="button" onclick="openDirectBanModal('<%= u._id %>', '<%= u.username %>')" class="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-[11px] transition-all cursor-pointer" title="Blokir Akun Pengguna">
+                        <i class="fa-solid fa-ban text-[10px]"></i>
+                        <span>Ban</span>
+                      </button>
+                    <% } %>
+                  <% } %>
+
+                  <!-- Ban / Unban IP Button -->
+                  <% if (userIp && userRole !== 'owner') { %>
+                    <% if (isIpBanned) { %>
+                      <form method="POST" action="/admin/users/<%= u._id %>/unban-ip" class="m-0 inline">
+                        <button type="submit" onclick="return confirm('Buka blokir IP <%= userIp %> untuk pengguna ini?')" class="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[10px] transition-all cursor-pointer" title="Buka blokir IP">
+                          <span>Unban IP</span>
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <button type="button" onclick="openQuickBanModal('<%= u._id %>', '<%= u.username %>', '<%= userIp %>')" class="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold text-[10px] transition-all cursor-pointer" title="Ban Alamat IP">
+                        <span>Ban IP</span>
+                      </button>
+                    <% } %>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% } %>
+
+</div>
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- MODAL EDIT USER -->
+<div id="editUserModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity" onclick="closeEditUserModal()"></div>
+  <div class="relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden z-10 transform transition-all scale-95 opacity-0 duration-200 flex flex-col max-h-[90vh]" id="editUserModalContent">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <i class="fa-solid fa-user-gear text-blue-600 text-sm"></i>
+        <h2 class="text-sm font-bold text-slate-900 font-outfit">Edit Data Pengguna</h2>
+      </div>
+      <button onclick="closeEditUserModal()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+        <i class="fas fa-times text-sm"></i>
+      </button>
+    </div>
+
+    <div class="p-6 overflow-y-auto custom-scroll">
+      <form id="editUserForm" method="POST" action="" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Username</label>
+          <input name="username" id="editUsername" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-sans" required>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Alamat Email</label>
+          <input name="email" type="email" id="editEmail" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-sans" required>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Password Baru <span class="text-slate-400 font-normal">(Kosongkan jika tidak diubah)</span></label>
+          <input name="password" type="password" id="editPassword" placeholder="••••••••" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-mono">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Saldo Pengguna (Rp)</label>
+          <div class="relative flex items-center">
+            <span class="absolute left-4 text-xs font-semibold text-slate-500">Rp</span>
+            <input type="text" id="editBalanceDisplay" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs font-bold font-outfit text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" oninput="formatEditBalance(this)">
+          </div>
+          <input type="hidden" name="balance" id="editBalanceReal">
+        </div>
+
+        <!-- Role & Hak Akses -->
+        <div class="p-4 bg-slate-50 rounded-lg sm:rounded-2xl border border-slate-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-semibold text-slate-700">Peran / Role Pengguna</label>
+            <span id="currentRoleBadge" class="px-2 py-0.5 bg-slate-900 text-white text-[10px] font-mono font-bold uppercase rounded">MEMBER</span>
+          </div>
+          <select name="role" id="editUserRole" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" onchange="togglePermsSection(this.value)">
+            <option value="user">User / Member Biasa</option>
+            <option value="admin">Admin Layanan</option>
+            <option value="owner">Owner / Pemilik Website</option>
+          </select>
+
+          <div id="permissionsContainer" class="hidden space-y-2 pt-2 border-t border-slate-200">
+            <span class="block text-[11px] font-semibold text-slate-600">Hak Akses Khusus Admin:</span>
+            <div class="grid grid-cols-1 gap-1.5 text-xs text-slate-700">
+              <label class="flex items-center gap-1.5 sm:gap-2 cursor-pointer">
+                <input type="checkbox" name="permissions" value="manage_users" class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 perm-checkbox">
+                <span>Kelola User & Access Control</span>
+              </label>
+              <label class="flex items-center gap-1.5 sm:gap-2 cursor-pointer">
+                <input type="checkbox" name="permissions" value="manage_transactions" class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 perm-checkbox">
+                <span>Kelola Transaksi & Mutasi</span>
+              </label>
+              <label class="flex items-center gap-1.5 sm:gap-2 cursor-pointer">
+                <input type="checkbox" name="permissions" value="manage_withdraw" class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 perm-checkbox">
+                <span>Approval Penarikan (Withdraw)</span>
+              </label>
+              <label class="flex items-center gap-1.5 sm:gap-2 cursor-pointer">
+                <input type="checkbox" name="permissions" value="manage_support" class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 perm-checkbox">
+                <span>Support & Global Chat</span>
+              </label>
+              <label class="flex items-center gap-1.5 sm:gap-2 cursor-pointer">
+                <input type="checkbox" name="permissions" value="send_notifications" class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 perm-checkbox">
+                <span>Kirim Notifikasi Massal</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- IP & Device Info -->
+        <div class="p-4 bg-slate-50 rounded-lg sm:rounded-2xl border border-slate-200 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-600">IP Terakhir</span>
+            <span id="modalUserIp" class="px-2.5 py-0.5 bg-slate-200 text-slate-800 font-mono font-bold text-xs rounded">-</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-600">Perangkat</span>
+            <span id="modalUserDevice" class="text-xs font-medium text-slate-700">-</span>
+          </div>
+        </div>
+
+        <!-- Account Status Toggle -->
+        <div class="flex items-center gap-2 sm:gap-3 p-4 bg-rose-50 border border-rose-200 rounded-lg sm:rounded-2xl">
+          <input type="checkbox" name="suspended" id="editSuspended" class="w-4 h-4 sm:w-5 sm:h-5 text-rose-600 border-slate-300 rounded focus:ring-rose-500 cursor-pointer">
+          <label for="editSuspended" class="text-xs font-semibold text-rose-800 cursor-pointer">
+            Tangguhkan / Blokir Akun Ini (BANNED)
+          </label>
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl text-xs font-semibold shadow-btn transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer mt-2 active:scale-95">
+          <i class="fas fa-save text-xs"></i>
+          <span>Simpan Perubahan Akun</span>
+        </button>
+      </form>
+
+      <div class="mt-5 pt-4 border-t border-slate-100">
+        <button type="button" onclick="confirmDeleteUser()" class="w-full bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-700 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95">
+          <i class="fas fa-trash-alt text-xs"></i>
+          <span>Hapus Akun Pengguna</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL QUICK BAN IP -->
+<div id="quickBanModal" class="fixed inset-0 z-[160] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs" onclick="closeQuickBanModal()"></div>
+  <div class="relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden z-10 transform transition-all scale-95 opacity-0 duration-200" id="quickBanContent">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <i class="fa-solid fa-ban text-rose-600 text-sm"></i>
+        <h3 class="text-sm font-bold text-slate-900 font-outfit">Banned IP Pengguna</h3>
+      </div>
+      <button onclick="closeQuickBanModal()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"><i class="fas fa-times text-sm"></i></button>
+    </div>
+
+    <div class="p-6">
+      <form id="quickBanForm" method="POST" action="" class="space-y-4">
+        <p class="text-xs text-slate-600">
+          Anda akan memblokir alamat IP untuk pengguna <strong id="quickBanUsername" class="text-rose-600"></strong>:
+        </p>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Alamat IP Target</label>
+          <input type="text" name="ip" id="quickBanIp" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-800 outline-none" readonly>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Alasan Pemblokiran</label>
+          <textarea name="reason" rows="2" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all resize-none" required>Pelanggaran Ketentuan Layanan / Aktivitas Mencurigakan</textarea>
+        </div>
+
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <input type="checkbox" name="suspendUser" id="quickBanSuspendUser" value="true" checked class="w-3 h-3 sm:w-4 sm:h-4 text-rose-600 border-slate-300 rounded focus:ring-rose-500">
+          <label for="quickBanSuspendUser" class="text-xs text-slate-700 cursor-pointer">Sekaligus ubah akun menjadi BANNED</label>
+        </div>
+
+        <div class="flex gap-1.5 sm:gap-2.5 pt-2">
+          <button type="button" onclick="closeQuickBanModal()" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors cursor-pointer">Batal</button>
+          <button type="submit" class="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-xl text-xs shadow-btn transition-colors cursor-pointer active:scale-95">Ya, Banned IP</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DIRECT BAN USER -->
+<div id="directBanModal" class="fixed inset-0 z-[160] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs" onclick="closeDirectBanModal()"></div>
+  <div class="relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden z-10 transform transition-all scale-95 opacity-0 duration-200" id="directBanContent">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <i class="fa-solid fa-user-slash text-rose-600 text-sm"></i>
+        <h3 class="text-sm font-bold text-slate-900 font-outfit">Blokir Akun Pengguna</h3>
+      </div>
+      <button onclick="closeDirectBanModal()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"><i class="fas fa-times text-sm"></i></button>
+    </div>
+
+    <div class="p-6">
+      <form method="POST" action="/admin/access-control/ban-user" class="space-y-4">
+        <input type="hidden" name="username" id="directBanUsernameInput">
+        <p class="text-xs text-slate-600">
+          Blokir akses akun <strong id="directBanUsernameText" class="text-rose-600"></strong> dari website PutzPay?
+        </p>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Alasan Pemblokiran</label>
+          <textarea name="reason" rows="2" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all resize-none" required>Pelanggaran Ketentuan Layanan / Aktivitas Mencurigakan</textarea>
+        </div>
+
+        <div class="space-y-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+          <label class="flex items-center gap-1.5 sm:gap-2 text-xs text-slate-700 cursor-pointer">
+            <input type="checkbox" name="banIpHistory" value="true" checked class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
+            <span>Blokir riwayat IP</span>
+          </label>
+          <label class="flex items-center gap-1.5 sm:gap-2 text-xs text-slate-700 cursor-pointer">
+            <input type="checkbox" name="blockDevice" value="true" checked class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
+            <span>Blokir perangkat (Session)</span>
+          </label>
+        </div>
+
+        <div class="flex gap-1.5 sm:gap-2.5 pt-2">
+          <button type="button" onclick="closeDirectBanModal()" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors cursor-pointer">Batal</button>
+          <button type="submit" class="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-xl text-xs shadow-btn transition-colors cursor-pointer active:scale-95">Ya, Blokir</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BULK BAN USERS -->
+<div id="bulkBanModal" class="fixed inset-0 z-[160] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs" onclick="closeBulkBanModal()"></div>
+  <div class="relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden z-10 transform transition-all scale-95 opacity-0 duration-200" id="bulkBanContent">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <i class="fa-solid fa-users-slash text-rose-600 text-sm"></i>
+        <h3 class="text-sm font-bold text-slate-900 font-outfit">Blokir Massal Pengguna</h3>
+      </div>
+      <button onclick="closeBulkBanModal()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"><i class="fas fa-times text-sm"></i></button>
+    </div>
+
+    <div class="p-6">
+      <form method="POST" action="/admin/access-control/bulk-ban-users" class="space-y-4">
+        <input type="hidden" name="userIds" id="bulkBanUserIdsInput">
+        <p class="text-xs text-slate-600">
+          Anda akan memblokir <strong id="bulkBanCountText" class="text-rose-600">0</strong> akun pengguna terpilih secara bersamaan.
+        </p>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Alasan Pemblokiran Massal</label>
+          <textarea name="reason" rows="2" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all resize-none" required>Penangguhan Massal / Aktivitas Mencurigakan</textarea>
+        </div>
+
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+          <label class="flex items-center gap-1.5 sm:gap-2 text-xs text-slate-700 cursor-pointer">
+            <input type="checkbox" name="banIps" value="true" checked class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
+            <span>Sekaligus blokir alamat IP seluruh user terpilih</span>
+          </label>
+        </div>
+
+        <div class="flex gap-1.5 sm:gap-2.5 pt-2">
+          <button type="button" onclick="closeBulkBanModal()" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors cursor-pointer">Batal</button>
+          <button type="submit" class="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-xl text-xs shadow-btn transition-colors cursor-pointer active:scale-95">Ya, Blokir Semua</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL KONFIRMASI HAPUS -->
+<div id="deleteConfirmModal" class="fixed inset-0 z-[160] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs" onclick="closeDeleteConfirmModal()"></div>
+  <div class="relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden z-10 transform transition-all scale-95 opacity-0 duration-200" id="deleteConfirmContent">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <i class="fa-solid fa-triangle-exclamation text-rose-600 text-sm"></i>
+        <h3 class="text-sm font-bold text-slate-900 font-outfit">Hapus Akun Permanen</h3>
+      </div>
+      <button onclick="closeDeleteConfirmModal()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"><i class="fas fa-times text-sm"></i></button>
+    </div>
+
+    <div class="p-6">
+      <p class="text-xs text-slate-600 mb-4">
+        Apakah Anda benar-benar yakin ingin menghapus pengguna ini? Seluruh saldo dan riwayat transaksi terkait akan terhapus.
+      </p>
+      <div class="flex gap-1.5 sm:gap-2.5">
+        <button onclick="closeDeleteConfirmModal()" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors cursor-pointer">Batal</button>
+        <form id="deleteUserForm" method="POST" action="" class="flex-1 m-0">
+          <button type="submit" class="w-full px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-xl text-xs shadow-btn transition-colors cursor-pointer active:scale-95">Ya, Hapus</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function getUserDataFromRow(row) {
+    return {
+      id: row.dataset.id,
+      username: row.dataset.username,
+      email: row.dataset.email,
+      balance: row.dataset.balance,
+      suspended: row.dataset.suspended === 'true',
+      role: row.dataset.role || 'user',
+      permissions: row.dataset.permissions ? row.dataset.permissions.split(',') : [],
+      ip: row.dataset.ip || '',
+      device: row.dataset.device || 'Desktop / Mobile',
+      ipbanned: row.dataset.ipbanned === 'true',
+      created: row.dataset.created
+    };
+  }
+
+  function togglePermsSection(role) {
+    const permsContainer = document.getElementById('permissionsContainer');
+    if (role === 'admin') {
+      permsContainer.classList.remove('hidden');
+    } else {
+      permsContainer.classList.add('hidden');
+    }
+  }
+
+  function formatEditBalance(input) {
+    let raw = input.value.replace(/\D/g, '');
+    document.getElementById('editBalanceReal').value = raw;
+    input.value = raw ? Number(raw).toLocaleString('id-ID') : '';
+  }
+
+  function openEditModalWithData(user) {
+    document.getElementById('editUsername').value = user.username;
+    document.getElementById('editEmail').value = user.email;
+    document.getElementById('editBalanceDisplay').value = Number(user.balance).toLocaleString('id-ID');
+    document.getElementById('editBalanceReal').value = user.balance;
+    document.getElementById('editSuspended').checked = user.suspended;
+    document.getElementById('editUserForm').action = '/admin/users/' + user.id + '/edit';
+
+    const roleSelect = document.getElementById('editUserRole');
+    if (roleSelect) {
+      roleSelect.value = user.role;
+      togglePermsSection(user.role);
+    }
+    const badge = document.getElementById('currentRoleBadge');
+    if (badge) badge.textContent = (user.role || 'USER').toUpperCase();
+
+    const permBoxes = document.querySelectorAll('.perm-checkbox');
+    permBoxes.forEach(box => {
+      box.checked = user.permissions.includes(box.value);
+    });
+
+    const ipEl = document.getElementById('modalUserIp');
+    const devEl = document.getElementById('modalUserDevice');
+    if (ipEl) ipEl.textContent = user.ip || 'Belum tersedia';
+    if (devEl) devEl.textContent = user.device || 'Belum tersedia';
+
+    const modal = document.getElementById('editUserModal');
+    const content = document.getElementById('editUserModalContent');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      content.classList.remove('scale-95', 'opacity-0');
+      content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeEditUserModal() {
+    if (window.location.hash.startsWith('#edit-user-')) {
+      history.back();
+    } else {
+      hideEditModalUI();
+    }
+  }
+
+  function hideEditModalUI() {
+    const modal = document.getElementById('editUserModal');
+    const content = document.getElementById('editUserModalContent');
+    if (content) {
+      content.classList.remove('scale-100', 'opacity-100');
+      content.classList.add('scale-95', 'opacity-0');
+    }
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }, 200);
+  }
+
+  function openDirectBanModal(userId, username) {
+    document.getElementById('directBanUsernameInput').value = username;
+    document.getElementById('directBanUsernameText').textContent = '@' + username;
+    const modal = document.getElementById('directBanModal');
+    const content = document.getElementById('directBanContent');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      content.classList.remove('scale-95', 'opacity-0');
+      content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+  }
+
+  function closeDirectBanModal() {
+    const modal = document.getElementById('directBanModal');
+    const content = document.getElementById('directBanContent');
+    if (content) {
+      content.classList.remove('scale-100', 'opacity-100');
+      content.classList.add('scale-95', 'opacity-0');
+    }
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 200);
+  }
+
+  function openQuickBanModal(userId, username, ip) {
+    document.getElementById('quickBanUsername').textContent = '@' + username;
+    document.getElementById('quickBanIp').value = ip;
+    document.getElementById('quickBanForm').action = '/admin/users/' + userId + '/ban-ip';
+
+    const modal = document.getElementById('quickBanModal');
+    const content = document.getElementById('quickBanContent');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      content.classList.remove('scale-95', 'opacity-0');
+      content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+  }
+
+  function closeQuickBanModal() {
+    const modal = document.getElementById('quickBanModal');
+    const content = document.getElementById('quickBanContent');
+    if (content) {
+      content.classList.remove('scale-100', 'opacity-100');
+      content.classList.add('scale-95', 'opacity-0');
+    }
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 200);
+  }
+
+  function toggleSelectAllUsers(master) {
+    document.querySelectorAll('.user-select-box').forEach(cb => {
+      cb.checked = master.checked;
+    });
+    updateSelectedUsers();
+  }
+
+  function updateSelectedUsers() {
+    const checked = Array.from(document.querySelectorAll('.user-select-box:checked')).map(cb => cb.value);
+    const bulkBar = document.getElementById('bulkActionBar');
+    const badge = document.getElementById('selectedCountBadge');
+    if (checked.length > 0) {
+      bulkBar.classList.remove('hidden');
+      badge.textContent = checked.length;
+    } else {
+      bulkBar.classList.add('hidden');
+    }
+  }
+
+  function openBulkBanModal() {
+    const checked = Array.from(document.querySelectorAll('.user-select-box:checked')).map(cb => cb.value);
+    if (checked.length === 0) return;
+    document.getElementById('bulkBanUserIdsInput').value = JSON.stringify(checked);
+    document.getElementById('bulkBanCountText').textContent = checked.length;
+    const modal = document.getElementById('bulkBanModal');
+    const content = document.getElementById('bulkBanContent');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      content.classList.remove('scale-95', 'opacity-0');
+      content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+  }
+
+  function closeBulkBanModal() {
+    const modal = document.getElementById('bulkBanModal');
+    const content = document.getElementById('bulkBanContent');
+    if (content) {
+      content.classList.remove('scale-100', 'opacity-100');
+      content.classList.add('scale-95', 'opacity-0');
+    }
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 200);
+  }
+
+  function confirmDeleteUser() {
+    const actionParts = document.getElementById('editUserForm').action.split('/');
+    const userId = actionParts[actionParts.length - 2];
+    if (!userId) return;
+    document.getElementById('deleteUserForm').action = '/admin/users/' + userId + '/delete';
+    
+    const modal = document.getElementById('deleteConfirmModal');
+    const content = document.getElementById('deleteConfirmContent');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      content.classList.remove('scale-95', 'opacity-0');
+      content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+  }
+
+  function closeDeleteConfirmModal() {
+    const modal = document.getElementById('deleteConfirmModal');
+    const content = document.getElementById('deleteConfirmContent');
+    if (content) {
+      content.classList.remove('scale-100', 'opacity-100');
+      content.classList.add('scale-95', 'opacity-0');
+    }
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 200);
+  }
+
+  function handleHashChange() {
+    const hash = window.location.hash;
+    if (hash.startsWith('#edit-user-')) {
+      const userId = hash.replace('#edit-user-', '');
+      const row = document.querySelector(`tr.user-row[data-id="${userId}"]`);
+      if (row) {
+        const user = getUserDataFromRow(row);
+        openEditModalWithData(user);
+      } else {
+        history.replaceState(null, null, window.location.pathname + window.location.search);
+      }
+    } else {
+      hideEditModalUI();
+    }
+  }
+
+  window.addEventListener('hashchange', handleHashChange);
+  window.addEventListener('popstate', function() {
+    if (!window.location.hash.startsWith('#edit-user-')) {
+      hideEditModalUI();
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.hash.startsWith('#edit-user-')) {
+      handleHashChange();
+    }
+  });
+
+  (() => {
+    const input = document.getElementById('searchInput');
+    if (!input) return;
+    let timer;
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (input.value) params.set('search', input.value);
+        else params.delete('search');
+        window.location.search = params.toString();
+      }, 500);
+    });
+  })();
+</script>
+
+<%- include('partials/footer') %>

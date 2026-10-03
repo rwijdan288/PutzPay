@@ -1,0 +1,564 @@
+<%- include('partials/header') %>
+
+<div class="max-w-4xl lg:max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 animate-fade-in">
+
+  <% if (invoice.status === 'paid' || invoice.status === 'success') { %>
+    <!-- ===================== OFFICIAL DIGITAL RECEIPT (LUNAS) ===================== -->
+    <div class="max-w-2xl lg:max-w-3xl mx-auto">
+      <div id="receiptCard" class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden relative">
+        
+        <!-- Top Decorative Green Stripe -->
+        <div class="h-2.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 w-full"></div>
+
+        <div class="p-6 sm:p-10 space-y-6">
+          
+          <!-- Header: Logo & Receipt Badge -->
+          <div class="flex items-center justify-between border-b border-slate-100 pb-5">
+            <div class="flex items-center gap-2 sm:gap-3.5">
+              <% if (settings.logoUrl) { %>
+                <img src="<%= settings.logoUrl %>" alt="<%= settings.name %>" class="w-11 h-11 rounded-lg sm:rounded-2xl object-cover border border-slate-200 shadow-xs">
+              <% } else { %>
+                <div class="w-11 h-11 rounded-lg sm:rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-xs">
+                  <i class="fa-solid fa-bolt"></i>
+                </div>
+              <% } %>
+              <div>
+                <h1 class="text-base font-black text-slate-900 font-sans tracking-tight"><%= settings.name || 'PutzPay' %></h1>
+                <p class="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Official E-Receipt</p>
+              </div>
+            </div>
+
+            <div class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold font-mono">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>LUNAS</span>
+            </div>
+          </div>
+
+          <!-- Success Hero Centerpiece -->
+          <div class="text-center py-2 sm:py-4">
+            <div class="w-16 h-16 mx-auto rounded-2xl sm:rounded-3xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mb-3.5 shadow-soft ring-8 ring-emerald-50/80">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider font-mono">Pembayaran Berhasil Diterima</p>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 font-outfit mt-1.5 tracking-tight">
+              Rp <%= (invoice.total || (invoice.amount + (invoice.fee || 0))).toLocaleString('id-ID') %>
+            </h2>
+            <div class="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-3 py-1 rounded-full mt-3">
+              <i class="fa-solid fa-shield-halved text-[11px]"></i> QRIS Realtime Terverifikasi Otomatis
+            </div>
+          </div>
+
+          <!-- Transaction Details Table -->
+          <div class="border border-slate-200 rounded-lg sm:rounded-2xl overflow-hidden bg-slate-50/40 divide-y divide-slate-100 text-xs sm:text-sm font-sans">
+            <div class="flex items-center justify-between px-5 py-3.5 bg-slate-50">
+              <span class="text-slate-500 font-medium">Nomor Invoice</span>
+              <span class="font-mono font-bold text-blue-600 select-all">#<%= invoice._id %></span>
+            </div>
+            <div class="flex items-center justify-between px-5 py-3.5">
+              <span class="text-slate-500 font-medium">Waktu Pembayaran</span>
+              <span class="font-mono text-slate-700">
+                <%= new Date(invoice.successAt || invoice.createdAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %> WIB
+              </span>
+            </div>
+            <div class="flex items-center justify-between px-5 py-3.5 bg-slate-50">
+              <span class="text-slate-500 font-medium">Penerima / Merchant</span>
+              <span class="font-semibold text-slate-800"><%= merchant ? (merchant.name || merchant.username) : (settings.name || 'PutzPay Merchant') %></span>
+            </div>
+            <% if (invoice.customerName) { %>
+            <div class="flex items-center justify-between px-5 py-3.5">
+              <span class="text-slate-500 font-medium">Nama Pelanggan</span>
+              <span class="font-semibold text-slate-800"><%= invoice.customerName %></span>
+            </div>
+            <% } %>
+            <div class="flex items-center justify-between px-5 py-3.5 bg-slate-50">
+              <span class="text-slate-500 font-medium">Metode Pembayaran</span>
+              <span class="font-semibold text-slate-800 flex items-center gap-1.5">
+                <i class="fa-solid fa-qrcode text-emerald-600"></i> QRIS Realtime Settlement
+              </span>
+            </div>
+            <div class="flex items-center justify-between px-5 py-3.5">
+              <span class="text-slate-500 font-medium">Nominal Pokok</span>
+              <span class="font-mono font-semibold text-slate-700">Rp <%= (invoice.amount || 0).toLocaleString('id-ID') %></span>
+            </div>
+            <div class="flex items-center justify-between px-5 py-3.5">
+              <span class="text-slate-500 font-medium">Kode Unik / Admin</span>
+              <span class="font-mono text-slate-600">Rp <%= (invoice.fee || 0).toLocaleString('id-ID') %></span>
+            </div>
+            <div class="flex items-center justify-between px-5 py-4 bg-blue-50/80">
+              <span class="font-bold text-slate-900 text-sm">Total Tagihan Lunas</span>
+              <span class="font-black text-blue-700 font-outfit text-base sm:text-lg">Rp <%= (invoice.total || (invoice.amount + (invoice.fee || 0))).toLocaleString('id-ID') %></span>
+            </div>
+          </div>
+
+          <!-- Action Buttons: WhatsApp & Download Struk -->
+          <div class="space-y-3 pt-2">
+            
+            <button onclick="shareReceiptToWhatsApp()" class="w-full py-3.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm rounded-lg sm:rounded-2xl shadow-btn transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer active:scale-98">
+              <i class="fa-brands fa-whatsapp text-lg"></i>
+              <span>Bagikan Bukti ke WhatsApp</span>
+            </button>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+              <button onclick="downloadReceiptPNG()" id="downloadBtn" class="py-3 px-4 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95">
+                <i class="fa-solid fa-download text-xs text-blue-600"></i>
+                <span>Unduh Gambar Struk (PNG)</span>
+              </button>
+
+              <button onclick="window.print()" class="py-3 px-4 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95">
+                <i class="fa-solid fa-print text-xs text-slate-600"></i>
+                <span>Cetak / Print Struk</span>
+              </button>
+            </div>
+
+            <% if (user) { %>
+              <div class="pt-3 text-center">
+                <a href="/deposit" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors">
+                  <i class="fa-solid fa-arrow-left text-[10px]"></i> Kembali ke Transaksi
+                </a>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Footer Verification Seal -->
+          <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center items-center justify-between text-[11px] font-mono text-slate-400 gap-1.5 sm:gap-2">
+            <span>VERIFIED BY <%= (settings.name || 'PUTZPAY').toUpperCase() %></span>
+            <span>REF: <%= invoice._id %></span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  <% } else if (invoice.status === 'pending') { %>
+    <!-- ===================== PENDING PAYMENT WITH QRIS (RESPONSIVE TWO-COLUMN) ===================== -->
+    <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden">
+      
+      <!-- Top Decorative Amber Stripe -->
+      <div class="h-2.5 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 w-full"></div>
+
+      <div class="p-6 sm:p-8 lg:p-10 space-y-6">
+        
+        <!-- Header: Logo & Status Badge -->
+        <div class="flex items-center justify-between border-b border-slate-100 pb-5">
+          <div class="flex items-center gap-2 sm:gap-3.5">
+            <% if (settings.logoUrl) { %>
+              <img src="<%= settings.logoUrl %>" alt="<%= settings.name %>" class="w-10 h-10 rounded-xl object-cover border border-slate-200 shadow-xs">
+            <% } else { %>
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                <i class="fa-solid fa-bolt text-xs"></i>
+              </div>
+            <% } %>
+            <div>
+              <h1 class="text-sm font-bold text-slate-900 font-sans"><%= settings.name || 'PutzPay' %></h1>
+              <p class="text-[10px] font-mono text-slate-500">Invoice Pembayaran QRIS</p>
+            </div>
+          </div>
+
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200/80 text-amber-800 text-xs font-bold font-mono">
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+            <span>MENUNGGU BAYAR</span>
+          </div>
+        </div>
+
+        <!-- Responsive Grid for Pending Payment -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-start">
+          
+          <!-- Left Column: Payment Details & Countdown -->
+          <div class="md:col-span-7 lg:col-span-7 space-y-5">
+            
+            <!-- Sisa Waktu Countdown Banner -->
+            <div class="bg-amber-50 border border-amber-200 rounded-lg sm:rounded-2xl p-4 flex items-center justify-between gap-2 sm:gap-3 shadow-xs">
+              <div class="flex items-center gap-1.5 sm:gap-2.5 text-amber-900 font-sans text-xs font-semibold">
+                <i class="fa-regular fa-clock text-amber-600 text-base"></i>
+                <span>Sisa Waktu Pembayaran:</span>
+              </div>
+              <span id="countdownDisplay" class="font-mono font-black text-amber-700 text-base bg-white px-3.5 py-1 rounded-xl border border-amber-200 shadow-xs">--:--</span>
+            </div>
+
+            <!-- Nominal Transfer Exact Box -->
+            <div class="bg-blue-50/70 border border-blue-200/80 rounded-lg sm:rounded-2xl p-5 text-center space-y-2">
+              <span class="text-[11px] font-mono font-bold text-blue-700 uppercase tracking-wider block">
+                TOTAL PEMBAYARAN PERSIS
+              </span>
+              <div class="flex items-center justify-center gap-2 sm:gap-3">
+                <h2 class="text-3xl sm:text-4xl font-black text-blue-800 font-outfit tracking-tight">
+                  Rp <%= (invoice.total || (invoice.amount + (invoice.fee || 0))).toLocaleString('id-ID') %>
+                </h2>
+                <button onclick="copyNominal('<%= invoice.total || (invoice.amount + (invoice.fee || 0)) %>')" class="px-3 py-1.5 bg-white hover:bg-slate-100 text-blue-600 border border-blue-200 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95 flex items-center gap-1.5" title="Salin Nominal">
+                  <i class="fa-regular fa-copy"></i>
+                  <span>Salin</span>
+                </button>
+              </div>
+              <p class="text-[11px] text-amber-700 font-medium leading-relaxed max-w-md mx-auto pt-1">
+                ⚠️ Wajib transfer sesuai nominal hingga 3 digit terakhir untuk verifikasi otomatis realtime.
+              </p>
+            </div>
+
+            <!-- Transaction Details List -->
+            <div class="border border-slate-200 rounded-lg sm:rounded-2xl overflow-hidden bg-slate-50/40 divide-y divide-slate-100 text-xs font-sans">
+              <div class="flex items-center justify-between px-4 py-3 bg-slate-50">
+                <span class="text-slate-500">ID Invoice</span>
+                <span class="font-mono font-bold text-blue-600 select-all">#<%= invoice._id %></span>
+              </div>
+              <div class="flex items-center justify-between px-4 py-3">
+                <span class="text-slate-500">Waktu Tagihan</span>
+                <span class="font-mono text-slate-700">
+                  <%= new Date(invoice.createdAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %> WIB
+                </span>
+              </div>
+              <% if (invoice.customerName) { %>
+              <div class="flex items-center justify-between px-4 py-3 bg-slate-50">
+                <span class="text-slate-500">Nama Pembeli</span>
+                <span class="font-semibold text-slate-800"><%= invoice.customerName %></span>
+              </div>
+              <% } %>
+              <div class="flex items-center justify-between px-4 py-3">
+                <span class="text-slate-500">Nominal Pokok</span>
+                <span class="font-mono text-slate-700">Rp <%= (invoice.amount || 0).toLocaleString('id-ID') %></span>
+              </div>
+              <div class="flex items-center justify-between px-4 py-3">
+                <span class="text-slate-500">Kode Unik Transaksi</span>
+                <span class="font-mono text-slate-600">Rp <%= (invoice.fee || 0).toLocaleString('id-ID') %></span>
+              </div>
+            </div>
+
+            <!-- Cancel Transaction Button -->
+            <% if (isOwner || (user && (user.role === 'admin' || user.role === 'owner'))) { %>
+              <div class="pt-1">
+                <button id="cancelBtn" onclick="cancelPendingInvoice()" class="w-full py-3 px-4 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg sm:rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95">
+                  <i class="fa-solid fa-ban text-xs"></i>
+                  <span>Batalkan Transaksi Ini</span>
+                </button>
+              </div>
+            <% } %>
+
+          </div>
+
+          <!-- Right Column: QRIS Display & Supported Methods -->
+          <div class="md:col-span-5 lg:col-span-5 flex flex-col items-center justify-center space-y-4">
+            
+            <div class="p-4 sm:p-5 bg-white border-2 border-slate-200 rounded-2xl sm:rounded-3xl shadow-sm sm:shadow-card relative flex flex-col items-center w-full max-w-xs mx-auto">
+              <img id="qrisImage" src="<%= invoice.qris_image %>" alt="QRIS" class="w-56 h-56 sm:w-64 sm:h-64 object-contain rounded-lg sm:rounded-2xl" onerror="this.onerror=null; this.outerHTML='<div class=\'w-64 h-64 flex items-center justify-center bg-slate-100 rounded-lg sm:rounded-2xl text-xs text-slate-400 font-sans\'>QR Code Sedang Dimuat...</div>';">
+              
+              <a href="<%= invoice.qris_image %>" download="QRIS_<%= invoice._id %>.png" class="mt-3 text-[11px] font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1.5 transition-colors">
+                <i class="fa-solid fa-download text-[10px]"></i>
+                <span>Simpan Gambar QR</span>
+              </a>
+            </div>
+
+            <p class="text-xs text-slate-500 text-center max-w-xs font-sans leading-relaxed">
+              Buka aplikasi Mobile Banking atau e-Wallet apa saja, pilih menu <strong class="text-slate-800">Scan QRIS</strong>, lalu arahkan kamera ke barcode di atas.
+            </p>
+
+            <!-- Supported Apps Pills -->
+            <div class="flex flex-wrap justify-center gap-1.5 text-[10px] font-mono text-slate-600">
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">BCA</span>
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">Mandiri</span>
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">BRI</span>
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">GoPay</span>
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">OVO</span>
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">DANA</span>
+              <span class="bg-slate-100 px-2 py-0.5 rounded-md">ShopeePay</span>
+            </div>
+
+            <!-- Live Status Checker Pulse -->
+            <div class="flex items-center justify-center gap-1.5 sm:gap-2 text-xs text-slate-400 font-mono py-1">
+              <i class="fa-solid fa-circle-notch fa-spin text-blue-600 text-xs"></i>
+              <span>Menunggu mutasi pembayaran otomatis...</span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  <% } else { %>
+    <!-- ===================== CANCELLED / EXPIRED INVOICE ===================== -->
+    <div class="max-w-xl mx-auto bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-xl p-8 sm:p-10 text-center animate-fade-in space-y-4">
+      <div class="w-16 h-16 mx-auto rounded-2xl sm:rounded-3xl bg-rose-100 text-rose-600 flex items-center justify-center text-3xl shadow-soft">
+        <i class="fa-solid fa-ban"></i>
+      </div>
+      <h2 class="text-xl font-bold text-slate-900 font-sans">Transaksi <%= invoice.status === 'cancelled' ? 'Dibatalkan' : 'Kadaluarsa' %></h2>
+      <p class="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-sm mx-auto font-sans">
+        Invoice ini sudah tidak berlaku. QR Code tidak lagi dapat menerima pembayaran.
+      </p>
+      <div class="pt-3">
+        <a href="/deposit" class="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-btn active:scale-95">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>Buat Transaksi Baru</span>
+        </a>
+      </div>
+    </div>
+  <% } %>
+
+</div>
+
+<!-- Hidden Canvas for Crisp Graphic Struk PNG Generation -->
+<canvas id="receiptCanvas" width="600" height="850" class="hidden"></canvas>
+
+<%- include('partials/footer') %>
+
+<script>
+  const invoiceData = {
+    id: '<%= invoice._id %>',
+    amount: <%= invoice.amount || 0 %>,
+    fee: <%= invoice.fee || 0 %>,
+    total: <%= invoice.total || (invoice.amount + (invoice.fee || 0)) %>,
+    status: '<%= invoice.status %>',
+    createdAt: '<%= invoice.createdAt %>',
+    successAt: '<%= invoice.successAt || invoice.createdAt %>',
+    customerName: '<%= invoice.customerName || "" %>',
+    merchantName: '<%= merchant ? (merchant.name || merchant.username) : (settings.name || "PutzPay") %>',
+    appName: '<%= settings.name || "PutzPay" %>'
+  };
+
+  // 1. Copy Nominal
+  function copyNominal(val) {
+    navigator.clipboard.writeText(val).then(() => {
+      showToast('Nominal Rp ' + parseInt(val).toLocaleString('id-ID') + ' disalin!', 'success');
+    }).catch(() => {
+      showToast('Nominal: ' + val, 'info');
+    });
+  }
+
+  // 2. Share Receipt to WhatsApp
+  function shareReceiptToWhatsApp() {
+    const timeStr = new Date(invoiceData.successAt).toLocaleString('id-ID', {
+      timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    }) + ' WIB';
+
+    const text = 
+`🧾 *BUKTI PEMBAYARAN RESMI - ${invoiceData.appName.toUpperCase()}*
+━━━━━━━━━━━━━━━━━━━━━━━━
+No. Invoice : *#${invoiceData.id}*
+Status      : *LUNAS / BERHASIL ✅*
+Waktu       : ${timeStr}
+Penerima    : *${invoiceData.merchantName}*
+${invoiceData.customerName ? `Pelanggan   : *${invoiceData.customerName}*\n` : ''}Nominal Pokok : Rp ${invoiceData.amount.toLocaleString('id-ID')}
+Kode Unik   : Rp ${invoiceData.fee.toLocaleString('id-ID')}
+*Total Bayar: Rp ${invoiceData.total.toLocaleString('id-ID')}*
+Metode      : QRIS Realtime Otomatis
+━━━━━━━━━━━━━━━━━━━━━━━━
+Verifikasi Struk Asli Secara Online:
+${window.location.origin}/invoice/${invoiceData.id}
+
+Terima kasih atas transaksi Anda di ${invoiceData.appName}! 🙏`;
+
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, '_blank');
+  }
+
+  // 3. Generate and Download Sharp Graphic PNG Receipt using HTML5 Canvas
+  function downloadReceiptPNG() {
+    const canvas = document.getElementById('receiptCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    // Canvas dimensions: 600 x 850
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // Background Clean Off-white
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(0, 0, w, h);
+
+    // White receipt body
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
+    ctx.shadowBlur = 20;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 4;
+    ctx.roundRect(30, 30, w - 60, h - 60, 24);
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+
+    // Top Green Accent Bar
+    ctx.fillStyle = '#10b981';
+    ctx.roundRect(30, 30, w - 60, 10, [24, 24, 0, 0]);
+    ctx.fill();
+
+    // Brand Title
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(invoiceData.appName.toUpperCase(), w / 2, 85);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '12px monospace';
+    ctx.fillText('BUKTI PEMBAYARAN DIGITAL RESMI', w / 2, 105);
+
+    // Green Check Circle
+    ctx.fillStyle = '#ecfdf5';
+    ctx.beginPath();
+    ctx.arc(w / 2, 155, 32, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#10b981';
+    ctx.font = 'bold 30px sans-serif';
+    ctx.fillText('✓', w / 2, 166);
+
+    // Status Label
+    ctx.fillStyle = '#059669';
+    ctx.font = 'bold 13px monospace';
+    ctx.fillText('PEMBAYARAN LUNAS / BERHASIL', w / 2, 215);
+
+    // Amount Large
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.fillText('Rp ' + invoiceData.total.toLocaleString('id-ID'), w / 2, 265);
+
+    // Dashed Divider Line
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.moveTo(60, 295);
+    ctx.lineTo(w - 60, 295);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Table rows
+    const startY = 330;
+    const lineSpacing = 38;
+    const leftX = 65;
+    const rightX = w - 65;
+
+    const rows = [
+      ['No. Invoice', '#' + invoiceData.id],
+      ['Waktu', new Date(invoiceData.successAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' WIB'],
+      ['Penerima', invoiceData.merchantName],
+      ...(invoiceData.customerName ? [['Pelanggan', invoiceData.customerName]] : []),
+      ['Metode', 'QRIS Realtime'],
+      ['Nominal Pokok', 'Rp ' + invoiceData.amount.toLocaleString('id-ID')],
+      ['Kode Unik', 'Rp ' + invoiceData.fee.toLocaleString('id-ID')],
+      ['Total Bayar', 'Rp ' + invoiceData.total.toLocaleString('id-ID')]
+    ];
+
+    rows.forEach((r, idx) => {
+      const y = startY + idx * lineSpacing;
+      
+      // Highlight Total Bayar
+      if (r[0] === 'Total Bayar') {
+        ctx.fillStyle = '#eff6ff';
+        ctx.fillRect(55, y - 24, w - 110, 36);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.font = 'bold 15px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(r[0], leftX, y);
+        ctx.textAlign = 'right';
+        ctx.fillText(r[1], rightX, y);
+      } else {
+        ctx.fillStyle = '#64748b';
+        ctx.font = '13px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(r[0], leftX, y);
+        ctx.fillStyle = '#1e293b';
+        ctx.font = 'bold 13px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(r[1], rightX, y);
+      }
+    });
+
+    // Bottom Seal
+    const footerY = 740;
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(60, footerY);
+    ctx.lineTo(w - 60, footerY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '11px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('VERIFIKASI RESMI: ' + window.location.origin + '/invoice/' + invoiceData.id, w / 2, footerY + 28);
+    ctx.fillText('Terima kasih telah bertransaksi dengan ' + invoiceData.appName, w / 2, footerY + 48);
+
+    // Convert to Image and trigger download
+    const link = document.createElement('a');
+    link.download = `Struk_${invoiceData.appName}_${invoiceData.id}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('Struk berhasil diunduh!', 'success');
+  }
+
+  // 4. Cancel Pending Invoice
+  async function cancelPendingInvoice() {
+    if (!confirm('Apakah Anda yakin ingin membatalkan transaksi ini? QRIS akan langsung dinonaktifkan.')) {
+      return;
+    }
+
+    const btn = document.getElementById('cancelBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> <span>Membatalkan...</span>';
+    }
+
+    try {
+      const res = await fetch('/invoice/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoiceId: invoiceData.id })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Gagal membatalkan transaksi');
+      }
+
+      showToast('Transaksi berhasil dibatalkan.', 'info');
+      setTimeout(() => {
+        window.location.reload();
+      }, 700);
+
+    } catch (e) {
+      alert(e.message || 'Terjadi kesalahan');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-ban text-xs"></i> <span>Batalkan Transaksi Ini</span>';
+      }
+    }
+  }
+
+  // 5. Countdown & Status Polling for Pending Invoices
+  <% if (invoice.status === 'pending') { %>
+    const expiredTime = new Date('<%= invoice.expiredAt %>').getTime();
+    const countdownEl = document.getElementById('countdownDisplay');
+
+    function updateCountdown() {
+      const now = Date.now();
+      const diff = expiredTime - now;
+
+      if (diff <= 0) {
+        if (countdownEl) countdownEl.textContent = 'KADALUARSA';
+        setTimeout(() => window.location.reload(), 1500);
+        return;
+      }
+
+      const m = Math.floor(diff / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      if (countdownEl) {
+        countdownEl.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      }
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // Auto-polling payment status every 3 seconds
+    let checkInterval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/invoice/${invoiceData.id}`);
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.status === 'paid' || json.status === 'success' || json.status === 'cancelled') {
+          clearInterval(checkInterval);
+          window.location.reload();
+        }
+      } catch (e) {}
+    }, 3000);
+  <% } %>
+</script>

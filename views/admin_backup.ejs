@@ -1,0 +1,240 @@
+<%- include('partials/header', { title: 'Backup Website - Admin' }) %>
+
+<div class="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-8 space-y-6 sm:space-y-8 w-full min-w-0 font-sans">
+
+  <!-- Header Section -->
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-white shadow-sm sm:shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+    <div class="space-y-1.5 z-10">
+      <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider border border-blue-500/30">
+        <i class="fa-solid fa-box-archive text-xs"></i>
+        <span>Pusat Backup & Pemeliharaan Kode</span>
+      </div>
+      <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-bold tracking-tight text-white font-outfit">Backup Source Code Website</h1>
+      <p class="text-xs sm:text-sm text-slate-400">Buat arsip ZIP seluruh source code website PutzPay untuk keperluan migrasi, arsip, dan pemulihan darurat.</p>
+    </div>
+    <div class="z-10">
+      <a href="/admin/dashboard" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold uppercase flex items-center gap-1.5 sm:gap-2 transition-all">
+        <i class="fa-solid fa-arrow-left text-xs"></i>
+        <span>Kembali ke Dashboard</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Server Notifications -->
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-4 rounded-lg sm:rounded-2xl text-xs font-semibold flex items-center gap-2 sm:gap-3 shadow-xs">
+      <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
+      <p><%= success %></p>
+    </div>
+  <% } %>
+  
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="bg-rose-50 border border-rose-200 text-rose-800 px-5 py-4 rounded-lg sm:rounded-2xl text-xs font-semibold flex items-center gap-2 sm:gap-3 shadow-xs">
+      <i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i>
+      <p><%= error %></p>
+    </div>
+  <% } %>
+
+  <!-- Grid: Buat Backup & Instruksi -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Action Card: Buat Backup -->
+    <div class="lg:col-span-2 bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm sm:shadow-card space-y-6">
+      <div class="flex items-center gap-2 sm:gap-3 pb-4 border-b border-slate-100">
+        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-file-zipper text-sm"></i>
+        </div>
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-slate-900 font-outfit">Buat Arsip Backup Baru</h2>
+          <p class="text-xs text-slate-500">Kompresi berkas proyek menjadi arsip berkas ZIP (.zip) tunggal secara asinkron.</p>
+        </div>
+      </div>
+
+      <form id="createBackupForm" method="POST" action="/admin/backup/create" class="space-y-6">
+        
+        <!-- Checklist Cakupan -->
+        <div class="bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl p-4 space-y-3">
+          <p class="text-xs font-semibold text-slate-700 flex items-center gap-1.5 sm:gap-2">
+            <i class="fa-solid fa-list-check text-xs text-blue-600"></i> Cakupan Berkas yang Di-backup:
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-xs text-slate-600">
+            <div class="flex items-center gap-1.5 sm:gap-2"><i class="fa-solid fa-check text-emerald-600"></i> <span>Core Server (<code>server.js</code>)</span></div>
+            <div class="flex items-center gap-1.5 sm:gap-2"><i class="fa-solid fa-check text-emerald-600"></i> <span>Tampilan EJS (<code>views/</code>)</span></div>
+            <div class="flex items-center gap-1.5 sm:gap-2"><i class="fa-solid fa-check text-emerald-600"></i> <span>Aset Publik & Push (<code>public/</code>)</span></div>
+            <div class="flex items-center gap-1.5 sm:gap-2"><i class="fa-solid fa-check text-emerald-600"></i> <span>Modul Monitor (<code>telegram-monitor/</code>)</span></div>
+            <div class="flex items-center gap-1.5 sm:gap-2"><i class="fa-solid fa-check text-emerald-600"></i> <span>Manifest (<code>package.json</code>)</span></div>
+            <div class="flex items-center gap-1.5 sm:gap-2"><i class="fa-solid fa-check text-emerald-600"></i> <span>Template Config (<code>config.example.js</code>)</span></div>
+          </div>
+          <div class="pt-2 border-t border-slate-200 text-[11px] font-mono text-slate-500">
+            🚫 <em>Otomatis dikecualikan: <code>node_modules/</code>, folder <code>backups/</code>, file cache, dan temporary logs.</em>
+          </div>
+        </div>
+
+        <!-- Opsi File Sensitif -->
+        <div class="bg-amber-50/70 border border-amber-200/80 rounded-lg sm:rounded-2xl p-4">
+          <label class="flex items-start gap-2 sm:gap-3 cursor-pointer select-none">
+            <input type="checkbox" name="includeSensitive" value="true" id="includeSensitive" class="w-3 h-3 sm:w-4 sm:h-4 mt-0.5 accent-blue-600 rounded border-slate-300 cursor-pointer">
+            <div class="flex-1">
+              <span class="text-xs font-bold text-amber-900 block font-outfit">
+                Sertakan Konfigurasi Sensitif (.env & Secrets)
+              </span>
+              <span class="text-[11px] text-amber-700 block mt-0.5 leading-snug">
+                ⚠️ Peringatan: Opsi ini menyertakan environment variable dan credential rahasia ke dalam ZIP. Simpan berkas dengan aman jika dicentang. (Default: Nonaktif)
+              </span>
+            </div>
+          </label>
+        </div>
+
+        <!-- Status Box / Progress (Hidden by default) -->
+        <div id="backupProgressBox" class="hidden bg-blue-50 border border-blue-200 rounded-lg sm:rounded-2xl p-4 flex items-center gap-2 sm:gap-3">
+          <div class="animate-spin text-blue-600 text-xl">
+            <i class="fa-solid fa-spinner"></i>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-blue-900 font-outfit">Sedang Memproses Backup...</p>
+            <p class="text-[11px] text-blue-700">Membaca berkas dan mengompresi ke dalam ZIP. Mohon tunggu beberapa detik...</p>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="btnCreateBackup" class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs sm:text-sm font-semibold font-outfit shadow-btn flex items-center justify-center gap-1.5 sm:gap-2 transition-all active:scale-95 cursor-pointer">
+          <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
+          <span id="btnBackupText">BUAT BACKUP WEBSITE SEKARANG</span>
+        </button>
+
+      </form>
+    </div>
+
+    <!-- Info Card: Keamanan & Petunjuk -->
+    <div class="bg-slate-900 border border-slate-800 text-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm sm:shadow-card flex flex-col justify-between">
+      <div>
+        <div class="flex items-center gap-1.5 sm:gap-2 text-xs font-semibold uppercase tracking-wider mb-4 bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full border border-blue-500/30 inline-flex">
+          <i class="fa-solid fa-shield text-xs"></i> KEAMANAN BACKUP
+        </div>
+        <h3 class="text-lg font-bold font-outfit text-white mb-3">Ketentuan & Panduan</h3>
+        
+        <ul class="space-y-3 text-xs text-slate-300 leading-relaxed">
+          <li class="flex items-start gap-1.5 sm:gap-2.5">
+            <i class="fa-solid fa-bolt text-amber-400 mt-0.5 shrink-0"></i>
+            <span><strong class="text-white">Non-Disruptive:</strong> Proses backup berjalan di background secara streaming tanpa membuat website down atau me-restart server.</span>
+          </li>
+          <li class="flex items-start gap-1.5 sm:gap-2.5">
+            <i class="fa-solid fa-lock text-emerald-400 mt-0.5 shrink-0"></i>
+            <span><strong class="text-white">Akses Terproteksi:</strong> Hanya akun Administrator/Owner yang memiliki hak akses untuk men-download atau menghapus berkas backup.</span>
+          </li>
+          <li class="flex items-start gap-1.5 sm:gap-2.5">
+            <i class="fa-solid fa-trash-can text-rose-400 mt-0.5 shrink-0"></i>
+            <span><strong class="text-white">Manajemen Penyimpanan:</strong> Hapus berkas backup lama secara berkala agar tidak memenuhi kapasitas disk server.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-slate-800">
+        <p class="text-[11px] font-mono text-slate-400">
+          Format: <code class="text-blue-400">PutzPay-Backup-YYYY-MM-DD-HH-mm-ss.zip</code>
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Daftar Berkas Backup -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm sm:shadow-card">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-folder-open text-sm"></i>
+        </div>
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-slate-900 font-outfit">Daftar Berkas Backup Tersimpan</h2>
+          <p class="text-xs text-slate-500">Total berkas backup: <strong class="text-slate-800"><%= typeof backups !== 'undefined' ? backups.length : 0 %></strong> berkas</p>
+        </div>
+      </div>
+      <button type="button" onclick="window.location.reload()" class="self-start sm:self-auto px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 sm:gap-2 transition-all cursor-pointer">
+        <i class="fa-solid fa-rotate-right text-xs"></i> Refresh
+      </button>
+    </div>
+
+    <% if (typeof backups !== 'undefined' && backups && backups.length > 0) { %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-outfit text-xs font-semibold">
+              <th class="py-3 px-4">Nama Berkas ZIP</th>
+              <th class="py-3 px-4">Ukuran</th>
+              <th class="py-3 px-4">Waktu Dibuat</th>
+              <th class="py-3 px-4 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-xs">
+            <% backups.forEach(item => { %>
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="py-3.5 px-4 text-slate-900 font-medium">
+                  <div class="flex items-center gap-1.5 sm:gap-2">
+                    <i class="fa-solid fa-file-zipper text-blue-600 text-base"></i>
+                    <span class="font-mono text-xs select-all"><%= item.filename %></span>
+                  </div>
+                </td>
+                <td class="py-3.5 px-4 whitespace-nowrap">
+                  <span class="inline-block bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-lg font-mono text-xs">
+                    <%= item.sizeFormatted %>
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-slate-500 whitespace-nowrap">
+                  <%= item.createdAtFormatted %>
+                </td>
+                <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                  <div class="flex items-center justify-center gap-1.5 sm:gap-2">
+                    <!-- Download Button -->
+                    <a href="/admin/backup/download/<%= item.filename %>" 
+                       class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all active:scale-95">
+                      <i class="fa-solid fa-download text-xs"></i> Download
+                    </a>
+
+                    <!-- Delete Button Form -->
+                    <form method="POST" action="/admin/backup/delete/<%= item.filename %>" onsubmit="return confirm('Yakin ingin menghapus berkas backup <%= item.filename %>? Tindakan ini tidak dapat dibatalkan.');">
+                      <button type="submit" 
+                              class="px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                        <i class="fa-solid fa-trash-can text-xs"></i> Hapus
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <!-- Empty State -->
+      <div class="py-12 px-4 text-center bg-slate-50 border border-dashed border-slate-200 rounded-lg sm:rounded-2xl">
+        <div class="w-14 h-14 bg-slate-100 rounded-lg sm:rounded-2xl flex items-center justify-center mx-auto mb-3 text-slate-400 text-xl">
+          <i class="fa-solid fa-box-open"></i>
+        </div>
+        <h3 class="text-sm font-bold text-slate-900 font-outfit mb-1">Belum Ada Berkas Backup</h3>
+        <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">
+          Klik tombol "Buat Backup Website Sekarang" di atas untuk membuat arsip ZIP pertama Anda.
+        </p>
+      </div>
+    <% } %>
+
+  </div>
+
+</div>
+
+<script>
+  const form = document.getElementById('createBackupForm');
+  const btn = document.getElementById('btnCreateBackup');
+  const btnText = document.getElementById('btnBackupText');
+  const progressBox = document.getElementById('backupProgressBox');
+
+  if (form) {
+    form.addEventListener('submit', () => {
+      if (btn) btn.disabled = true;
+      if (btnText) btnText.textContent = 'SEDANG MEMBUAT BACKUP...';
+      if (progressBox) progressBox.classList.remove('hidden');
+    });
+  }
+</script>
+
+<%- include('partials/footer') %>

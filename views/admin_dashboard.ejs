@@ -1,0 +1,149 @@
+<%- include('partials/header', { title: 'Admin Overview Dashboard' }) %>
+
+<div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-8 space-y-6 sm:space-y-8 w-full min-w-0">
+
+  <% if (locals.error) { %>
+    <div class="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg sm:rounded-2xl flex items-center gap-2 sm:gap-3 text-sm font-medium animate-fade-in shadow-xs">
+      <i class="fa-solid fa-triangle-exclamation text-rose-500 text-base shrink-0"></i>
+      <span><%= locals.error %></span>
+    </div>
+  <% } %>
+  <% if (locals.success) { %>
+    <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg sm:rounded-2xl flex items-center gap-2 sm:gap-3 text-sm font-medium animate-fade-in shadow-xs">
+      <i class="fa-solid fa-circle-check text-emerald-500 text-base shrink-0"></i>
+      <span><%= locals.success %></span>
+    </div>
+  <% } %>
+
+  <!-- Header section -->
+  <div class="bg-gradient-to-r from-slate-900 to-blue-950 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-white shadow-sm sm:shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-xs text-blue-300 text-xs font-semibold tracking-wide mb-2 border border-white/10">
+        <i class="fa-solid fa-shield-halved text-xs"></i>
+        <span>Panel Administrator Control Center</span>
+      </div>
+      <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-black tracking-tight text-white font-outfit">Ringkasan Statistik Sistem</h1>
+      <p class="text-xs sm:text-sm text-slate-300 font-sans mt-1">Metrik performa realtime, omzet transaksi, dan akumulasi fee payment gateway.</p>
+    </div>
+  </div>
+
+  <!-- Metric Cards Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    
+    <!-- Card 1: Total Users -->
+    <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 shadow-xs hover:shadow-card-hover sm:shadow-card transition-all">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Pengguna Aktif</span>
+        <div class="w-10 h-10 rounded-lg sm:rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center font-bold shadow-xs">
+          <i class="fa-solid fa-users text-sm"></i>
+        </div>
+      </div>
+      <p class="text-3xl font-black text-slate-900 font-outfit"><%= totalUsers %></p>
+      <span class="text-xs text-slate-500 font-sans block mt-1">Pengguna terdaftar dalam sistem</span>
+    </div>
+
+    <!-- Card 2: Total Uang Masuk -->
+    <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 shadow-xs hover:shadow-card-hover sm:shadow-card transition-all">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Deposit Uang Masuk</span>
+        <div class="w-10 h-10 rounded-lg sm:rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center font-bold shadow-xs">
+          <i class="fa-solid fa-arrow-down-left text-sm"></i>
+        </div>
+      </div>
+      <p class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-black text-slate-900 font-outfit">Rp <%= totalDepositAmount.toLocaleString('id-ID') %></p>
+      <span class="text-xs text-emerald-600 font-semibold block mt-1 flex items-center gap-1">
+        <i class="fa-solid fa-circle-check text-xs"></i> Akumulasi transaksi berhasil
+      </span>
+    </div>
+
+    <!-- Card 3: Fee TRX Masuk -->
+    <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 shadow-xs hover:shadow-card-hover sm:shadow-card transition-all">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Keuntungan Fee Deposit</span>
+        <div class="w-10 h-10 rounded-lg sm:rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center font-bold shadow-xs">
+          <i class="fa-solid fa-coins text-sm"></i>
+        </div>
+      </div>
+      <p class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-black text-slate-900 font-outfit">Rp <%= totalDepositFee.toLocaleString('id-ID') %></p>
+      <span class="text-xs text-slate-500 font-sans block mt-1">Pendapatan fee admin (Deposit)</span>
+    </div>
+
+    <!-- Card 4: Total Withdraw -->
+    <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 shadow-xs hover:shadow-card-hover sm:shadow-card transition-all">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Penarikan Saldo</span>
+        <div class="w-10 h-10 rounded-lg sm:rounded-2xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center font-bold shadow-xs">
+          <i class="fa-solid fa-arrow-up-right text-sm"></i>
+        </div>
+      </div>
+      <p class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-black text-slate-900 font-outfit">Rp <%= totalWithdrawAmount.toLocaleString('id-ID') %></p>
+      <span class="text-xs text-slate-500 font-sans block mt-1">Total dana dicairkan oleh user</span>
+    </div>
+
+    <!-- Card 5: Fee WD Masuk -->
+    <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 shadow-xs hover:shadow-card-hover sm:shadow-card transition-all">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Keuntungan Fee Penarikan</span>
+        <div class="w-10 h-10 rounded-lg sm:rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center font-bold shadow-xs">
+          <i class="fa-solid fa-file-invoice-dollar text-sm"></i>
+        </div>
+      </div>
+      <p class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-black text-slate-900 font-outfit">Rp <%= totalWithdrawFee.toLocaleString('id-ID') %></p>
+      <span class="text-xs text-slate-500 font-sans block mt-1">Pendapatan fee admin (Withdraw)</span>
+    </div>
+
+    <!-- Card 6: Total Transaksi -->
+    <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 shadow-xs hover:shadow-card-hover sm:shadow-card transition-all">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Volume Transaksi</span>
+        <div class="w-10 h-10 rounded-lg sm:rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center font-bold shadow-xs">
+          <i class="fa-solid fa-list-check text-sm"></i>
+        </div>
+      </div>
+      <p class="text-3xl font-black text-slate-900 font-outfit"><%= totalTransactions %></p>
+      <span class="text-xs text-slate-500 font-sans block mt-1">Jumlah kuantitas invoice dibuat</span>
+    </div>
+
+  </div>
+
+  <!-- Quick Nav Admin Section -->
+  <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xs">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div>
+        <h3 class="text-lg font-bold text-slate-900 font-outfit mb-1">Akses Cepat Pengelolaan Platform</h3>
+        <p class="text-xs text-slate-500 font-sans">Navigasi pintas untuk mengelola pengguna, persetujuan penarikan, dan konfigurasi metode pembayaran.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2.5">
+        <a href="/admin/users" class="px-3.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 sm:gap-2 active:scale-95">
+          <i class="fa-solid fa-users text-xs text-blue-600"></i>
+          <span>Kelola Pengguna</span>
+        </a>
+        <a href="/admin/banned-ips" class="px-3.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 sm:gap-2 active:scale-95">
+          <i class="fa-solid fa-ban text-xs text-rose-600"></i>
+          <span>Banned / Suspend IP</span>
+        </a>
+        <a href="/admin/withdraw" class="px-3.5 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 sm:gap-2 active:scale-95">
+          <i class="fa-solid fa-hand-holding-dollar text-xs text-amber-600"></i>
+          <span>Persetujuan WD</span>
+        </a>
+        <a href="/admin/transactions" class="px-3.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 sm:gap-2 active:scale-95">
+          <i class="fa-solid fa-receipt text-xs text-indigo-600"></i>
+          <span>Semua Transaksi</span>
+        </a>
+        <a href="/admin/settings" class="px-3.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 sm:gap-2 active:scale-95">
+          <i class="fa-solid fa-gear text-xs text-slate-600"></i>
+          <span>Sistem & Metode</span>
+        </a>
+        <% if (locals.canAccessBackup) { %>
+        <a href="/admin/backup" class="px-3.5 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 sm:gap-2 active:scale-95">
+          <i class="fa-solid fa-box-archive text-xs text-blue-600"></i>
+          <span>Backup Website</span>
+        </a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,466 @@
+<!-- LIVE SERVER MONITORING CARD - PUTZPAY PAYMENT GATEWAY -->
+
+<!-- SECTION 1: MONITORING SERVER -->
+<div id="live-server-monitoring-card" class="bg-slate-900 text-white border border-slate-800/90 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm sm:shadow-card relative overflow-hidden font-sans space-y-5 transition-all duration-300">
+  
+  <!-- AMBIENT BACKGROUND GLOW ACCENTS -->
+  <div class="pointer-events-none absolute -top-24 -right-24 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
+  <div class="pointer-events-none absolute -bottom-24 -left-24 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl"></div>
+
+  <!-- SUBTLE UPDATE HIGHLIGHT PULSE BORDER -->
+  <div id="serverCardPulse" class="pointer-events-none absolute inset-0 rounded-2xl sm:rounded-3xl border-2 border-emerald-400/40 opacity-0 transition-opacity duration-700"></div>
+
+  <!-- WINDOW TOP HEADER BAR -->
+  <div class="relative z-10 flex items-center justify-between border-b border-slate-800 pb-3">
+    <!-- WINDOW DOTS -->
+    <div class="flex items-center gap-1.5 sm:gap-2">
+      <span class="w-3 h-3 rounded-full bg-rose-500/80 inline-block shadow-2xs"></span>
+      <span class="w-3 h-3 rounded-full bg-amber-400/80 inline-block shadow-2xs"></span>
+      <span class="w-3 h-3 rounded-full bg-emerald-400/80 inline-block shadow-2xs"></span>
+      <span class="ml-2 text-xs font-mono font-semibold uppercase tracking-wider text-slate-400 hidden sm:inline-block">System Server Monitoring</span>
+    </div>
+
+    <!-- LIVE BADGE -->
+    <div id="liveBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold uppercase shadow-xs transition-colors duration-300">
+      <span id="liveDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+      <span id="liveText">LIVE</span>
+    </div>
+  </div>
+
+  <!-- NODE ACTIVE CARD BANNER -->
+  <div class="relative z-10 bg-slate-800/80 border border-slate-700/60 rounded-lg sm:rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-2xs">
+    <div class="flex items-center gap-2 sm:gap-3.5">
+      <div class="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0 shadow-2xs">
+        <i class="fa-solid fa-server text-lg"></i>
+      </div>
+      <div>
+        <h3 id="serverNodeName" class="text-xs sm:text-sm lg:text-base font-bold font-outfit text-white tracking-wide">
+          Node Localhost
+        </h3>
+        <p class="text-xs font-mono font-medium text-slate-400 flex items-center gap-1.5 mt-0.5">
+          <span id="serverNodeDot" class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
+          <span id="serverNodeStatus" class="text-emerald-400 font-semibold">Active</span>
+        </p>
+      </div>
+    </div>
+    
+    <div class="text-right hidden sm:block">
+      <span class="text-[10px] font-mono text-slate-400 uppercase block">Platform OS</span>
+      <span id="serverPlatform" class="text-xs font-mono font-semibold text-slate-200 uppercase">Linux / Node.js</span>
+    </div>
+  </div>
+
+  <!-- REALTIME METRICS PROGRESS BARS -->
+  <div class="relative z-10 space-y-4 pt-1">
+    
+    <!-- CPU USAGE -->
+    <div class="space-y-1.5">
+      <div class="flex justify-between items-center text-xs font-mono font-medium">
+        <span class="text-slate-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-microchip text-blue-400 text-xs"></i> CPU Usage
+        </span>
+        <span id="cpuVal" class="text-white font-bold transition-colors duration-300">0%</span>
+      </div>
+      <div class="w-full h-2 bg-slate-800/90 rounded-full overflow-hidden">
+        <div id="cpuBar" class="h-full bg-blue-500 rounded-full transition-all duration-700 ease-out w-[0%]"></div>
+      </div>
+    </div>
+
+    <!-- MEMORY USAGE -->
+    <div class="space-y-1.5">
+      <div class="flex justify-between items-center text-xs font-mono font-medium">
+        <span class="text-slate-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-memory text-emerald-400 text-xs"></i> Memory
+        </span>
+        <span id="memVal" class="text-emerald-400 font-bold transition-colors duration-300">0%</span>
+      </div>
+      <div class="w-full h-2 bg-slate-800/90 rounded-full overflow-hidden">
+        <div id="memBar" class="h-full bg-emerald-500 rounded-full transition-all duration-700 ease-out w-[0%]"></div>
+      </div>
+    </div>
+
+    <!-- BANDWIDTH / DISK -->
+    <div class="space-y-1.5">
+      <div class="flex justify-between items-center text-xs font-mono font-medium">
+        <span class="text-slate-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-network-wired text-purple-400 text-xs"></i> Bandwidth & Storage
+        </span>
+        <span id="bwVal" class="text-purple-300 font-bold transition-colors duration-300">0%</span>
+      </div>
+      <div class="w-full h-2 bg-slate-800/90 rounded-full overflow-hidden">
+        <div id="bwBar" class="h-full bg-purple-500 rounded-full transition-all duration-700 ease-out w-[0%]"></div>
+      </div>
+    </div>
+
+    <!-- PING & UPTIME METRIC ROW -->
+    <div class="grid grid-cols-2 gap-2 sm:gap-3 pt-2 text-xs font-mono">
+      <div class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-3 flex items-center justify-between shadow-2xs">
+        <span class="text-slate-400 text-[11px]">Latency / Ping</span>
+        <span class="flex items-center gap-1.5">
+          <span id="pingDot" class="w-1.5 h-1.5 rounded-full bg-cyan-400 inline-block animate-pulse"></span>
+          <span id="pingVal" class="font-bold text-cyan-300">18 ms</span>
+        </span>
+      </div>
+      <div class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-3 flex items-center justify-between shadow-2xs">
+        <span class="text-slate-400 text-[11px]">Uptime</span>
+        <span id="uptimeVal" class="font-bold text-amber-300 font-mono">0h 0m</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- CARD TERAKHIR: LOGO PTZ + DOMAIN -->
+<div class="mt-4 bg-slate-900 text-white border border-slate-800 rounded-lg sm:rounded-2xl p-4 shadow-sm sm:shadow-card relative overflow-hidden font-sans">
+  <div class="relative z-10 flex items-center justify-between">
+    <div class="flex items-center gap-1.5 sm:gap-2.5">
+      <div class="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold font-outfit text-xs flex items-center justify-center shrink-0 shadow-2xs">
+        PTZ
+      </div>
+      <span id="serverHostname" class="text-xs sm:text-sm font-mono font-medium text-slate-300">
+        pay.putzoffc.biz.id
+      </span>
+    </div>
+    <div class="flex items-center gap-1.5 text-xs font-mono font-semibold text-emerald-400">
+      <span id="footerOnlineDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span id="footerOnlineText">Online</span>
+    </div>
+  </div>
+</div>
+
+<!-- REALTIME SOCKET.IO CLIENT LISTENER & SMOOTH ANIMATION SCRIPT -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  (function() {
+    // Utility: Smooth Number Animation with requestAnimationFrame
+    function animateNumber(el, start, end, duration, formatFn) {
+      if (!el) return;
+      const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reducedMotion || start === end || isNaN(start) || isNaN(end)) {
+        el.textContent = formatFn(end);
+        el.setAttribute('data-val', end);
+        return;
+      }
+
+      if (el._animFrame) cancelAnimationFrame(el._animFrame);
+
+      const startTime = performance.now();
+      const diff = end - start;
+
+      function step(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Smooth ease-out cubic curve
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(start + (diff * ease));
+        el.textContent = formatFn(current);
+
+        if (progress < 1) {
+          el._animFrame = requestAnimationFrame(step);
+        } else {
+          el.textContent = formatFn(end);
+          el.setAttribute('data-val', end);
+          el._animFrame = null;
+        }
+      }
+
+      el._animFrame = requestAnimationFrame(step);
+    }
+
+    // Formatters
+    const formatUsers = (val) => Number(val).toLocaleString('id-ID') + '+';
+    const formatMoney = (val) => 'Rp ' + Number(val).toLocaleString('id-ID');
+    const formatTrxCount = (val) => Number(val).toLocaleString('id-ID') + ' trx';
+    const formatPercent = (val) => Math.round(val) + '%';
+    const formatPing = (val) => Math.round(val) + ' ms';
+
+    // Highlight & Glow effect helper (subtle, no shaking or bouncing)
+    function highlightCard(cardEl, glowEl, accentBorder) {
+      if (!cardEl) return;
+      const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reducedMotion) return;
+
+      if (glowEl) {
+        glowEl.style.opacity = '1';
+        setTimeout(() => { glowEl.style.opacity = '0'; }, 700);
+      }
+
+      const ringClass = accentBorder || 'border-blue-400';
+      cardEl.classList.add(ringClass, 'ring-2', 'ring-offset-1');
+      setTimeout(() => {
+        cardEl.classList.remove(ringClass, 'ring-2', 'ring-offset-1');
+      }, 850);
+    }
+
+    // Server card highlight pulse
+    function highlightServerCard() {
+      const pulseEl = document.getElementById('serverCardPulse');
+      if (!pulseEl) return;
+      const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reducedMotion) return;
+      pulseEl.style.opacity = '0.6';
+      setTimeout(() => { pulseEl.style.opacity = '0'; }, 600);
+    }
+
+    // Elements - Live Server Monitoring
+    const liveBadge = document.getElementById('liveBadge');
+    const liveDot = document.getElementById('liveDot');
+    const liveText = document.getElementById('liveText');
+
+    const serverNodeName = document.getElementById('serverNodeName');
+    const serverNodeStatus = document.getElementById('serverNodeStatus');
+    const serverNodeDot = document.getElementById('serverNodeDot');
+    const serverPlatform = document.getElementById('serverPlatform');
+    const serverHostname = document.getElementById('serverHostname');
+
+    const cpuVal = document.getElementById('cpuVal');
+    const cpuBar = document.getElementById('cpuBar');
+    const memVal = document.getElementById('memVal');
+    const memBar = document.getElementById('memBar');
+    const bwVal = document.getElementById('bwVal');
+    const bwBar = document.getElementById('bwBar');
+
+    const pingVal = document.getElementById('pingVal');
+    const pingDot = document.getElementById('pingDot');
+    const uptimeVal = document.getElementById('uptimeVal');
+
+    const footerOnlineDot = document.getElementById('footerOnlineDot');
+    const footerOnlineText = document.getElementById('footerOnlineText');
+
+    // Elements - 3 Platform Stat Cards
+    const statValUsers = document.getElementById('statValUsers');
+    const cardTotalUsers = document.getElementById('cardTotalUsers');
+    const cardGlowUsers = document.getElementById('cardGlowUsers');
+
+    const statValWithdraw = document.getElementById('statValWithdraw');
+    const cardTotalWithdraw = document.getElementById('cardTotalWithdraw');
+    const cardGlowWithdraw = document.getElementById('cardGlowWithdraw');
+
+    const statValDeposit = document.getElementById('statValDeposit');
+    const cardTotalDeposit = document.getElementById('cardTotalDeposit');
+    const cardGlowDeposit = document.getElementById('cardGlowDeposit');
+
+    const statValTrxCount = document.getElementById('statValTrxCount');
+
+    const platformSyncBadge = document.getElementById('platformSyncBadge');
+    const platformSyncPulse = document.getElementById('platformSyncPulse');
+    const platformSyncDot = document.getElementById('platformSyncDot');
+    const platformSyncText = document.getElementById('platformSyncText');
+
+    // State tracking to animate only on actual changes
+    let prevServerStats = {
+      cpu: 0,
+      memory: 0,
+      bandwidth: 0,
+      ping: 18
+    };
+
+    let hasRunInitialEntrance = false;
+
+    // Function to update platform cards when real data arrives (Static update without animation)
+    function updatePlatformCards(stats) {
+      if (!stats) return;
+
+      // Update Total Users
+      if (statValUsers && typeof stats.totalUsers !== 'undefined') {
+        const target = Number(stats.totalUsers);
+        statValUsers.textContent = formatUsers(target);
+        statValUsers.setAttribute('data-val', target);
+      }
+
+      // Update Total Withdraw
+      if (statValWithdraw && typeof stats.totalWithdrawAmount !== 'undefined') {
+        const target = Number(stats.totalWithdrawAmount);
+        statValWithdraw.textContent = formatMoney(target);
+        statValWithdraw.setAttribute('data-val', target);
+      }
+
+      // Update Total Transaksi (Deposit Amount)
+      if (statValDeposit && typeof stats.totalDepositAmount !== 'undefined') {
+        const target = Number(stats.totalDepositAmount);
+        statValDeposit.textContent = formatMoney(target);
+        statValDeposit.setAttribute('data-val', target);
+      }
+
+      // Update Total Transactions Count
+      if (statValTrxCount && typeof stats.totalTransactions !== 'undefined') {
+        const target = Number(stats.totalTransactions);
+        statValTrxCount.textContent = formatTrxCount(target);
+        statValTrxCount.setAttribute('data-val', target);
+      }
+    }
+
+    // Realtime Socket.IO Connection Setup
+    if (typeof io !== 'undefined') {
+      const socket = io();
+
+      socket.on('connect', () => {
+        if (liveBadge) {
+          liveBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold uppercase shadow-xs transition-colors duration-300";
+        }
+        if (liveDot) liveDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping";
+        if (liveText) liveText.textContent = "LIVE";
+
+        if (serverNodeStatus) {
+          serverNodeStatus.textContent = "Active";
+          serverNodeStatus.className = "text-emerald-400 font-semibold";
+        }
+        if (serverNodeDot) serverNodeDot.className = "w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse";
+
+        if (footerOnlineDot) footerOnlineDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+        if (footerOnlineText) footerOnlineText.textContent = "Online";
+
+        if (platformSyncPulse) platformSyncPulse.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
+        if (platformSyncDot) platformSyncDot.className = "relative inline-flex rounded-full h-2 w-2 bg-emerald-500";
+        if (platformSyncText) {
+          platformSyncText.textContent = "Synchronized";
+          platformSyncText.className = "text-emerald-600 font-bold";
+        }
+      });
+
+      socket.on('disconnect', () => {
+        if (liveBadge) {
+          liveBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-950/80 border border-rose-500/30 text-rose-400 text-xs font-mono font-bold uppercase shadow-xs transition-colors duration-300";
+        }
+        if (liveDot) liveDot.className = "w-2 h-2 rounded-full bg-rose-500 animate-pulse";
+        if (liveText) liveText.textContent = "OFFLINE";
+
+        if (serverNodeStatus) {
+          serverNodeStatus.textContent = "Reconnecting";
+          serverNodeStatus.className = "text-amber-400 font-semibold";
+        }
+        if (serverNodeDot) serverNodeDot.className = "w-2 h-2 rounded-full bg-amber-400 inline-block animate-pulse";
+
+        if (footerOnlineDot) footerOnlineDot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
+        if (footerOnlineText) footerOnlineText.textContent = "Connecting";
+
+        if (platformSyncPulse) platformSyncPulse.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75";
+        if (platformSyncDot) platformSyncDot.className = "relative inline-flex rounded-full h-2 w-2 bg-amber-500";
+        if (platformSyncText) {
+          platformSyncText.textContent = "Reconnecting...";
+          platformSyncText.className = "text-amber-600 font-bold";
+        }
+      });
+
+      // Handle server stats
+      socket.on('server_stats', (data) => {
+        if (!data) return;
+
+        // CPU Usage
+        const newCpu = Math.min(100, Math.max(0, Math.round(data.cpu || 0)));
+        if (cpuVal && newCpu !== prevServerStats.cpu) {
+          animateNumber(cpuVal, prevServerStats.cpu, newCpu, 600, formatPercent);
+          prevServerStats.cpu = newCpu;
+        }
+        if (cpuBar) {
+          cpuBar.style.width = newCpu + '%';
+          if (newCpu >= 85) {
+            cpuBar.className = "h-full bg-rose-500 rounded-full transition-all duration-700 ease-out";
+          } else if (newCpu >= 70) {
+            cpuBar.className = "h-full bg-amber-500 rounded-full transition-all duration-700 ease-out";
+          } else {
+            cpuBar.className = "h-full bg-blue-500 rounded-full transition-all duration-700 ease-out";
+          }
+        }
+
+        // Memory Usage
+        const newMem = Math.min(100, Math.max(0, Math.round(data.memory || 0)));
+        if (memVal && newMem !== prevServerStats.memory) {
+          animateNumber(memVal, prevServerStats.memory, newMem, 600, formatPercent);
+          prevServerStats.memory = newMem;
+        }
+        if (memBar) {
+          memBar.style.width = newMem + '%';
+          if (newMem >= 90) {
+            memBar.className = "h-full bg-rose-500 rounded-full transition-all duration-700 ease-out";
+          } else if (newMem >= 75) {
+            memBar.className = "h-full bg-amber-500 rounded-full transition-all duration-700 ease-out";
+          } else {
+            memBar.className = "h-full bg-emerald-500 rounded-full transition-all duration-700 ease-out";
+          }
+        }
+
+        // Bandwidth & Storage
+        const newBw = Math.min(100, Math.max(0, Math.round(data.bandwidth || data.disk || 0)));
+        if (bwVal && newBw !== prevServerStats.bandwidth) {
+          animateNumber(bwVal, prevServerStats.bandwidth, newBw, 600, formatPercent);
+          prevServerStats.bandwidth = newBw;
+        }
+        if (bwBar) {
+          bwBar.style.width = newBw + '%';
+        }
+
+        // Ping / Latency
+        const newPing = Math.round(data.ping || 18);
+        if (pingVal && newPing !== prevServerStats.ping) {
+          animateNumber(pingVal, prevServerStats.ping, newPing, 500, formatPing);
+          prevServerStats.ping = newPing;
+        }
+        if (pingDot) {
+          if (newPing <= 45) {
+            pingDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse";
+          } else if (newPing <= 120) {
+            pingDot.className = "w-1.5 h-1.5 rounded-full bg-cyan-400 inline-block animate-pulse";
+          } else {
+            pingDot.className = "w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-pulse";
+          }
+        }
+
+        // Uptime
+        if (uptimeVal && data.uptime) uptimeVal.textContent = data.uptime;
+
+        // Hostname & Node Identity
+        if (serverHostname && (window.location.hostname || data.hostname)) {
+          serverHostname.textContent = window.location.hostname || data.hostname;
+        }
+        if (serverNodeName && (window.location.hostname || data.hostname)) {
+          const rawHost = (window.location.hostname || data.hostname).toLowerCase();
+          if (rawHost.includes('localhost') || rawHost.includes('127.0.0.1') || rawHost.includes('run.app')) {
+            serverNodeName.textContent = 'Node Localhost';
+          } else {
+            const part = data.hostname ? data.hostname.split('.')[0] : 'Localhost';
+            serverNodeName.textContent = 'Node ' + (part.charAt(0).toUpperCase() + part.slice(1));
+          }
+        }
+        if (serverPlatform && data.platform) {
+          serverPlatform.textContent = data.platform + ' / ' + (data.nodeVersion || 'Node.js');
+        }
+
+        // Pulse server card subtly
+        highlightServerCard();
+
+        // Update platform stats if attached to payload
+        if (data.platformStats) {
+          updatePlatformCards(data.platformStats);
+        }
+      });
+
+      // Handle standalone platform stats event
+      socket.on('platform_stats', (pStats) => {
+        updatePlatformCards(pStats);
+      });
+
+      // Handle live transactions
+      socket.on('live_transaction', () => {
+        // When a transaction arrives, request fresh platform stats
+        socket.emit('get_platform_stats');
+      });
+    }
+
+    // Fallback sync via REST API in case socket was delayed
+    function fetchPlatformStatsFallback() {
+      fetch('/api/platform/stats')
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.success && data.stats) {
+            updatePlatformCards(data.stats);
+          }
+        })
+        .catch(() => {});
+    }
+
+    // Initial check after 2 seconds to make sure data is fresh
+    setTimeout(fetchPlatformStatsFallback, 2000);
+  })();
+</script>

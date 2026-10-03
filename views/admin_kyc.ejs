@@ -1,0 +1,401 @@
+<%- include('partials/header', { title: 'Manajemen Verifikasi KYC - Admin PutzPay' }) %>
+
+<div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-8 space-y-6 sm:space-y-8 w-full min-w-0 font-sans">
+
+  <!-- Header Section -->
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-white shadow-sm sm:shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+    <div class="space-y-1.5 z-10">
+      <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs font-semibold uppercase tracking-wider border border-purple-500/30 font-mono">
+        <i class="fa-solid fa-id-card-clip text-xs"></i>
+        <span>Kepatuhan & Verifikasi Identitas</span>
+      </div>
+      <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-bold tracking-tight text-white font-outfit">Manajemen Verifikasi KYC</h1>
+      <p class="text-xs sm:text-sm text-slate-400 max-w-2xl font-sans">
+        Tinjau dokumen KTP, Kartu Pelajar, dan Kartu Keluarga pengguna untuk persetujuan kenaikan limit dan diskon biaya.
+      </p>
+    </div>
+
+    <!-- Quick Stat Counter Badge -->
+    <div class="flex items-center gap-2 sm:gap-3 bg-slate-800/80 border border-slate-700/80 px-4 py-2.5 rounded-lg sm:rounded-2xl text-slate-200 self-start sm:self-center z-10">
+      <span class="relative flex h-2.5 w-2.5">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full <%= stats.pending > 0 ? 'bg-amber-400' : 'bg-emerald-400' %> opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2.5 w-2.5 <%= stats.pending > 0 ? 'bg-amber-500' : 'bg-emerald-500' %>"></span>
+      </span>
+      <div class="text-xs font-mono">
+        <span class="font-bold <%= stats.pending > 0 ? 'text-amber-400' : 'text-emerald-400' %> text-sm"><%= stats.pending %></span>
+        <span class="text-slate-400 ml-1">Menunggu Review</span>
+      </div>
+    </div>
+  </div>
+
+  <% if (errorMsg) { %>
+    <div class="p-4 rounded-lg sm:rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-start gap-2 sm:gap-3">
+      <i class="fa-solid fa-circle-exclamation text-rose-600 text-base shrink-0 mt-0.5"></i>
+      <div>
+        <p class="font-bold">Pemberitahuan</p>
+        <p><%= errorMsg %></p>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (successMsg) { %>
+    <div class="p-4 rounded-lg sm:rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm flex items-start gap-2 sm:gap-3">
+      <i class="fa-solid fa-circle-check text-emerald-600 text-base shrink-0 mt-0.5"></i>
+      <div>
+        <p class="font-bold">Berhasil</p>
+        <p><%= successMsg %></p>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Status Metric Tabs -->
+  <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3">
+    <a href="/admin/kyc?status=all" class="p-4 rounded-lg sm:rounded-2xl border transition-all text-left <%= currentStatus === 'all' ? 'bg-indigo-50/80 border-indigo-300 ring-2 ring-indigo-500/20' : 'bg-white border-slate-200/80 hover:bg-slate-50' %>">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-bold text-slate-500 uppercase font-mono">SEMUA</span>
+        <i class="fa-solid fa-users text-slate-400 text-xs"></i>
+      </div>
+      <p class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 font-mono mt-1"><%= stats.total %></p>
+    </a>
+
+    <a href="/admin/kyc?status=pending" class="p-4 rounded-lg sm:rounded-2xl border transition-all text-left <%= currentStatus === 'pending' ? 'bg-amber-50 border-amber-300 ring-2 ring-amber-500/20' : 'bg-white border-slate-200/80 hover:bg-slate-50' %>">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-bold text-amber-700 uppercase font-mono">PENDING</span>
+        <i class="fa-solid fa-hourglass-half text-amber-500 text-xs"></i>
+      </div>
+      <p class="text-base sm:text-lg lg:text-xl font-bold text-amber-900 font-mono mt-1"><%= stats.pending %></p>
+    </a>
+
+    <a href="/admin/kyc?status=verified" class="p-4 rounded-lg sm:rounded-2xl border transition-all text-left <%= currentStatus === 'verified' ? 'bg-emerald-50 border-emerald-300 ring-2 ring-emerald-500/20' : 'bg-white border-slate-200/80 hover:bg-slate-50' %>">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-bold text-emerald-700 uppercase font-mono">VERIFIED</span>
+        <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
+      </div>
+      <p class="text-base sm:text-lg lg:text-xl font-bold text-emerald-900 font-mono mt-1"><%= stats.verified %></p>
+    </a>
+
+    <a href="/admin/kyc?status=requires_review" class="p-4 rounded-lg sm:rounded-2xl border transition-all text-left <%= currentStatus === 'requires_review' ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-500/20' : 'bg-white border-slate-200/80 hover:bg-slate-50' %>">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-bold text-blue-700 uppercase font-mono">REVIEW</span>
+        <i class="fa-solid fa-rotate-left text-blue-500 text-xs"></i>
+      </div>
+      <p class="text-base sm:text-lg lg:text-xl font-bold text-blue-900 font-mono mt-1"><%= stats.requires_review %></p>
+    </a>
+
+    <a href="/admin/kyc?status=rejected" class="p-4 rounded-lg sm:rounded-2xl border transition-all text-left <%= currentStatus === 'rejected' ? 'bg-rose-50 border-rose-300 ring-2 ring-rose-500/20' : 'bg-white border-slate-200/80 hover:bg-slate-50' %> col-span-2 sm:col-span-1">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-bold text-rose-700 uppercase font-mono">DITOLAK</span>
+        <i class="fa-solid fa-circle-xmark text-rose-500 text-xs"></i>
+      </div>
+      <p class="text-base sm:text-lg lg:text-xl font-bold text-rose-900 font-mono mt-1"><%= stats.rejected %></p>
+    </a>
+  </div>
+
+  <!-- Search & Filter Card -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm sm:shadow-card">
+    <form action="/admin/kyc" method="GET" class="flex flex-col sm:flex-row sm:items-center items-center gap-2 sm:gap-3">
+      <input type="hidden" name="status" value="<%= currentStatus %>" />
+      <div class="relative w-full">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input type="text" name="search" placeholder="Cari nama lengkap, NIK, username, atau email pengguna..." 
+               class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-mono"
+               value="<%= search %>" autocomplete="off" />
+      </div>
+      <div class="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto shrink-0">
+        <button type="submit" class="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold font-outfit shadow-btn transition-all">
+          Cari
+        </button>
+        <% if (search) { %>
+          <a href="/admin/kyc?status=<%= currentStatus %>" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-semibold font-outfit transition-all">
+            Reset
+          </a>
+        <% } %>
+      </div>
+    </form>
+  </div>
+
+  <!-- Submissions Table -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm sm:shadow-card">
+    <% if (users.length === 0) { %>
+      <div class="p-12 text-center">
+        <div class="w-14 h-14 rounded-lg sm:rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mx-auto mb-3 text-2xl border border-slate-100">
+          <i class="fa-solid fa-folder-open"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-900 font-outfit">Tidak Ada Pengajuan KYC</h3>
+        <p class="text-xs text-slate-500 mt-1 font-sans">Tidak ditemukan data pengajuan verifikasi identitas pada filter ini.</p>
+      </div>
+    <% } else { %>
+      <div class="overflow-x-auto custom-scroll" style="max-height: 650px;">
+        <table class="w-full text-xs text-left whitespace-nowrap">
+          <thead class="bg-slate-50 text-xs text-slate-600 font-semibold border-b border-slate-200 uppercase tracking-wider sticky top-0 z-10">
+            <tr>
+              <th class="px-5 py-3.5">Pengguna</th>
+              <th class="px-5 py-3.5">Identitas & NIK</th>
+              <th class="px-5 py-3.5">Tipe Identitas</th>
+              <th class="px-5 py-3.5">Status KYC</th>
+              <th class="px-5 py-3.5">Dokumen</th>
+              <th class="px-5 py-3.5">Tanggal Pengajuan</th>
+              <th class="px-5 py-3.5 text-center">Aksi Review</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-800">
+            <% users.forEach(u => { %>
+              <tr class="hover:bg-slate-50/70 transition-colors">
+                
+                <!-- Pengguna -->
+                <td class="px-5 py-3.5">
+                  <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 font-mono text-xs shrink-0">
+                      <%= (u.username || 'U').charAt(0).toUpperCase() %>
+                    </div>
+                    <div>
+                      <p class="font-bold text-slate-900 font-mono">@<%= u.username %></p>
+                      <p class="text-[11px] text-slate-400 font-mono"><%= u.email %></p>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Identitas & NIK -->
+                <td class="px-5 py-3.5">
+                  <p class="font-bold text-slate-900 font-sans"><%= u.kycFullName || '-' %></p>
+                  <p class="text-[11px] text-slate-500 font-mono"><%= u.kycNik || '-' %></p>
+                </td>
+
+                <!-- Tipe Identitas -->
+                <td class="px-5 py-3.5">
+                  <% if (u.kycType === 'pelajar') { %>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-50 text-purple-700 text-[11px] font-semibold border border-purple-200">
+                      <i class="fa-solid fa-graduation-cap text-xs"></i> Pelajar
+                    </span>
+                    <% if (u.kycParentApproval) { %>
+                      <span class="block text-[10px] text-emerald-600 font-medium mt-0.5"><i class="fa-solid fa-check"></i> Disetujui Wali</span>
+                    <% } %>
+                  <% } else { %>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-[11px] font-semibold border border-blue-200">
+                      <i class="fa-solid fa-id-card text-xs"></i> KTP Elektronik
+                    </span>
+                  <% } %>
+                </td>
+
+                <!-- Status KYC -->
+                <td class="px-5 py-3.5">
+                  <% if (u.kycStatus === 'VERIFIED') { %>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold font-mono border border-emerald-200">
+                      <i class="fa-solid fa-circle-check text-xs"></i> VERIFIED
+                    </span>
+                  <% } else if (u.kycStatus === 'PENDING') { %>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold font-mono border border-amber-200">
+                      <i class="fa-solid fa-hourglass-half text-xs"></i> PENDING
+                    </span>
+                  <% } else if (u.kycStatus === 'REQUIRES_REVIEW') { %>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-[11px] font-bold font-mono border border-blue-200">
+                      <i class="fa-solid fa-rotate-left text-xs"></i> REVIEW
+                    </span>
+                  <% } else if (u.kycStatus === 'REJECTED') { %>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold font-mono border border-rose-200">
+                      <i class="fa-solid fa-circle-xmark text-xs"></i> DITOLAK
+                    </span>
+                  <% } else { %>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[11px] font-mono">
+                      <%= u.kycStatus %>
+                    </span>
+                  <% } %>
+                </td>
+
+                <!-- Dokumen -->
+                <td class="px-5 py-3.5">
+                  <div class="flex items-center gap-1.5">
+                    <% if (u.documents && u.documents.length > 0) { %>
+                      <% u.documents.forEach(doc => { %>
+                        <a href="/api/kyc/document/<%= doc._id %>" target="_blank" title="Buka <%= doc.documentType %>" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-mono text-[10px] font-bold transition-colors inline-flex items-center gap-1">
+                          <i class="fa-solid fa-file-lines text-indigo-500"></i>
+                          <span class="uppercase"><%= doc.documentType %></span>
+                        </a>
+                      <% }) %>
+                    <% } else { %>
+                      <span class="text-[11px] text-slate-400">-</span>
+                    <% } %>
+                  </div>
+                </td>
+
+                <!-- Tanggal Pengajuan -->
+                <td class="px-5 py-3.5 text-slate-500 font-mono text-[11px]">
+                  <%= u.kycSubmittedAt ? new Date(u.kycSubmittedAt).toLocaleString('id-ID') : '-' %>
+                </td>
+
+                <!-- Aksi Review -->
+                <td class="px-5 py-3.5 text-center">
+                  <button type="button" onclick="openReviewModal('<%= u._id %>')" class="px-3.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold font-outfit transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-xs">
+                    <i class="fa-solid fa-eye text-xs"></i> Tinjau
+                  </button>
+                </td>
+
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+</div>
+
+<!-- REVIEW MODAL -->
+<div id="reviewModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6">
+  <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+      <div>
+        <h3 class="text-lg font-bold text-slate-900 font-outfit flex items-center gap-1.5 sm:gap-2">
+          <i class="fa-solid fa-id-card-clip text-indigo-600"></i>
+          Pemeriksaan Dokumen KYC
+        </h3>
+        <p class="text-xs text-slate-500" id="modalUserSubtitle">Review data identitas pengguna</p>
+      </div>
+      <button type="button" onclick="closeReviewModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center cursor-pointer transition-colors">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </button>
+    </div>
+
+    <!-- Metadata Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 text-xs bg-slate-50 p-4 rounded-lg sm:rounded-2xl border border-slate-200/70 font-sans">
+      <div>
+        <p class="text-[10px] font-mono text-slate-400 uppercase">Username</p>
+        <p class="font-bold text-slate-900 font-mono" id="modalUsername">-</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-mono text-slate-400 uppercase">Nama Lengkap</p>
+        <p class="font-bold text-slate-900" id="modalFullName">-</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-mono text-slate-400 uppercase">NIK / No Pelajar</p>
+        <p class="font-bold text-slate-900 font-mono" id="modalNik">-</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-mono text-slate-400 uppercase">Tanggal Lahir</p>
+        <p class="font-bold text-slate-900 font-mono" id="modalBirthDate">-</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-mono text-slate-400 uppercase">Jalur</p>
+        <p class="font-bold text-slate-900 uppercase font-mono" id="modalType">-</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-mono text-slate-400 uppercase">Saldo Akun</p>
+        <p class="font-bold text-indigo-600 font-mono" id="modalBalance">-</p>
+      </div>
+    </div>
+
+    <!-- Document Viewer Thumbnails -->
+    <div class="space-y-2">
+      <p class="text-xs font-bold text-slate-800 font-outfit">Berkas Dokumen yang Diunggah:</p>
+      <div id="modalDocContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+
+    <!-- Action Forms -->
+    <div class="pt-3 border-t border-slate-100 space-y-3">
+      <div class="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2.5">
+        
+        <!-- Reject Button with Prompt -->
+        <form id="formReject" method="POST" class="inline" onsubmit="return handleReject(event)">
+          <input type="hidden" name="reason" id="rejectReasonInput" />
+          <button type="submit" class="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold font-outfit transition-all cursor-pointer inline-flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-xmark"></i> Tolak Pengajuan
+          </button>
+        </form>
+
+        <!-- Request Review Button -->
+        <form id="formRequestReview" method="POST" class="inline" onsubmit="return handleRequestReview(event)">
+          <input type="hidden" name="note" id="reviewNoteInput" />
+          <button type="submit" class="px-4 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold font-outfit transition-all cursor-pointer inline-flex items-center gap-1.5">
+            <i class="fa-solid fa-rotate-left"></i> Minta Perbaikan
+          </button>
+        </form>
+
+        <!-- Approve Button -->
+        <form id="formApprove" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin MENYETUJUI verifikasi KYC untuk pengguna ini?')">
+          <button type="submit" class="px-6 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold font-outfit shadow-btn transition-all cursor-pointer inline-flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-check"></i> Setujui (Approve)
+          </button>
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const usersData = <%- JSON.stringify(users) %>;
+
+  function openReviewModal(userId) {
+    const user = usersData.find(u => String(u._id) === String(userId));
+    if (!user) return;
+
+    document.getElementById('modalUserSubtitle').textContent = 'Pemeriksaan pengajuan untuk @' + user.username;
+    document.getElementById('modalUsername').textContent = '@' + user.username;
+    document.getElementById('modalFullName').textContent = user.kycFullName || user.fullName || '-';
+    document.getElementById('modalNik').textContent = user.kycNik || '-';
+    document.getElementById('modalBirthDate').textContent = user.kycBirthDate ? new Date(user.kycBirthDate).toLocaleDateString('id-ID') : '-';
+    document.getElementById('modalType').textContent = user.kycType === 'pelajar' ? 'Pelajar / Santri' : 'KTP Elektronik';
+    document.getElementById('modalBalance').textContent = 'Rp ' + (user.balance || 0).toLocaleString('id-ID');
+
+    // Document links
+    const docBox = document.getElementById('modalDocContainer');
+    docBox.innerHTML = '';
+    if (user.documents && user.documents.length > 0) {
+      user.documents.forEach(doc => {
+        const item = document.createElement('div');
+        item.className = 'p-3 rounded-lg sm:rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between text-xs';
+        item.innerHTML = `
+          <div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+            <i class="fa-solid fa-file-shield text-indigo-600 text-base shrink-0"></i>
+            <div class="min-w-0">
+              <p class="font-bold text-slate-800 uppercase font-mono truncate">${doc.documentType} (v${doc.version})</p>
+              <p class="text-[10px] text-slate-400 font-mono">${(doc.fileSize / 1024).toFixed(1)} KB • Disimpan Aman</p>
+            </div>
+          </div>
+          <a href="/api/kyc/document/${doc._id}" target="_blank" class="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 font-semibold text-xs transition-colors shrink-0 inline-flex items-center gap-1 shadow-xs">
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Buka File
+          </a>
+        `;
+        docBox.appendChild(item);
+      });
+    } else {
+      docBox.innerHTML = '<p class="text-xs text-slate-400 italic col-span-2">Belum ada file dokumen yang tersimpan.</p>';
+    }
+
+    // Set action URLs
+    document.getElementById('formApprove').action = `/admin/kyc/${user._id}/approve`;
+    document.getElementById('formReject').action = `/admin/kyc/${user._id}/reject`;
+    document.getElementById('formRequestReview').action = `/admin/kyc/${user._id}/request-review`;
+
+    document.getElementById('reviewModal').classList.remove('hidden');
+  }
+
+  function closeReviewModal() {
+    document.getElementById('reviewModal').classList.add('hidden');
+  }
+
+  function handleReject(e) {
+    const reason = prompt('Masukkan alasan penolakan verifikasi KYC (akan dikirimkan ke pengguna):');
+    if (!reason || !reason.trim()) {
+      e.preventDefault();
+      return false;
+    }
+    document.getElementById('rejectReasonInput').value = reason.trim();
+    return true;
+  }
+
+  function handleRequestReview(e) {
+    const note = prompt('Masukkan instruksi perbaikan dokumen yang harus diperbarui pengguna:');
+    if (!note || !note.trim()) {
+      e.preventDefault();
+      return false;
+    }
+    document.getElementById('reviewNoteInput').value = note.trim();
+    return true;
+  }
+</script>
+
+<%- include('partials/footer') %>

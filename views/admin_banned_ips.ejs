@@ -1,0 +1,760 @@
+<%- include('partials/header', { title: 'Access Control & Pemblokiran - Admin' }) %>
+
+<div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-8 space-y-6 sm:space-y-8 w-full min-w-0 font-sans">
+
+  <!-- Header Section -->
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-white shadow-sm sm:shadow-card flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden">
+    <div class="space-y-2 z-10">
+      <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider border border-blue-500/30">
+        <i class="fa-solid fa-shield-halved text-xs text-rose-400"></i>
+        <span>PutzPay Security & Access Firewall</span>
+      </div>
+      <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl lg:text-4xl font-bold tracking-tight text-white font-outfit">
+        Access Control & Sistem Ban
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
+        Kelola 3 lapisan keamanan: <strong class="text-slate-200">Banned All Users</strong>, <strong class="text-slate-200">Blokir Akun Pengguna</strong>, dan <strong class="text-slate-200">Blokir Perangkat/IP</strong> dengan penegakan backend realtime.
+      </p>
+    </div>
+
+    <!-- Quick Actions Header -->
+    <% const isBanAllActive = Boolean(settings.banAllUsers || settings.globalWebsiteBlock); %>
+    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2.5 sm:gap-2 sm:gap-3 shrink-0 z-10">
+      <button type="button" id="quickToggleBanAllBtn" onclick="openGlobalBlockModal()" class="px-4 py-2.5 rounded-xl <%= isBanAllActive ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-rose-600 hover:bg-rose-500 text-white' %> font-semibold text-xs transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-btn active:scale-95">
+        <i class="fa-solid <%= isBanAllActive ? 'fa-lock-open' : 'fa-users-slash' %> text-sm"></i>
+        <span><%= isBanAllActive ? 'Buka Banned All Users' : 'Aktifkan Banned All Users' %></span>
+      </button>
+
+      <button type="button" onclick="openBanUserModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95">
+        <i class="fa-solid fa-user-slash text-sm text-rose-400"></i>
+        <span>Ban Akun User</span>
+      </button>
+
+      <button type="button" onclick="openAddDeviceBanModal()" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shadow-btn transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95">
+        <i class="fa-solid fa-mobile-screen-button text-sm"></i>
+        <span>Blokir Perangkat/IP</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric Overview Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+    <!-- Card 1: Banned All Users Status -->
+    <div id="statCardBanAll" class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 shadow-sm sm:shadow-card flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">1. Banned All Users</span>
+        <div class="w-10 h-10 rounded-lg sm:rounded-2xl <%= isBanAllActive ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-200' %> flex items-center justify-center font-bold">
+          <i class="fa-solid <%= isBanAllActive ? 'fa-users-slash' : 'fa-users' %> text-sm"></i>
+        </div>
+      </div>
+      <div>
+        <p class="text-xl font-bold font-outfit <%= isBanAllActive ? 'text-rose-600' : 'text-emerald-600' %> uppercase">
+          <%= isBanAllActive ? '🔴 AKTIF (MASS BANNED)' : '🟢 NORMAL (TERBUKA)' %>
+        </p>
+        <span class="text-[11px] text-slate-400 font-medium block mt-1">
+          <%= isBanAllActive ? 'Semua akun user dialihkan ke Halaman Banned' : 'Website & akun pengguna aktif normal' %>
+        </span>
+      </div>
+    </div>
+
+    <!-- Card 2: Banned Users -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 shadow-sm sm:shadow-card flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">2. Akun Terblokir</span>
+        <div class="w-10 h-10 rounded-lg sm:rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-user-xmark text-sm"></i>
+        </div>
+      </div>
+      <div>
+        <p class="text-3xl font-bold text-slate-900 font-outfit"><%= typeof bannedUsers !== 'undefined' ? bannedUsers.length : 0 %></p>
+        <span class="text-[11px] text-slate-400 font-medium block mt-1">Akun berstatus BANNED</span>
+      </div>
+    </div>
+
+    <!-- Card 3: Blocked Devices/IPs -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 shadow-sm sm:shadow-card flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">3. Perangkat / IP</span>
+        <div class="w-10 h-10 rounded-lg sm:rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-mobile-screen-button text-sm"></i>
+        </div>
+      </div>
+      <div>
+        <p class="text-3xl font-bold text-slate-900 font-outfit"><%= typeof bannedIps !== 'undefined' ? bannedIps.length : 0 %></p>
+        <span class="text-[11px] text-slate-400 font-medium block mt-1">Daftar blokir Device & IP</span>
+      </div>
+    </div>
+
+    <!-- Card 4: Current Admin IP -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 shadow-sm sm:shadow-card flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">IP Admin Anda</span>
+        <div class="w-10 h-10 rounded-lg sm:rounded-2xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-laptop-code text-sm"></i>
+        </div>
+      </div>
+      <div>
+        <p class="text-xs sm:text-sm font-bold font-mono text-slate-900 truncate"><%= typeof clientIp !== 'undefined' ? clientIp : '127.0.0.1' %></p>
+        <span class="text-[11px] text-emerald-600 font-medium block mt-1 flex items-center gap-1">
+          <i class="fa-solid fa-shield-check"></i> <%= typeof clientDevice !== 'undefined' ? clientDevice : 'Device Admin' %> (Bypass)
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs (3-Tier Access Control) -->
+  <% const currentTab = typeof activeTab !== 'undefined' ? activeTab : 'global'; %>
+  <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 p-1.5 bg-slate-100 border border-slate-200 rounded-lg sm:rounded-2xl">
+    <button type="button" onclick="switchAccessTab('global')" id="tabBtn-global" class="tab-btn flex-1 sm:flex-initial px-5 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer <%= currentTab === 'global' ? 'bg-white text-blue-600 shadow-xs border border-slate-200' : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-white/60' %>">
+      <i class="fa-solid fa-users-slash text-sm"></i>
+      <span>1. Banned All Users</span>
+      <% if (isBanAllActive) { %>
+        <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+      <% } %>
+    </button>
+
+    <button type="button" onclick="switchAccessTab('users')" id="tabBtn-users" class="tab-btn flex-1 sm:flex-initial px-5 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer <%= currentTab === 'users' ? 'bg-white text-blue-600 shadow-xs border border-slate-200' : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-white/60' %>">
+      <i class="fa-solid fa-user-slash text-sm"></i>
+      <span>2. Blokir Akun Pengguna (<%= typeof bannedUsers !== 'undefined' ? bannedUsers.length : 0 %>)</span>
+    </button>
+
+    <button type="button" onclick="switchAccessTab('devices')" id="tabBtn-devices" class="tab-btn flex-1 sm:flex-initial px-5 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer <%= currentTab === 'devices' ? 'bg-white text-blue-600 shadow-xs border border-slate-200' : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-white/60' %>">
+      <i class="fa-solid fa-mobile-screen-button text-sm"></i>
+      <span>3. Blokir Perangkat & IP (<%= typeof bannedIps !== 'undefined' ? bannedIps.length : 0 %>)</span>
+    </button>
+  </div>
+
+  <!-- ==================== TAB 1: BANNED ALL USERS (MASS ACCOUNT BLOCK) ==================== -->
+  <div id="tabContent-global" class="tab-panel space-y-6 <%= currentTab === 'global' ? '' : 'hidden' %>">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Control Panel (Left 7 Cols) -->
+      <div class="lg:col-span-7 bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm sm:shadow-card space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div class="space-y-1">
+            <h2 class="text-base sm:text-lg font-bold text-slate-900 font-outfit">Pengaturan Banned All Users (Blokir Massal Akun)</h2>
+            <p class="text-xs text-slate-500">Menonaktifkan seluruh akun pengguna sekaligus tanpa memblokir website seperti mode maintenance.</p>
+          </div>
+          <span class="px-3 py-1 rounded-xl <%= isBanAllActive ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200' %> font-semibold text-xs font-mono">
+            <%= isBanAllActive ? '🔴 ACTIVE' : '🟢 INACTIVE' %>
+          </span>
+        </div>
+
+        <form method="POST" action="/admin/access-control/ban-all-users" class="space-y-5">
+          <!-- Toggle Switch Card -->
+          <div class="p-5 <%= isBanAllActive ? 'bg-rose-50/70 border-rose-200' : 'bg-slate-50 border-slate-200' %> border rounded-lg sm:rounded-2xl flex items-center justify-between gap-4">
+            <div class="space-y-1">
+              <label for="globalBlockCheckbox" class="text-xs sm:text-sm font-bold text-slate-900 cursor-pointer flex items-center gap-1.5 sm:gap-2">
+                <i class="fa-solid fa-users-slash <%= isBanAllActive ? 'text-rose-600' : 'text-slate-400' %>"></i>
+                <span>Aktifkan Banned All Users</span>
+              </label>
+              <p class="text-xs text-slate-500">
+                Bila aktif, SEMUA pengguna non-admin akan dialihkan ke Halaman Banned (Akun Ditangguhkan) dengan tombol Logout tetap tersedia. Halaman publik dan login tetap terbuka normal (bukan maintenance).
+              </p>
+            </div>
+            <input type="checkbox" name="enabled" id="globalBlockCheckbox" value="true" <%= isBanAllActive ? 'checked' : '' %> class="w-6 h-6 text-rose-600 rounded cursor-pointer shrink-0">
+          </div>
+
+          <!-- Custom Message -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-semibold text-slate-700">Pesan Alasan Blokir Pengguna</label>
+            <textarea name="message" rows="3" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl p-3.5 text-xs sm:text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" required><%= settings.banAllUsersReason || settings.globalBlockMessage || 'Semua akun pengguna saat ini sedang dinonaktifkan sementara oleh Administrator.' %></textarea>
+            <span class="text-[11px] text-slate-400 block">Pesan ini akan tampil di layar Halaman Banned pengguna saat Banned All Users aktif.</span>
+          </div>
+
+          <!-- Customer Service Link -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-semibold text-slate-700">Link Customer Service 24/7 (Bebas Blokir)</label>
+            <div class="relative flex items-center">
+              <span class="absolute left-4 text-xs text-slate-400">
+                <i class="fa-solid fa-link"></i>
+              </span>
+              <input type="url" name="customerServiceUrl" value="<%= settings.customerServiceUrl || 'https://cs.putzpay.biz.id' %>" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 sm:py-3 text-xs sm:text-sm font-mono text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" required>
+            </div>
+            <span class="text-[11px] text-emerald-600 block">Tautan resmi CS 24/7 selalu dapat diakses oleh pengguna yang ditangguhkan.</span>
+          </div>
+
+          <button type="submit" id="submitBanAllSettingsBtn" class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs sm:text-sm font-semibold font-outfit shadow-btn transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95">
+            <i class="fa-solid fa-floppy-disk text-sm"></i>
+            <span>Simpan Pengaturan Banned All Users</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Preview Card (Right 5 Cols) -->
+      <div class="lg:col-span-5 bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-6 shadow-sm sm:shadow-card space-y-4 flex flex-col justify-between">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5 sm:gap-2">
+              <i class="fa-solid fa-eye text-blue-600"></i>
+              <span>Live Preview Halaman Banned</span>
+            </span>
+            <span class="text-[10px] font-mono text-slate-400 uppercase">Tampilan Pengguna</span>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl p-5 space-y-4 text-center">
+            <div class="w-12 h-12 rounded-lg sm:rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center text-xl mx-auto">
+              <i class="fa-solid fa-user-slash"></i>
+            </div>
+            <div class="space-y-1">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-600 border border-rose-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> BANNED
+              </span>
+              <h3 class="text-sm font-bold text-slate-900 font-outfit uppercase">AKUN DITANGGUHKAN</h3>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                <%= settings.banAllUsersReason || settings.globalBlockMessage || 'Semua akun pengguna saat ini sedang dinonaktifkan sementara oleh Administrator.' %>
+              </p>
+            </div>
+            <div class="space-y-2">
+              <div class="p-2.5 bg-blue-600 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 shadow-xs">
+                <i class="fa-solid fa-comments"></i>
+                <span>Customer Service 24/7</span>
+              </div>
+              <div class="p-2 bg-slate-100 text-slate-600 border border-slate-200 rounded-xl text-[11px] font-semibold flex items-center justify-center gap-1.5 sm:gap-2">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Keluar dari Akun (Logout)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 bg-amber-50/70 border border-amber-200 rounded-lg sm:rounded-2xl space-y-1.5">
+          <div class="flex items-center gap-1.5 sm:gap-2 text-xs font-bold text-amber-900">
+            <i class="fa-solid fa-circle-info text-amber-600"></i>
+            <span>Catatan Keamanan Admin</span>
+          </div>
+          <p class="text-xs text-amber-800 leading-relaxed">
+            Admin dan Owner tetap dapat mengakses panel admin dan login normal untuk mengatur sistem kapan saja. Website tidak berstatus maintenance sehingga landing page publik dan akses login tetap terbuka normal.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== TAB 2: USER ACCOUNT BLOCK ==================== -->
+  <div id="tabContent-users" class="tab-panel space-y-6 <%= currentTab === 'users' ? '' : 'hidden' %>">
+    
+    <!-- Action Bar for Users -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm sm:shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="relative w-full max-w-md">
+        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input id="searchUserInput" type="text" placeholder="Cari username atau email yang diblokir..." 
+               class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 placeholder:text-slate-400 transition-all font-mono"
+               oninput="filterUserTable(this.value)">
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button type="button" onclick="openBanUserModal()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-btn active:scale-95">
+          <i class="fa-solid fa-user-plus text-xs"></i>
+          <span>Ban Akun Pengguna</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Banned Users Table -->
+    <% if (!bannedUsers || bannedUsers.length === 0) { %>
+      <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-12 text-center shadow-sm sm:shadow-card space-y-4">
+        <div class="w-14 h-14 rounded-lg sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto text-2xl">
+          <i class="fa-solid fa-user-check"></i>
+        </div>
+        <div class="space-y-1">
+          <h3 class="text-base font-bold text-slate-900 font-outfit">Tidak Ada Akun Pengguna Yang Diblokir</h3>
+          <p class="text-xs text-slate-500 max-w-md mx-auto">
+            Seluruh akun pengguna terdaftar dalam status aktif. Anda dapat memblokir akun tertentu bila ditemukan pelanggaran.
+          </p>
+        </div>
+        <button type="button" onclick="openBanUserModal()" class="inline-flex items-center gap-1.5 sm:gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs transition-all cursor-pointer">
+          <i class="fa-solid fa-ban text-xs"></i>
+          <span>Blokir Akun Pengguna Sekarang</span>
+        </button>
+      </div>
+    <% } else { %>
+      <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm sm:shadow-card">
+        <div class="overflow-x-auto custom-scroll" style="max-height: 650px;">
+          <table class="w-full text-xs text-left whitespace-nowrap">
+            <thead class="bg-slate-50 text-slate-500 text-xs font-semibold border-b border-slate-200 uppercase tracking-wider sticky top-0 z-10 font-outfit">
+              <tr>
+                <th class="px-5 py-3.5">Pengguna</th>
+                <th class="px-5 py-3.5">Status Akun</th>
+                <th class="px-5 py-3.5">IP & Perangkat Terakhir</th>
+                <th class="px-5 py-3.5">Alasan Pemblokiran</th>
+                <th class="px-5 py-3.5">Ditindak Oleh</th>
+                <th class="px-5 py-3.5">Waktu Ban</th>
+                <th class="px-5 py-3.5 text-center">Tindakan</th>
+              </tr>
+            </thead>
+            <tbody id="bannedUsersTbody" class="divide-y divide-slate-100 text-slate-800">
+              <% bannedUsers.forEach(u => { %>
+              <tr class="hover:bg-slate-50/80 transition-colors user-ban-row" data-username="<%= u.username.toLowerCase() %>" data-email="<%= u.email.toLowerCase() %>">
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs text-white shadow-xs" style="background-color: <%= u.profileColor || '#f43f5e' %>;">
+                      <%= u.username.charAt(0).toUpperCase() %>
+                    </div>
+                    <div>
+                      <span class="font-bold text-xs text-slate-900 block font-outfit">@<%= u.username %></span>
+                      <span class="text-[11px] text-slate-400 font-mono"><%= u.email %></span>
+                    </div>
+                  </div>
+                </td>
+
+                <td class="px-5 py-4">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-full font-semibold text-[11px]">
+                    <i class="fa-solid fa-lock text-[9px]"></i> BANNED
+                  </span>
+                </td>
+
+                <td class="px-5 py-4">
+                  <div class="space-y-0.5">
+                    <div class="flex items-center gap-1.5">
+                      <span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded font-mono text-[11px] font-medium border border-slate-200">
+                        <%= u.lastIp || 'Belum ada IP' %>
+                      </span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 block">
+                      <%= u.lastDevice || 'Desktop / Mobile' %>
+                    </span>
+                  </div>
+                </td>
+
+                <td class="px-5 py-4">
+                  <div class="max-w-xs truncate text-rose-600 font-medium" title="<%= u.banReason || 'Pelanggaran Ketentuan Layanan' %>">
+                    <%= u.banReason || 'Pelanggaran Ketentuan Layanan' %>
+                  </div>
+                </td>
+
+                <td class="px-5 py-4">
+                  <span class="px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-lg text-slate-700 font-medium text-[11px]">
+                    <%= u.bannedBy || 'Admin' %>
+                  </span>
+                </td>
+
+                <td class="px-5 py-4 font-mono text-[11px] text-slate-400">
+                  <%= u.bannedAt ? new Date(u.bannedAt).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-' %>
+                </td>
+
+                <td class="px-5 py-4 text-center">
+                  <form method="POST" action="/admin/access-control/unban-user" class="m-0 inline">
+                    <input type="hidden" name="username" value="<%= u.username %>">
+                    <input type="hidden" name="unblockIps" value="true">
+                    <button type="submit" onclick="return confirm('Buka blokir (Unban) untuk akun @<%= u.username %>?')" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-semibold text-xs transition-all cursor-pointer active:scale-95" title="Buka Blokir Akun">
+                      <i class="fa-solid fa-lock-open text-[10px]"></i>
+                      <span>Unban</span>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- ==================== TAB 3: BLOKIR PERANGKAT & IP ==================== -->
+  <div id="tabContent-devices" class="tab-panel space-y-6 <%= currentTab === 'devices' ? '' : 'hidden' %>">
+    
+    <!-- Action Bar for Devices -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm sm:shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="relative w-full max-w-md">
+        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input id="searchDeviceInput" type="text" placeholder="Cari IP, perangkat, atau username target..." 
+               class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 placeholder:text-slate-400 transition-all font-mono"
+               oninput="filterDeviceTable(this.value)">
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <button type="button" onclick="openBanByUsernameModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95">
+          <i class="fa-solid fa-user-xmark text-xs"></i>
+          <span>Ban by Username IP History</span>
+        </button>
+
+        <button type="button" onclick="openAddDeviceBanModal()" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shadow-btn transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>Tambah Blokir Perangkat/IP</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Device / IP Table -->
+    <% if (!bannedIps || bannedIps.length === 0) { %>
+      <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-12 text-center shadow-sm sm:shadow-card space-y-4">
+        <div class="w-14 h-14 rounded-lg sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto text-2xl">
+          <i class="fa-solid fa-shield-check"></i>
+        </div>
+        <div class="space-y-1">
+          <h3 class="text-base font-bold text-slate-900 font-outfit">Tidak Ada Perangkat / Alamat IP Yang Diblokir</h3>
+          <p class="text-xs text-slate-500 max-w-md mx-auto">
+            Semua alamat IP dan perangkat dapat mengakses platform dengan normal.
+          </p>
+        </div>
+        <button type="button" onclick="openAddDeviceBanModal()" class="inline-flex items-center gap-1.5 sm:gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs transition-all cursor-pointer">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>Tambah Pemblokiran Manual</span>
+        </button>
+      </div>
+    <% } else { %>
+      <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm sm:shadow-card">
+        <div class="overflow-x-auto custom-scroll" style="max-height: 650px;">
+          <table class="w-full text-xs text-left whitespace-nowrap">
+            <thead class="bg-slate-50 text-slate-500 text-xs font-semibold border-b border-slate-200 uppercase tracking-wider sticky top-0 z-10 font-outfit">
+              <tr>
+                <th class="px-5 py-3.5">Alamat IP / Device ID</th>
+                <th class="px-5 py-3.5">Jenis Perangkat</th>
+                <th class="px-5 py-3.5">Akun Terkait</th>
+                <th class="px-5 py-3.5">Alasan Pemblokiran</th>
+                <th class="px-5 py-3.5">Ditindak Oleh</th>
+                <th class="px-5 py-3.5">Waktu Blokir</th>
+                <th class="px-5 py-3.5 text-center">Tindakan</th>
+              </tr>
+            </thead>
+            <tbody id="bannedDevicesTbody" class="divide-y divide-slate-100 text-slate-800">
+              <% bannedIps.forEach(item => { %>
+              <tr class="hover:bg-slate-50/80 transition-colors device-row" 
+                  data-ip="<%= item.ip || '' %>" 
+                  data-device="<%= item.deviceName || '' %>" 
+                  data-username="<%= item.targetUsername || '' %>"
+                  data-reason="<%= item.reason || '' %>">
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-1.5 sm:gap-2">
+                    <span class="px-2.5 py-1 bg-slate-100 text-slate-800 rounded-lg font-mono font-bold text-xs border border-slate-200">
+                      <%= item.ip || item.deviceId || 'IP Khusus' %>
+                    </span>
+                    <% if (item.ip) { %>
+                    <button type="button" onclick="copyToClipboard('<%= item.ip %>')" class="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center text-xs transition-colors" title="Salin IP">
+                      <i class="fa-regular fa-copy"></i>
+                    </button>
+                    <% } %>
+                  </div>
+                </td>
+
+                <td class="px-5 py-4">
+                  <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-xs">
+                    <i class="fa-solid fa-laptop-mobile mr-1 text-slate-400"></i> <%= item.deviceName || 'Perangkat Terdaftar' %>
+                  </span>
+                </td>
+
+                <td class="px-5 py-4">
+                  <% if (item.targetUsername) { %>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full font-semibold text-xs">
+                      <i class="fa-solid fa-user text-[10px]"></i> @<%= item.targetUsername %>
+                    </span>
+                  <% } else { %>
+                    <span class="text-slate-400 font-mono text-[11px]">- Semua Pengguna -</span>
+                  <% } %>
+                </td>
+
+                <td class="px-5 py-4">
+                  <div class="max-w-xs truncate text-rose-600 font-medium" title="<%= item.reason %>">
+                    <%= item.reason || 'Pelanggaran Ketentuan Layanan' %>
+                  </div>
+                </td>
+
+                <td class="px-5 py-4">
+                  <span class="px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-lg text-slate-600 font-medium text-[11px]">
+                    <%= item.bannedBy || 'Admin' %>
+                  </span>
+                </td>
+
+                <td class="px-5 py-4 font-mono text-[11px] text-slate-400">
+                  <%= item.createdAt ? new Date(item.createdAt).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-' %>
+                </td>
+
+                <td class="px-5 py-4 text-center">
+                  <form method="POST" action="/admin/banned-ips/unban/<%= item._id %>" class="m-0 inline">
+                    <button type="submit" onclick="return confirm('Buka blokir IP / perangkat <%= item.ip || item.deviceId %>?')" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-semibold text-xs transition-all cursor-pointer active:scale-95" title="Buka Blokir Perangkat">
+                      <i class="fa-solid fa-lock-open text-[10px]"></i>
+                      <span>Unblock</span>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% } %>
+
+  </div>
+
+</div>
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- MODAL 1: BAN USER ACCOUNT -->
+<div id="banUserModal" class="fixed inset-0 z-[160] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs" onclick="closeBanUserModal()"></div>
+  <div class="relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden z-10 transform transition-all scale-95 opacity-0 duration-200" id="banUserModalContent">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <div class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+          <i class="fa-solid fa-user-slash text-xs"></i>
+        </div>
+        <h3 class="text-sm font-bold text-slate-900 font-outfit">Blokir Akun Pengguna</h3>
+      </div>
+      <button onclick="closeBanUserModal()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+        <i class="fas fa-times text-sm"></i>
+      </button>
+    </div>
+
+    <div class="p-6">
+      <form method="POST" action="/admin/access-control/ban-user" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Username Target</label>
+          <input type="text" name="username" placeholder="Masukkan username (tanpa @)" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" required>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Alasan Pemblokiran</label>
+          <textarea name="reason" rows="3" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl p-3 text-xs sm:text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" required>Pelanggaran Ketentuan Layanan / Aktivitas Mencurigakan</textarea>
+        </div>
+
+        <div class="space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+          <label class="flex items-center gap-1.5 sm:gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+            <input type="checkbox" name="banIpHistory" value="true" checked class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 rounded">
+            <span>Sekaligus blokir seluruh riwayat IP akun ini</span>
+          </label>
+          <label class="flex items-center gap-1.5 sm:gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+            <input type="checkbox" name="blockDevice" value="true" checked class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 rounded">
+            <span>Blokir perangkat (Device Session) yang terhubung</span>
+          </label>
+        </div>
+
+        <div class="flex gap-2 sm:gap-3 pt-2">
+          <button type="button" onclick="closeBanUserModal()" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors cursor-pointer">Batal</button>
+          <button type="submit" class="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-xl text-xs transition-colors cursor-pointer shadow-btn active:scale-95">Ya, Blokir Akun</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 2: ADD DEVICE / IP BAN -->
+<div id="addDeviceBanModal" class="fixed inset-0 z-[160] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs" onclick="closeAddDeviceBanModal()"></div>
+  <div class="relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden z-10 transform transition-all scale-95 opacity-0 duration-200" id="addDeviceBanModalContent">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+          <i class="fa-solid fa-mobile-screen-button text-xs"></i>
+        </div>
+        <h3 class="text-sm font-bold text-slate-900 font-outfit">Tambah Blokir Perangkat / IP</h3>
+      </div>
+      <button onclick="closeAddDeviceBanModal()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+        <i class="fas fa-times text-sm"></i>
+      </button>
+    </div>
+
+    <div class="p-6">
+      <form method="POST" action="/admin/access-control/block-device" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Alamat IP Target</label>
+          <input type="text" name="ip" placeholder="Contoh: 114.122.50.21" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-mono text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" required>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Perangkat / Device Label (Opsional)</label>
+          <input type="text" name="deviceName" placeholder="Contoh: Android Mobile, iPhone, Windows PC" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Username Terkait (Opsional)</label>
+          <input type="text" name="targetUsername" placeholder="Username user (jika ada)" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Alasan Pemblokiran</label>
+          <textarea name="reason" rows="2" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl p-3 text-xs sm:text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" required>Pelanggaran Ketentuan Layanan / Aktivitas Mencurigakan</textarea>
+        </div>
+
+        <div class="flex gap-2 sm:gap-3 pt-2">
+          <button type="button" onclick="closeAddDeviceBanModal()" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors cursor-pointer">Batal</button>
+          <button type="submit" class="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition-colors cursor-pointer shadow-btn active:scale-95">Simpan Blokir</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 3: BAN BY USERNAME IP HISTORY -->
+<div id="banByUsernameModal" class="fixed inset-0 z-[160] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs" onclick="closeBanByUsernameModal()"></div>
+  <div class="relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden z-10 transform transition-all scale-95 opacity-0 duration-200" id="banByUsernameModalContent">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <div class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+          <i class="fa-solid fa-user-xmark text-xs"></i>
+        </div>
+        <h3 class="text-sm font-bold text-slate-900 font-outfit">Ban IP By Username</h3>
+      </div>
+      <button onclick="closeBanByUsernameModal()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+        <i class="fas fa-times text-sm"></i>
+      </button>
+    </div>
+
+    <div class="p-6">
+      <form method="POST" action="/admin/banned-ips/ban-username" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Username Target</label>
+          <input type="text" name="username" placeholder="Masukkan username akun" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" required>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Alasan Pemblokiran</label>
+          <textarea name="reason" rows="2" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl p-3 text-xs sm:text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" required>Pelanggaran Ketentuan Layanan / Aktivitas Mencurigakan</textarea>
+        </div>
+
+        <div class="space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+          <label class="flex items-center gap-1.5 sm:gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+            <input type="checkbox" name="banAllHistory" value="true" checked class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 rounded">
+            <span>Blokir SEMUA IP dalam riwayat aktivitas pengguna</span>
+          </label>
+          <label class="flex items-center gap-1.5 sm:gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+            <input type="checkbox" name="suspendUser" value="true" checked class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 rounded">
+            <span>Sekaligus ubah status akun menjadi BANNED</span>
+          </label>
+        </div>
+
+        <div class="flex gap-2 sm:gap-3 pt-2">
+          <button type="button" onclick="closeBanByUsernameModal()" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors cursor-pointer">Batal</button>
+          <button type="submit" class="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-xl text-xs transition-colors cursor-pointer shadow-btn active:scale-95">Blokir IP User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function switchAccessTab(tabName) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('bg-white', 'text-blue-600', 'shadow-xs', 'border', 'border-slate-200');
+      btn.classList.add('bg-transparent', 'text-slate-600');
+    });
+
+    const targetPanel = document.getElementById('tabContent-' + tabName);
+    const targetBtn = document.getElementById('tabBtn-' + tabName);
+    if (targetPanel) targetPanel.classList.remove('hidden');
+    if (targetBtn) {
+      targetBtn.classList.remove('bg-transparent', 'text-slate-600');
+      targetBtn.classList.add('bg-white', 'text-blue-600', 'shadow-xs', 'border', 'border-slate-200');
+    }
+
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tabName);
+    window.history.replaceState({}, '', url);
+  }
+
+  function filterUserTable(query) {
+    const q = (query || '').toLowerCase().trim();
+    const rows = document.querySelectorAll('.user-ban-row');
+    rows.forEach(row => {
+      const u = row.dataset.username || '';
+      const e = row.dataset.email || '';
+      if (!q || u.includes(q) || e.includes(q)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  function filterDeviceTable(query) {
+    const q = (query || '').toLowerCase().trim();
+    const rows = document.querySelectorAll('.device-row');
+    rows.forEach(row => {
+      const ip = (row.dataset.ip || '').toLowerCase();
+      const dev = (row.dataset.device || '').toLowerCase();
+      const u = (row.dataset.username || '').toLowerCase();
+      const r = (row.dataset.reason || '').toLowerCase();
+      if (!q || ip.includes(q) || dev.includes(q) || u.includes(q) || r.includes(q)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  function copyToClipboard(text) {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Alamat IP ' + text + ' berhasil disalin!');
+    }).catch(() => {});
+  }
+
+  function openGlobalBlockModal() {
+    switchAccessTab('global');
+    window.scrollTo({ top: 300, behavior: 'smooth' });
+  }
+
+  function openBanUserModal() {
+    const modal = document.getElementById('banUserModal');
+    const content = document.getElementById('banUserModalContent');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      content.classList.remove('scale-95', 'opacity-0');
+      content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeBanUserModal() {
+    const modal = document.getElementById('banUserModal');
+    const content = document.getElementById('banUserModalContent');
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }, 200);
+  }
+
+  function openAddDeviceBanModal() {
+    const modal = document.getElementById('addDeviceBanModal');
+    const content = document.getElementById('addDeviceBanModalContent');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      content.classList.remove('scale-95', 'opacity-0');
+      content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeAddDeviceBanModal() {
+    const modal = document.getElementById('addDeviceBanModal');
+    const content = document.getElementById('addDeviceBanModalContent');
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }, 200);
+  }
+
+  function openBanByUsernameModal() {
+    const modal = document.getElementById('banByUsernameModal');
+    const content = document.getElementById('banByUsernameModalContent');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      content.classList.remove('scale-95', 'opacity-0');
+      content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeBanByUsernameModal() {
+    const modal = document.getElementById('banByUsernameModal');
+    const content = document.getElementById('banByUsernameModalContent');
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }, 200);
+  }
+</script>
+
+<%- include('partials/footer') %>

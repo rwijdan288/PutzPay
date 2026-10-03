@@ -1,0 +1,573 @@
+<%- include('partials/header', { 
+  title: 'KYC PutzPay — Verifikasi Identitas & Peningkatan Limit',
+  metaDescription: 'Verifikasi identitas (KYC) PutzPay untuk mendapatkan kenaikan batas transaksi, saldo, penarikan, dan diskon biaya layanan.',
+  canonicalPath: '/kyc'
+}) %>
+
+<div class="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8 w-full min-w-0 font-sans">
+  
+  <!-- HERO BANNER -->
+  <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm sm:shadow-card border border-slate-800 relative overflow-hidden w-full min-w-0">
+    <div class="relative z-10 space-y-3">
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider border border-indigo-500/30 font-mono">
+          <i class="fa-solid fa-id-card text-xs"></i> Verifikasi Identitas
+        </span>
+        <% if (user && user.kycStatus === 'VERIFIED') { %>
+          <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-500/30 font-mono">
+            <i class="fa-solid fa-shield-check text-xs"></i> VERIFIED ACCOUNT
+          </span>
+        <% } else if (user && user.kycStatus === 'PENDING') { %>
+          <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold border border-amber-500/30 font-mono">
+            <i class="fa-solid fa-hourglass-half text-xs"></i> SEDANG DITINJAU
+          </span>
+        <% } else if (user && user.kycStatus === 'REJECTED') { %>
+          <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-xs font-semibold border border-rose-500/30 font-mono">
+            <i class="fa-solid fa-circle-xmark text-xs"></i> PERLU PERBAIKAN
+          </span>
+        <% } else { %>
+          <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-700/60 text-slate-300 text-xs font-semibold border border-slate-600/50 font-mono">
+            FITUR AKTIF
+          </span>
+        <% } %>
+      </div>
+
+      <div>
+        <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-bold tracking-tight text-white font-outfit">
+          Pusat Verifikasi Identitas (KYC)
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-300 mt-1 font-sans max-w-2xl leading-relaxed">
+          Tingkatkan plafon transaksi, kuota penarikan saldo, serta nikmati potongan biaya penarikan hingga <%= settings.kycDiscountPercent || 15 %>% dengan verifikasi identitas resmi.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 sm:gap-3 pt-3 border-t border-slate-800/80 text-xs font-mono text-slate-400">
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <i class="fa-solid fa-lock text-indigo-400"></i>
+          <span>Enkripsi Penyimpanan Privat & ISO compliant</span>
+        </div>
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <i class="fa-solid fa-circle-check text-emerald-400"></i>
+          <span>Opsional: Akun Basic tetap dapat bertransaksi normal</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if (errorMsg) { %>
+    <div class="p-4 rounded-lg sm:rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-start gap-2 sm:gap-3">
+      <i class="fa-solid fa-circle-exclamation text-rose-600 text-base shrink-0 mt-0.5"></i>
+      <div>
+        <p class="font-bold">Perhatian</p>
+        <p><%= errorMsg %></p>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (successMsg) { %>
+    <div class="p-4 rounded-lg sm:rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm flex items-start gap-2 sm:gap-3">
+      <i class="fa-solid fa-circle-check text-emerald-600 text-base shrink-0 mt-0.5"></i>
+      <div>
+        <p class="font-bold">Berhasil</p>
+        <p><%= successMsg %></p>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- TIER COMPARISON TABLE -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-sm sm:shadow-card space-y-4">
+    <div class="flex items-center justify-between flex-wrap gap-1.5 sm:gap-2">
+      <div>
+        <h2 class="text-base sm:text-lg font-bold text-slate-900 font-outfit flex items-center gap-1.5 sm:gap-2">
+          <i class="fa-solid fa-scale-balanced text-indigo-600"></i>
+          Perbandingan Level Akun
+        </h2>
+        <p class="text-xs text-slate-500 font-sans mt-0.5">
+          PutzPay tidak membatasi merchant pemula. Verifikasi KYC dibuka kapan saja sesuai kebutuhan volume bisnis Anda.
+        </p>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto rounded-lg sm:rounded-2xl border border-slate-200/80">
+      <table class="w-full text-xs text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50/80 border-b border-slate-200/80 text-slate-700 font-bold font-outfit">
+            <th class="p-3.5 sm:p-4">Fitur / Limit</th>
+            <th class="p-3.5 sm:p-4 text-center bg-slate-100/50">
+              <span class="inline-flex items-center gap-1 text-slate-700">
+                <i class="fa-solid fa-user text-slate-400"></i> Akun Basic (Non-KYC)
+              </span>
+            </th>
+            <th class="p-3.5 sm:p-4 text-center bg-indigo-50/50 text-indigo-900 border-l border-indigo-100">
+              <span class="inline-flex items-center gap-1 text-indigo-700">
+                <i class="fa-solid fa-shield-check text-indigo-600"></i> Terverifikasi (KYC Verified)
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200/70 font-sans text-slate-700">
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="p-3.5 sm:p-4 font-medium">Batas Maksimum Saldo</td>
+            <td class="p-3.5 sm:p-4 text-center font-mono">Rp <%= (settings.kycNonKycMaxBalance || 2000000).toLocaleString('id-ID') %></td>
+            <td class="p-3.5 sm:p-4 text-center font-mono font-bold text-indigo-700 bg-indigo-50/30 border-l border-indigo-100">
+              Rp <%= (settings.kycVerifiedMaxBalance || 50000000).toLocaleString('id-ID') %>
+            </td>
+          </tr>
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="p-3.5 sm:p-4 font-medium">Limit Transaksi Harian</td>
+            <td class="p-3.5 sm:p-4 text-center font-mono">Rp <%= (settings.kycNonKycMaxDailyTransaction || 5000000).toLocaleString('id-ID') %></td>
+            <td class="p-3.5 sm:p-4 text-center font-mono font-bold text-indigo-700 bg-indigo-50/30 border-l border-indigo-100">
+              Rp <%= (settings.kycVerifiedMaxDailyTransaction || 100000000).toLocaleString('id-ID') %>
+            </td>
+          </tr>
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="p-3.5 sm:p-4 font-medium">Batas Penarikan per Transaksi</td>
+            <td class="p-3.5 sm:p-4 text-center font-mono">Rp <%= (settings.kycNonKycMaxWithdrawalPerTx || 1000000).toLocaleString('id-ID') %></td>
+            <td class="p-3.5 sm:p-4 text-center font-mono font-bold text-indigo-700 bg-indigo-50/30 border-l border-indigo-100">
+              Rp <%= (settings.kycVerifiedMaxWithdrawalPerTx || 25000000).toLocaleString('id-ID') %>
+            </td>
+          </tr>
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="p-3.5 sm:p-4 font-medium">Batas Penarikan Harian</td>
+            <td class="p-3.5 sm:p-4 text-center font-mono">Rp <%= (settings.kycNonKycMaxDailyWithdrawal || 2000000).toLocaleString('id-ID') %></td>
+            <td class="p-3.5 sm:p-4 text-center font-mono font-bold text-indigo-700 bg-indigo-50/30 border-l border-indigo-100">
+              Rp <%= (settings.kycVerifiedMaxDailyWithdrawal || 50000000).toLocaleString('id-ID') %>
+            </td>
+          </tr>
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="p-3.5 sm:p-4 font-medium">Frekuensi Penarikan per Hari</td>
+            <td class="p-3.5 sm:p-4 text-center font-mono"><%= settings.kycNonKycMaxDailyWithdrawalCount || 3 %>x sehari</td>
+            <td class="p-3.5 sm:p-4 text-center font-mono font-bold text-indigo-700 bg-indigo-50/30 border-l border-indigo-100">
+              <%= settings.kycVerifiedMaxDailyWithdrawalCount || 20 %>x sehari
+            </td>
+          </tr>
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="p-3.5 sm:p-4 font-medium">Diskon Biaya Penarikan (Fee)</td>
+            <td class="p-3.5 sm:p-4 text-center font-mono text-slate-500">Standar (0%)</td>
+            <td class="p-3.5 sm:p-4 text-center font-mono font-bold text-emerald-600 bg-indigo-50/30 border-l border-indigo-100">
+              Diskon <%= settings.kycDiscountPercent || 15 %>%
+            </td>
+          </tr>
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="p-3.5 sm:p-4 font-medium">Lencana Profil</td>
+            <td class="p-3.5 sm:p-4 text-center text-slate-400">-</td>
+            <td class="p-3.5 sm:p-4 text-center font-bold text-emerald-700 bg-indigo-50/30 border-l border-indigo-100">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px]">
+                <i class="fa-solid fa-check"></i> Verified
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <% if (!user) { %>
+    <!-- GUEST STATE -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-8 sm:p-10 shadow-sm sm:shadow-card text-center space-y-5">
+      <div class="w-16 h-16 rounded-lg sm:rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center text-2xl mx-auto shadow-xs">
+        <i class="fa-solid fa-user-lock"></i>
+      </div>
+      <div class="space-y-2 max-w-md mx-auto">
+        <h3 class="text-xl font-bold text-slate-900 font-outfit">Masuk untuk Mengajukan Verifikasi</h3>
+        <p class="text-xs sm:text-sm text-slate-600 font-sans">
+          Silakan masuk ke akun PutzPay Anda untuk mengunggah dokumen identitas dan memantau status persetujuan secara instan.
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 pt-2">
+        <a href="/login" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold font-outfit shadow-btn transition-all flex items-center gap-1.5 sm:gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i> Masuk Akun
+        </a>
+        <a href="/register" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-2.5 rounded-xl text-xs font-bold font-outfit transition-all flex items-center gap-1.5 sm:gap-2">
+          <i class="fa-solid fa-user-plus"></i> Daftar Akun Baru
+        </a>
+      </div>
+    </div>
+  <% } else if (user.kycStatus === 'VERIFIED') { %>
+    <!-- VERIFIED STATE -->
+    <div class="bg-white border border-emerald-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm sm:shadow-card space-y-6">
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 rounded-lg sm:rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shrink-0 shadow-xs">
+          <i class="fa-solid fa-shield-check"></i>
+        </div>
+        <div class="space-y-1 min-w-0 flex-1">
+          <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <h3 class="text-lg font-bold text-slate-900 font-outfit">Akun Anda Telah Terverifikasi (KYC Verified)</h3>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono border border-emerald-200">
+              <i class="fa-solid fa-check"></i> AKTIF
+            </span>
+          </div>
+          <p class="text-xs text-slate-600 font-sans leading-relaxed">
+            Selamat, identitas Anda telah diverifikasi oleh tim kepatuhan PutzPay. Batas transaksi maksimal dan kuota penarikan telah aktif secara permanen.
+          </p>
+        </div>
+      </div>
+
+      <!-- Verified Metadata Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 pt-2">
+        <div class="p-3.5 rounded-lg sm:rounded-2xl bg-slate-50 border border-slate-200/70">
+          <p class="text-[11px] text-slate-500 font-mono">NAMA TERVERIFIKASI</p>
+          <p class="text-xs font-bold text-slate-900 mt-1 truncate"><%= user.kycFullName || user.fullName || user.username %></p>
+        </div>
+        <div class="p-3.5 rounded-lg sm:rounded-2xl bg-slate-50 border border-slate-200/70">
+          <p class="text-[11px] text-slate-500 font-mono">TIPE DOKUMEN</p>
+          <p class="text-xs font-bold text-slate-900 mt-1 uppercase"><%= user.kycType === 'pelajar' ? 'Kartu Pelajar + KK' : 'KTP + KK' %></p>
+        </div>
+        <div class="p-3.5 rounded-lg sm:rounded-2xl bg-slate-50 border border-slate-200/70">
+          <p class="text-[11px] text-slate-500 font-mono">TANGGAL VERIFIKASI</p>
+          <p class="text-xs font-bold text-slate-900 mt-1 font-mono"><%= user.kycVerifiedAt ? new Date(user.kycVerifiedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-' %></p>
+        </div>
+      </div>
+
+      <!-- Documents Uploaded Info -->
+      <% if (kycDocs && kycDocs.length > 0) { %>
+        <div class="pt-2 border-t border-slate-100 space-y-2">
+          <p class="text-xs font-bold text-slate-800 font-outfit">Dokumen Terdaftar:</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+            <% kycDocs.forEach(doc => { %>
+              <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">
+                <div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+                  <i class="fa-solid fa-file-shield text-indigo-600 text-sm shrink-0"></i>
+                  <div class="min-w-0">
+                    <p class="font-bold text-slate-800 uppercase font-mono truncate"><%= doc.documentType %> (v<%= doc.version %>)</p>
+                    <p class="text-[10px] text-slate-400 font-mono"><%= (doc.fileSize / 1024).toFixed(1) %> KB • Disimpan Aman</p>
+                  </div>
+                </div>
+                <a href="/api/kyc/document/<%= doc._id %>" target="_blank" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 font-semibold text-[11px] transition-colors shrink-0 flex items-center gap-1">
+                  <i class="fa-solid fa-eye text-xs"></i> Lihat
+                </a>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  <% } else if (user.kycStatus === 'PENDING') { %>
+    <!-- PENDING STATE -->
+    <div class="bg-white border border-amber-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm sm:shadow-card space-y-6">
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 rounded-lg sm:rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl shrink-0 shadow-xs">
+          <i class="fa-solid fa-hourglass-half animate-pulse"></i>
+        </div>
+        <div class="space-y-1 min-w-0 flex-1">
+          <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <h3 class="text-lg font-bold text-slate-900 font-outfit">Pengajuan Verifikasi Sedang Ditinjau</h3>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold font-mono border border-amber-200">
+              DALAM ANTRIAN
+            </span>
+          </div>
+          <p class="text-xs text-slate-600 font-sans leading-relaxed">
+            Dokumen Anda telah kami terima pada <span class="font-mono font-bold text-slate-800"><%= user.kycSubmittedAt ? new Date(user.kycSubmittedAt).toLocaleString('id-ID') : 'hari ini' %></span> dan sedang diperiksa oleh tim verifikasi. Proses verifikasi rata-rata memakan waktu 1-24 jam kerja.
+          </p>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-lg sm:rounded-2xl bg-amber-50/60 border border-amber-200/80 text-xs text-amber-900 space-y-1">
+        <p class="font-bold flex items-center gap-1.5 font-outfit">
+          <i class="fa-solid fa-info-circle text-amber-600"></i> Informasi Transaksi
+        </p>
+        <p class="font-sans leading-relaxed text-amber-800">
+          Selama masa peninjauan, akun Anda tetap dapat digunakan secara aktif untuk menerima pembayaran QRIS dan melakukan penarikan dengan limit akun basic (Non-KYC).
+        </p>
+      </div>
+
+      <!-- Uploaded documents preview list -->
+      <% if (kycDocs && kycDocs.length > 0) { %>
+        <div class="space-y-2 pt-2 border-t border-slate-100">
+          <p class="text-xs font-bold text-slate-800 font-outfit">Dokumen yang Diajukan:</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+            <% kycDocs.forEach(doc => { %>
+              <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">
+                <div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+                  <i class="fa-solid fa-file-circle-check text-blue-600 text-sm shrink-0"></i>
+                  <div class="min-w-0">
+                    <p class="font-bold text-slate-800 uppercase font-mono truncate"><%= doc.documentType %> (v<%= doc.version %>)</p>
+                    <p class="text-[10px] text-slate-400 font-mono"><%= (doc.fileSize / 1024).toFixed(1) %> KB</p>
+                  </div>
+                </div>
+                <a href="/api/kyc/document/<%= doc._id %>" target="_blank" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 font-semibold text-[11px] transition-colors shrink-0 flex items-center gap-1">
+                  <i class="fa-solid fa-eye text-xs"></i> Pratinjau
+                </a>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  <% } else { %>
+    <!-- SUBMISSION / RE-SUBMISSION FORM -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm sm:shadow-card space-y-6">
+      
+      <% if (user.kycStatus === 'REJECTED' || user.kycStatus === 'REQUIRES_REVIEW') { %>
+        <div class="p-4.5 rounded-lg sm:rounded-2xl bg-rose-50 border border-rose-200 text-xs sm:text-sm text-rose-900 space-y-1.5">
+          <div class="flex items-center gap-1.5 sm:gap-2 font-bold font-outfit text-rose-800">
+            <i class="fa-solid fa-triangle-exclamation text-rose-600"></i>
+            <span>Catatan Verifikasi dari Tim Kepatuhan</span>
+          </div>
+          <p class="font-sans leading-relaxed text-rose-800 bg-white/70 p-3 rounded-xl border border-rose-200/60 font-mono text-xs">
+            "<%= user.kycRejectionReason || 'Dokumen buram atau tidak terbaca jelas. Mohon unggah kembali foto asli yang jernih.' %>"
+          </p>
+          <p class="text-[11px] text-rose-700 mt-1 font-sans">
+            Silakan perbaiki data atau unggah dokumen terbaru di bawah ini untuk mengajukan verifikasi ulang.
+          </p>
+        </div>
+      <% } %>
+
+      <div class="space-y-1">
+        <h2 class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 font-outfit flex items-center gap-1.5 sm:gap-2">
+          <i class="fa-solid fa-id-card-clip text-indigo-600"></i>
+          Formulir Pengajuan Identitas
+        </h2>
+        <p class="text-xs text-slate-500 font-sans">
+          Pastikan foto dokumen asli, terbaca jelas tanpa pantulan cahaya, dan tidak terpotong.
+        </p>
+      </div>
+
+      <form action="/api/kyc/submit" method="POST" enctype="multipart/form-data" id="kycForm" class="space-y-6">
+        
+        <!-- Document Type Selector Tabs -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-slate-700 uppercase font-mono tracking-wider">
+            1. Jalur Identitas <span class="text-rose-500">*</span>
+          </label>
+          <div class="grid grid-cols-2 gap-2 sm:gap-3 max-w-md">
+            <label class="cursor-pointer border-2 rounded-lg sm:rounded-2xl p-3.5 flex items-center gap-2 sm:gap-3 transition-all has-checked:border-indigo-600 has-checked:bg-indigo-50/50 border-slate-200 hover:border-slate-300">
+              <input type="radio" name="kycType" value="ktp" checked onchange="toggleKycType('ktp')" class="accent-indigo-600 text-indigo-600" />
+              <div>
+                <p class="text-xs font-bold text-slate-900 font-outfit">KTP Elektronik</p>
+                <p class="text-[10px] text-slate-500 font-sans">Umum / Dewasa (17+)</p>
+              </div>
+            </label>
+            <label class="cursor-pointer border-2 rounded-lg sm:rounded-2xl p-3.5 flex items-center gap-2 sm:gap-3 transition-all has-checked:border-indigo-600 has-checked:bg-indigo-50/50 border-slate-200 hover:border-slate-300">
+              <input type="radio" name="kycType" value="pelajar" onchange="toggleKycType('pelajar')" class="accent-indigo-600 text-indigo-600" />
+              <div>
+                <p class="text-xs font-bold text-slate-900 font-outfit">Kartu Pelajar</p>
+                <p class="text-[10px] text-slate-500 font-sans">Pelajar / Santri</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Personal Info Fields -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-1.5">
+            <label for="fullNameInput" class="block text-xs font-bold text-slate-700 font-sans">
+              Nama Lengkap (Sesuai Identitas) <span class="text-rose-500">*</span>
+            </label>
+            <input type="text" id="fullNameInput" name="fullName" required value="<%= user.kycFullName || user.fullName || '' %>" placeholder="Contoh: Budi Santoso" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-sans text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600" />
+          </div>
+
+          <div class="space-y-1.5">
+            <label for="nikInput" class="block text-xs font-bold text-slate-700 font-sans">
+              <span id="nikLabel">Nomor Induk Kependudukan (NIK 16 Digit)</span> <span class="text-rose-500">*</span>
+            </label>
+            <input type="text" id="nikInput" name="nik" required value="<%= user.kycNik || '' %>" placeholder="16 digit NIK atau Nomor Kartu Pelajar" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600" />
+          </div>
+
+          <div class="space-y-1.5">
+            <label for="birthDateInput" class="block text-xs font-bold text-slate-700 font-sans">
+              Tanggal Lahir <span class="text-rose-500">*</span>
+            </label>
+            <input type="date" id="birthDateInput" name="birthDate" required value="<%= user.kycBirthDate ? new Date(user.kycBirthDate).toISOString().split('T')[0] : '' %>" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-sans text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600" />
+          </div>
+        </div>
+
+        <!-- Student Parental Approval Checkbox -->
+        <div id="pelajarConsentBox" class="hidden p-4 rounded-lg sm:rounded-2xl bg-amber-50/70 border border-amber-200/80">
+          <label class="flex items-start gap-1.5 sm:gap-2.5 cursor-pointer text-xs text-amber-900 font-sans">
+            <input type="checkbox" id="parentApprovalCheck" name="parentApproval" value="true" class="mt-0.5 accent-amber-600" />
+            <span>
+              <strong>Persetujuan Orang Tua / Wali:</strong> Saya menyatakan dengan sungguh-sungguh bahwa penggunaan akun PutzPay ini telah diketahui dan disetujui oleh orang tua atau wali sah saya, serta dokumen Kartu Keluarga yang saya lampirkan adalah dokumen keluarga yang sah.
+            </span>
+          </label>
+        </div>
+
+        <!-- File Upload Section -->
+        <div class="space-y-4 pt-2 border-t border-slate-100">
+          <label class="block text-xs font-bold text-slate-700 uppercase font-mono tracking-wider">
+            2. Unggah Berkas Dokumen Asli <span class="text-rose-500">*</span>
+          </label>
+          <p class="text-[11px] text-slate-500 font-sans">Format: JPG, PNG, WEBP, atau PDF. Maksimal 5 MB per file. Pastikan tulisan terbaca jelas.</p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            <!-- Primary Document Upload (KTP) -->
+            <div id="ktpUploadBlock" class="p-4 rounded-lg sm:rounded-2xl border-2 border-dashed border-slate-200 hover:border-indigo-400 bg-slate-50/50 transition-all space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-800 font-outfit flex items-center gap-1.5">
+                  <i class="fa-solid fa-address-card text-indigo-600"></i> Foto KTP Asli
+                </span>
+                <span class="text-[10px] font-mono text-slate-400">Wajib (KTP)</span>
+              </div>
+              <input type="file" id="ktpFile" name="ktp" accept="image/jpeg,image/png,image/webp,application/pdf" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer" onchange="previewUpload(this, 'ktpPreview')" />
+              <div id="ktpPreview" class="hidden relative rounded-xl overflow-hidden border border-slate-200 max-h-36 bg-white flex items-center justify-center">
+                <!-- Preview image injected here -->
+              </div>
+            </div>
+
+            <!-- Primary Document Upload (Kartu Pelajar) -->
+            <div id="pelajarUploadBlock" class="hidden p-4 rounded-lg sm:rounded-2xl border-2 border-dashed border-slate-200 hover:border-indigo-400 bg-slate-50/50 transition-all space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-800 font-outfit flex items-center gap-1.5">
+                  <i class="fa-solid fa-graduation-cap text-indigo-600"></i> Foto Kartu Pelajar Asli
+                </span>
+                <span class="text-[10px] font-mono text-slate-400">Wajib (Pelajar)</span>
+              </div>
+              <input type="file" id="pelajarFile" name="kartu_pelajar" accept="image/jpeg,image/png,image/webp,application/pdf" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer" onchange="previewUpload(this, 'pelajarPreview')" />
+              <div id="pelajarPreview" class="hidden relative rounded-xl overflow-hidden border border-slate-200 max-h-36 bg-white flex items-center justify-center">
+                <!-- Preview image injected here -->
+              </div>
+            </div>
+
+            <!-- Supporting Document Upload (KK) -->
+            <div class="p-4 rounded-lg sm:rounded-2xl border-2 border-dashed border-slate-200 hover:border-indigo-400 bg-slate-50/50 transition-all space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-800 font-outfit flex items-center gap-1.5">
+                  <i class="fa-solid fa-users-rectangle text-indigo-600"></i> Foto Kartu Keluarga (KK)
+                </span>
+                <span class="text-[10px] font-mono text-slate-400">Wajib</span>
+              </div>
+              <input type="file" id="kkFile" name="kk" required accept="image/jpeg,image/png,image/webp,application/pdf" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer" onchange="previewUpload(this, 'kkPreview')" />
+              <div id="kkPreview" class="hidden relative rounded-xl overflow-hidden border border-slate-200 max-h-36 bg-white flex items-center justify-center">
+                <!-- Preview image injected here -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Privacy & Policy Acknowledgment -->
+        <div class="p-4 rounded-lg sm:rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-2">
+          <label class="flex items-start gap-1.5 sm:gap-2.5 cursor-pointer">
+            <input type="checkbox" required class="mt-0.5 accent-indigo-600" />
+            <span>
+              Saya menyatakan bahwa data dan dokumen yang saya unggah adalah sah, asli milik saya, dan saya menyetujui pemrosesan data identitas untuk kepatuhan hukum transaksi sesuai <a href="/privacy-policy" target="_blank" class="text-blue-600 underline font-semibold">Kebijakan Privasi</a> dan <a href="/terms" target="_blank" class="text-blue-600 underline font-semibold">Syarat & Ketentuan</a> PutzPay.
+            </span>
+          </label>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center items-center justify-end gap-2 sm:gap-3 pt-2">
+          <a href="/dashboard" class="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold font-outfit transition-all text-center">
+            Batal
+          </a>
+          <button type="submit" id="submitBtn" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2.5 rounded-xl text-xs font-bold font-outfit shadow-btn transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>Kirim Dokumen Verifikasi</span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  <% } %>
+
+  <!-- AUDIT LOG HISTORY (IF USER HAS HISTORY) -->
+  <% if (auditLogs && auditLogs.length > 0) { %>
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-sm sm:shadow-card space-y-3">
+      <h3 class="text-sm font-bold text-slate-900 font-outfit flex items-center gap-1.5 sm:gap-2">
+        <i class="fa-solid fa-clock-rotate-left text-slate-500"></i>
+        Riwayat Status & Audit Verifikasi
+      </h3>
+      <div class="divide-y divide-slate-100 text-xs font-sans">
+        <% auditLogs.forEach(log => { %>
+          <div class="py-2.5 flex items-center justify-between flex-wrap gap-1.5 sm:gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-2.5">
+              <% if (log.action === 'APPROVED') { %>
+                <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs"><i class="fa-solid fa-check"></i></span>
+                <span class="font-bold text-emerald-800">Verifikasi Disetujui</span>
+              <% } else if (log.action === 'REJECTED') { %>
+                <span class="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-xs"><i class="fa-solid fa-xmark"></i></span>
+                <span class="font-bold text-rose-800">Verifikasi Ditolak</span>
+              <% } else if (log.action === 'SUBMITTED') { %>
+                <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs"><i class="fa-solid fa-arrow-up"></i></span>
+                <span class="font-bold text-slate-800">Dokumen Diajukan</span>
+              <% } else { %>
+                <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-xs"><i class="fa-solid fa-circle-info"></i></span>
+                <span class="font-bold text-slate-800"><%= log.action %></span>
+              <% } %>
+            </div>
+            <div class="text-right text-[11px] text-slate-400 font-mono">
+              <%= new Date(log.timestamp).toLocaleString('id-ID') %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+
+</div>
+
+<script>
+  function toggleKycType(type) {
+    const ktpBlock = document.getElementById('ktpUploadBlock');
+    const pelajarBlock = document.getElementById('pelajarUploadBlock');
+    const pelajarConsent = document.getElementById('pelajarConsentBox');
+    const parentApprovalCheck = document.getElementById('parentApprovalCheck');
+    const nikLabel = document.getElementById('nikLabel');
+    const ktpFile = document.getElementById('ktpFile');
+    const pelajarFile = document.getElementById('pelajarFile');
+
+    if (type === 'pelajar') {
+      if (ktpBlock) ktpBlock.classList.add('hidden');
+      if (pelajarBlock) pelajarBlock.classList.remove('hidden');
+      if (pelajarConsent) pelajarConsent.classList.remove('hidden');
+      if (parentApprovalCheck) parentApprovalCheck.required = true;
+      if (ktpFile) ktpFile.required = false;
+      if (pelajarFile) pelajarFile.required = true;
+      if (nikLabel) nikLabel.textContent = 'Nomor Identitas Pelajar / NISN';
+    } else {
+      if (ktpBlock) ktpBlock.classList.remove('hidden');
+      if (pelajarBlock) pelajarBlock.classList.add('hidden');
+      if (pelajarConsent) pelajarConsent.classList.add('hidden');
+      if (parentApprovalCheck) parentApprovalCheck.required = false;
+      if (ktpFile) ktpFile.required = true;
+      if (pelajarFile) pelajarFile.required = false;
+      if (nikLabel) nikLabel.textContent = 'Nomor Induk Kependudukan (NIK 16 Digit)';
+    }
+  }
+
+  function previewUpload(input, targetId) {
+    const container = document.getElementById(targetId);
+    if (!container) return;
+    container.innerHTML = '';
+    
+    if (!input.files || !input.files[0]) {
+      container.classList.add('hidden');
+      return;
+    }
+
+    const file = input.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Ukuran file maksimal adalah 5MB.');
+      input.value = '';
+      container.classList.add('hidden');
+      return;
+    }
+
+    if (file.type === 'application/pdf') {
+      container.innerHTML = '<div class="p-3 text-center text-xs font-mono text-slate-600"><i class="fa-solid fa-file-pdf text-rose-500 text-lg mb-1 block"></i> Dokumen PDF (' + (file.size / 1024).toFixed(1) + ' KB)</div>';
+      container.classList.remove('hidden');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      container.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="w-full h-auto max-h-32 object-contain rounded-lg" />';
+      container.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  const kycForm = document.getElementById('kycForm');
+  if (kycForm) {
+    kycForm.addEventListener('submit', function() {
+      const btn = document.getElementById('submitBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i><span>Mengunggah Dokumen...</span>';
+      }
+    });
+  }
+</script>
+
+<%- include('partials/footer') %>

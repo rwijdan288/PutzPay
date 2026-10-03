@@ -1,0 +1,79 @@
+</main>
+
+<footer class="bg-white border-t border-slate-200 text-slate-600 py-5 sm:py-6 px-4 text-center mt-8 sm:mt-10">
+  <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center items-center justify-center gap-2.5 sm:gap-4 text-xs font-sans">
+    <div class="flex items-center gap-2 sm:gap-3 text-xs text-slate-500 font-medium">
+      <a href="/partners" class="hover:text-blue-600 transition-colors">Partners</a>
+      <span class="text-slate-300">•</span>
+      <a href="/privacy-policy" class="hover:text-blue-600 transition-colors">Privacy Policy</a>
+      <span class="text-slate-300">•</span>
+      <a href="/terms" class="hover:text-blue-600 transition-colors">Terms of Service</a>
+    </div>
+
+    <p class="text-slate-400 text-[11px] sm:text-xs font-mono">&copy; <%= new Date().getFullYear() %> <%= settings.name %>. All rights reserved.</p>
+  </div>
+</footer>
+
+<div id="toastContainer"></div>
+
+<script>
+  function showToast(msg, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    
+    let themeClasses = 'bg-white border border-slate-200 text-slate-800 shadow-xl';
+    let iconClass = 'fa-circle-info text-blue-600';
+
+    if (type === 'success') {
+      themeClasses = 'bg-emerald-50 border border-emerald-200 text-emerald-900 shadow-xl';
+      iconClass = 'fa-circle-check text-emerald-600';
+    } else if (type === 'error') {
+      themeClasses = 'bg-rose-50 border border-rose-200 text-rose-900 shadow-xl';
+      iconClass = 'fa-triangle-exclamation text-rose-600';
+    } else {
+      themeClasses = 'bg-amber-50 border border-amber-200 text-amber-900 shadow-xl';
+      iconClass = 'fa-circle-info text-amber-600';
+    }
+    
+    toast.className = `fixed top-20 left-1/2 w-[92%] max-w-sm px-4 py-3.5 rounded-lg sm:rounded-2xl flex items-center gap-2 sm:gap-3 z-[1000] transform -translate-x-1/2 -translate-y-8 opacity-0 transition-all duration-300 font-semibold text-xs font-sans ${themeClasses}`;
+    
+    toast.innerHTML = `
+      <div class="w-8 h-8 rounded-xl bg-white/80 border border-slate-200/50 flex items-center justify-center shrink-0 shadow-xs">
+        <i class="fas ${iconClass} text-sm"></i>
+      </div>
+      <span class="text-xs font-medium leading-snug flex-1">${msg}</span>
+    `;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => { 
+      toast.classList.remove('-translate-y-8', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+    }, 10);
+    
+    setTimeout(() => { 
+      toast.classList.remove('translate-y-0', 'opacity-100');
+      toast.classList.add('-translate-y-8', 'opacity-0');
+      setTimeout(() => toast.remove(), 300); 
+    }, 5000);
+  }
+
+  // Keyboard accessibility: Close modals on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const modals = document.querySelectorAll('[id$="Modal"]');
+      modals.forEach(m => {
+        if (!m.classList.contains('hidden')) {
+          m.classList.add('hidden');
+        }
+      });
+    }
+  });
+</script>
+<% if (typeof user !== 'undefined' && user) { %>
+  <script src="/push-client.js"></script>
+<% } %>
+</body>
+</html>

@@ -1,0 +1,496 @@
+<%- include('partials/header', { title: 'Semua Transaksi - Admin' }) %>
+
+<div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-8 space-y-6 sm:space-y-8 w-full min-w-0 font-sans">
+
+  <!-- Header Section -->
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-white shadow-sm sm:shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+    <div class="space-y-1.5 z-10">
+      <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider border border-blue-500/30">
+        <i class="fa-solid fa-list-check text-xs"></i>
+        <span>Pengelolaan Riwayat Sistem</span>
+      </div>
+      <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-bold tracking-tight text-white font-outfit">Riwayat Transaksi Keseluruhan</h1>
+      <p class="text-xs sm:text-sm text-slate-400 max-w-2xl">Daftar lengkap seluruh aktivitas deposit QRIS dan penarikan saldo pengguna.</p>
+    </div>
+
+    <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-800/80 border border-slate-700/80 px-4 py-2 rounded-xl text-slate-200 self-start sm:self-center z-10">
+      <span class="relative flex h-2 w-2">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+      </span>
+      <span class="text-xs font-medium font-mono text-emerald-400">Total <%= transactions.length %> Record</span>
+    </div>
+  </div>
+
+  <!-- Search & Filter Card -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm sm:shadow-card flex flex-col sm:flex-row sm:items-center items-center justify-between gap-2 sm:gap-3">
+    <div class="relative w-full sm:w-80">
+      <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+      <input id="searchInput" type="text" placeholder="Cari ID Invoice / Reference..." 
+             class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-mono"
+             value="<%= typeof search !== 'undefined' ? search : '' %>">
+    </div>
+
+    <div class="relative w-full sm:w-56" id="filterDropdownContainer">
+      <button type="button" id="filterButton" class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-slate-800 px-4 py-2 text-xs font-semibold flex justify-between items-center transition-colors cursor-pointer">
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <i class="fa-solid fa-filter text-slate-500 text-xs"></i>
+          <span id="activeFilterText">Semua Transaksi</span>
+        </div>
+        <i class="fas fa-chevron-down text-xs text-slate-400"></i>
+      </button>
+
+      <div id="filterMenu" class="absolute right-0 mt-2 w-full bg-white border border-slate-200 rounded-lg sm:rounded-2xl shadow-xl py-1.5 hidden z-50">
+        <button type="button" data-val="all" class="filter-option w-full text-left px-4 py-2 text-xs font-medium hover:bg-slate-50 text-slate-800 flex justify-between items-center transition-colors cursor-pointer">
+          <span>Semua Transaksi</span>
+          <i class="fas fa-check text-blue-600 check-icon text-xs"></i>
+        </button>
+        <button type="button" data-val="deposit" class="filter-option w-full text-left px-4 py-2 text-xs font-medium hover:bg-slate-50 text-slate-800 flex justify-between items-center transition-colors cursor-pointer">
+          <span>Deposit (Masuk)</span>
+          <i class="fas fa-check text-blue-600 check-icon text-xs hidden"></i>
+        </button>
+        <button type="button" data-val="withdraw" class="filter-option w-full text-left px-4 py-2 text-xs font-medium hover:bg-slate-50 text-slate-800 flex justify-between items-center transition-colors cursor-pointer">
+          <span>Withdraw (Keluar)</span>
+          <i class="fas fa-check text-blue-600 check-icon text-xs hidden"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabel Transaksi Card -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm sm:shadow-card">
+    <div class="overflow-x-auto custom-scroll" style="max-height: 600px;">
+      <table class="w-full text-xs text-left whitespace-nowrap">
+        <thead class="bg-slate-50 text-xs text-slate-600 font-semibold border-b border-slate-200 uppercase tracking-wider sticky top-0 z-10">
+          <tr>
+            <th class="px-5 py-3.5">ID Invoice / Ref</th>
+            <th class="px-5 py-3.5">Tipe</th>
+            <th class="px-5 py-3.5">Nominal Transaction</th>
+            <th class="px-5 py-3.5">Status</th>
+            <th class="px-5 py-3.5">Waktu Buat</th>
+          </tr>
+        </thead>
+        <tbody id="transactionTableBody" class="divide-y divide-slate-100 text-slate-800 font-mono">
+          <% if (transactions.length === 0) { %>
+            <tr id="emptyTrxState">
+              <td colspan="5" class="px-6 py-16 text-center">
+                <div class="flex flex-col items-center justify-center">
+                  <div class="w-12 h-12 rounded-lg sm:rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mb-3 text-xl">
+                    <i class="fa-solid fa-inbox"></i>
+                  </div>
+                  <p class="text-xs font-bold text-slate-700">Belum ada data transaksi</p>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Semua transaksi baru akan otomatis muncul di sini</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% transactions.forEach(t => { 
+                 let statusBadge = '';
+                 if (t.status === 'paid' || t.status === 'success') {
+                   statusBadge = '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-circle-check text-[9px]"></i> Success</span>';
+                 } else if (t.status === 'pending') {
+                   statusBadge = '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200"><i class="fa-solid fa-clock text-[9px]"></i> Pending</span>';
+                 } else if (t.status === 'expired' || t.status === 'rejected') {
+                   statusBadge = '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200"><i class="fa-solid fa-circle-xmark text-[9px]"></i> ' + (t.status === 'rejected' ? 'Rejected' : 'Expired') + '</span>';
+                 } else {
+                   statusBadge = '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200"><i class="fa-solid fa-clock text-[9px]"></i> Pending</span>';
+                 }
+
+                 let typeBadge = '';
+                 if (t.type === 'withdraw') {
+                   typeBadge = '<span class="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200"><i class="fas fa-arrow-up text-[9px]"></i> WD</span>';
+                 } else {
+                   typeBadge = '<span class="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200"><i class="fas fa-arrow-down text-[9px]"></i> Deposit</span>';
+                 }
+            %>
+            <tr class="trx-row hover:bg-slate-50/70 cursor-pointer transition-colors"
+                data-id="<%= t.reference || t._id %>"
+                data-type="<%= t.type %>"
+                data-amount="<%= t.amount %>"
+                data-fee="<%= t.fee %>"
+                data-status="<%= t.status %>"
+                data-created="<%= t.createdAt.toISOString() %>"
+                data-expired="<%= t.expiredAt ? t.expiredAt.toISOString() : '' %>"
+                data-username="<%= t.userId?.username || 'Pengguna Dihapus' %>"
+                data-email="<%= t.userId?.email || '' %>"
+                data-method="<%= t.method || '' %>"
+                data-account="<%= t.accountNumber || '' %>"
+                data-name="<%= t.accountName || '' %>"
+                data-note="<%= t.adminNote || '' %>"
+                data-qris="<%= t.qris_image || '' %>"
+                data-completed="<%= t.completedAt ? t.completedAt.toISOString() : '' %>"
+                onclick="window.location.hash = 'transactions-' + this.dataset.id">
+              <td class="px-5 py-3.5">
+                <span class="text-xs font-mono font-semibold text-blue-600 hover:underline"><%= t.reference %></span>
+              </td>
+              <td class="px-5 py-3.5"><%- typeBadge %></td>
+              <td class="px-5 py-3.5 text-slate-900 font-bold font-outfit text-sm">Rp <%= Math.abs(t.amount).toLocaleString('id-ID') %></td>
+              <td class="px-5 py-3.5"><%- statusBadge %></td>
+              <td class="px-5 py-3.5 text-slate-500 font-mono date-cell" data-timestamp="<%= t.createdAt.toISOString() %>"></td>
+            </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="emptyState" class="hidden py-16 text-center flex flex-col items-center justify-center border-t border-slate-100">
+      <div class="w-12 h-12 rounded-lg sm:rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mb-3 text-lg">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </div>
+      <p class="text-xs font-bold text-slate-700">Tidak ada transaksi yang cocok</p>
+      <p class="text-[11px] text-slate-400 mt-0.5">Coba ubah kata kunci pencarian atau filter status Anda</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL DETAIL DEPOSIT -->
+<div id="invoiceModalFull" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity" onclick="closeInvoiceModalFull()"></div>
+  <div class="relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden z-10 transform transition-all scale-95 opacity-0 duration-200 flex flex-col max-h-[90vh]" id="invoiceModalContent">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-1.5 sm:gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
+          <i class="fa-solid fa-file-invoice"></i>
+        </div>
+        <h2 class="text-sm font-bold text-slate-900 font-outfit">Rincian Deposit Merchant</h2>
+      </div>
+      <button onclick="closeInvoiceModalFull()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+        <i class="fas fa-times text-sm"></i>
+      </button>
+    </div>
+    
+    <div class="p-6 overflow-y-auto custom-scroll">
+      <div class="border border-slate-200 rounded-lg sm:rounded-2xl overflow-hidden mb-4 shadow-xs">
+        <table class="w-full text-xs text-left divide-y divide-slate-100">
+          <tbody class="divide-y divide-slate-100 text-slate-800">
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600 w-32">Tipe</td><td class="px-4 py-2.5 font-bold" id="modalFullType">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600 w-32">ID Invoice</td><td class="px-4 py-2.5 font-mono font-semibold text-blue-600 break-all" id="modalFullInvoiceId">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Pengguna</td><td class="px-4 py-2.5 font-medium" id="modalFullUsername">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Email</td><td class="px-4 py-2.5 font-medium text-slate-600" id="modalFullEmail">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Status</td><td class="px-4 py-2.5" id="modalFullStatus">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Waktu Dibuat</td><td class="px-4 py-2.5 text-slate-500 font-mono" id="modalFullTanggal">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Batas Expired</td><td class="px-4 py-2.5 text-slate-500 font-mono" id="modalFullExpired">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Nominal Utama</td><td class="px-4 py-2.5 font-bold font-outfit" id="modalFullNominal">Rp 0</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Biaya Admin</td><td class="px-4 py-2.5 font-bold font-outfit" id="modalFullFee">Rp 0</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Total Pembayaran</td><td class="px-4 py-2.5 font-bold text-slate-900 font-outfit text-sm" id="modalFullTotal">Rp 0</td></tr>
+            <tr id="modalFullCompletedRow" class="hidden"><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Waktu Selesai</td><td class="px-4 py-2.5 text-slate-500 font-mono" id="modalFullCompleted">-</td></tr>
+            <tr id="modalFullNoteRow" class="hidden"><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Catatan Admin</td><td class="px-4 py-2.5 font-medium text-slate-800" id="modalFullNote">-</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="modalFullDynamicContent" class="flex justify-center"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETAIL WITHDRAW -->
+<div id="withdrawModalFull" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity" onclick="closeWithdrawModalFull()"></div>
+  <div class="relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden z-10 transform transition-all scale-95 opacity-0 duration-200 flex flex-col max-h-[90vh]" id="withdrawModalContent">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-1.5 sm:gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-xs">
+          <i class="fa-solid fa-hand-holding-dollar"></i>
+        </div>
+        <h2 class="text-sm font-bold text-slate-900 font-outfit">Rincian Penarikan Saldo</h2>
+      </div>
+      <button onclick="closeWithdrawModalFull()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+        <i class="fas fa-times text-sm"></i>
+      </button>
+    </div>
+
+    <div class="p-6 overflow-y-auto custom-scroll">
+      <div class="border border-slate-200 rounded-lg sm:rounded-2xl overflow-hidden mb-4 shadow-xs">
+        <table class="w-full text-xs text-left divide-y divide-slate-100">
+          <tbody class="divide-y divide-slate-100 text-slate-800">
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600 w-32">Tipe</td><td class="px-4 py-2.5 font-bold" id="modalFullWithdrawType">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600 w-32">ID Penarikan</td><td class="px-4 py-2.5 font-mono font-semibold text-blue-600 break-all" id="modalFullWithdrawId">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Pengguna</td><td class="px-4 py-2.5 font-medium" id="modalFullWithdrawUsername">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Email</td><td class="px-4 py-2.5 font-medium text-slate-600" id="modalFullWithdrawEmail">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Status</td><td class="px-4 py-2.5" id="modalFullWithdrawStatus">-</td></tr>
+            <tr id="modalFullWithdrawAdminNoteRow" class="hidden"><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Keterangan Admin</td><td class="px-4 py-2.5 font-bold text-rose-600" id="modalFullWithdrawAdminNote"></td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Waktu Pengajuan</td><td class="px-4 py-2.5 text-slate-500 font-mono" id="modalFullWithdrawTanggal">-</td></tr>
+            <tr id="modalFullWithdrawCompletedRow" class="hidden"><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Tanggal Selesai</td><td class="px-4 py-2.5 text-slate-500 font-mono" id="modalFullWithdrawCompleted">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Nominal WD</td><td class="px-4 py-2.5 font-bold font-outfit" id="modalFullWithdrawNominal">Rp 0</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Biaya Admin</td><td class="px-4 py-2.5 font-bold font-outfit" id="modalFullWithdrawFee">Rp 0</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Total Terpotong</td><td class="px-4 py-2.5 font-bold font-outfit" id="modalFullWithdrawTotalPotong">Rp 0</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Total Diterima User</td><td class="px-4 py-2.5 font-bold text-emerald-600 font-outfit text-sm" id="modalFullWithdrawDiterima">Rp 0</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Metode Transfer</td><td class="px-4 py-2.5 font-medium uppercase" id="modalFullWithdrawMethod">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">No. Rekening</td><td class="px-4 py-2.5 font-mono font-semibold text-blue-600" id="modalFullWithdrawAccount">-</td></tr>
+            <tr><td class="px-4 py-2.5 bg-slate-50 font-semibold text-slate-600">Atas Nama Pemilik</td><td class="px-4 py-2.5 font-medium" id="modalFullWithdrawName">-</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function formatDateCell(cell) {
+    const timestamp = cell.dataset.timestamp;
+    if (!timestamp) return;
+    const d = new Date(timestamp);
+    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const dayName = days[d.getDay()];
+    const dateNum = String(d.getDate()).padStart(2, '0');
+    const timeStr = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+    cell.textContent = `${dayName} ${dateNum}, ${timeStr}`;
+  }
+
+  const filterButton = document.getElementById('filterButton');
+  const filterMenu = document.getElementById('filterMenu');
+  const searchInput = document.getElementById('searchInput');
+  let isFilterOpen = false;
+
+  filterButton.addEventListener('click', function(e) {
+    e.stopPropagation();
+    isFilterOpen = !isFilterOpen;
+    filterMenu.classList.toggle('hidden', !isFilterOpen);
+  });
+
+  document.addEventListener('click', function(event) {
+    if (!filterButton.contains(event.target) && !filterMenu.contains(event.target)) {
+      isFilterOpen = false;
+      filterMenu.classList.add('hidden');
+    }
+  });
+
+  document.querySelectorAll('.filter-option').forEach(option => {
+    option.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const val = this.dataset.val;
+      const text = this.innerText.trim().split(' ')[0]; 
+      selectFilter(val, text);
+    });
+  });
+
+  window.selectFilter = (val, text) => {
+    document.getElementById('activeFilterText').innerText = text === 'Semua' ? 'Semua Transaksi' : text;
+    document.querySelectorAll('.filter-option').forEach(btn => {
+      const icon = btn.querySelector('.check-icon');
+      if (btn.dataset.val === val) {
+        icon.classList.remove('hidden');
+      } else {
+        icon.classList.add('hidden');
+      }
+    });
+    applyCurrentFilter();
+    isFilterOpen = false;
+    filterMenu.classList.add('hidden');
+  };
+
+  function applyCurrentFilter() {
+    const searchText = searchInput.value.trim().toLowerCase();
+    const activeFilterText = document.getElementById('activeFilterText').innerText;
+    const rows = document.querySelectorAll('.trx-row');
+    let visible = 0;
+
+    if (activeFilterText === 'Semua' || activeFilterText === 'Semua Status' || activeFilterText === 'Semua Transaksi') {
+      rows.forEach(r => {
+        const id = (r.dataset.id || '').toLowerCase();
+        const show = searchText === '' || id.includes(searchText);
+        r.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+    } else {
+      const filterMap = { 'Deposit': 'deposit', 'Withdraw': 'withdraw' };
+      const val = filterMap[activeFilterText];
+      if (!val) return;
+      rows.forEach(row => {
+        const type = row.dataset.type;
+        const id = (row.dataset.id || '').toLowerCase();
+        const typeMatch = type === val;
+        const searchMatch = searchText === '' || id.includes(searchText);
+        const show = typeMatch && searchMatch;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+    }
+
+    const empty = document.getElementById('emptyState');
+    if (empty) empty.classList.toggle('hidden', visible > 0);
+  }
+
+  searchInput.addEventListener('input', applyCurrentFilter);
+
+  function openDepositModal(transactionData) {
+    document.getElementById('modalFullType').innerHTML = '<span class="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200"><i class="fas fa-arrow-down text-[9px]"></i> Deposit</span>';
+    document.getElementById('modalFullInvoiceId').innerText = transactionData.id;
+    document.getElementById('modalFullUsername').innerText = transactionData.username || '-';
+    document.getElementById('modalFullEmail').innerText = transactionData.email || '-';
+
+    const amount = parseInt(transactionData.amount) || 0;
+    const fee = parseInt(transactionData.fee) || 0;
+    const total = amount + fee;
+    document.getElementById('modalFullNominal').innerText = `Rp ${amount.toLocaleString('id-ID')}`;
+    document.getElementById('modalFullFee').innerText = `Rp ${fee.toLocaleString('id-ID')}`;
+    document.getElementById('modalFullTotal').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+
+    let statusText = '', statusClass = '';
+    const st = transactionData.status;
+    if (st === 'paid' || st === 'success') { statusText = st === 'paid' ? 'PAID' : 'COMPLETED'; statusClass = 'text-emerald-700 font-bold'; }
+    else if (st === 'pending') { statusText = 'PENDING'; statusClass = 'text-amber-700 font-bold'; }
+    else if (st === 'expired' || st === 'rejected') { statusText = st === 'rejected' ? 'REJECTED' : 'EXPIRED'; statusClass = 'text-rose-700 font-bold'; }
+    else { statusText = 'PENDING'; statusClass = 'text-amber-700 font-bold'; }
+    document.getElementById('modalFullStatus').innerHTML = `<span class="text-xs uppercase ${statusClass}">${statusText}</span>`;
+
+    const createdDate = new Date(transactionData.created);
+    const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const dayName = days[createdDate.getDay()];
+    const dateNum = String(createdDate.getDate()).padStart(2,'0');
+    const month = String(createdDate.getMonth() + 1).padStart(2,'0');
+    const year = createdDate.getFullYear();
+    const time = createdDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+    document.getElementById('modalFullTanggal').innerText = `${dayName} ${dateNum}/${month}/${year}, ${time}`;
+
+    if (transactionData.expired) {
+      const expDate = new Date(transactionData.expired);
+      const expDayName = days[expDate.getDay()];
+      const expDateNum = String(expDate.getDate()).padStart(2,'0');
+      const expMonth = String(expDate.getMonth() + 1).padStart(2,'0');
+      const expYear = expDate.getFullYear();
+      const expTime = expDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+      document.getElementById('modalFullExpired').innerText = `${expDayName} ${expDateNum}/${expMonth}/${expYear}, ${expTime}`;
+    } else document.getElementById('modalFullExpired').innerText = '-';
+
+    if (transactionData.completed) {
+      const compDate = new Date(transactionData.completed);
+      const compDayName = days[compDate.getDay()];
+      const compDateNum = String(compDate.getDate()).padStart(2,'0');
+      const compMonth = String(compDate.getMonth() + 1).padStart(2,'0');
+      const compYear = compDate.getFullYear();
+      const compTime = compDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+      document.getElementById('modalFullCompleted').innerText = `${compDayName} ${compDateNum}/${compMonth}/${compYear}, ${compTime}`;
+      document.getElementById('modalFullCompletedRow').classList.remove('hidden');
+    } else document.getElementById('modalFullCompletedRow').classList.add('hidden');
+
+    if (transactionData.note && transactionData.note.trim() !== '') {
+      document.getElementById('modalFullNote').innerText = transactionData.note;
+      document.getElementById('modalFullNoteRow').classList.remove('hidden');
+    } else document.getElementById('modalFullNoteRow').classList.add('hidden');
+
+    const dynamicDiv = document.getElementById('modalFullDynamicContent');
+    if (st === 'pending' && transactionData.qris) {
+      dynamicDiv.innerHTML = `<div class="flex flex-col items-center mt-4"><div class="p-3 bg-white border border-slate-200 rounded-lg sm:rounded-2xl shadow-xs mb-3"><img src="${transactionData.qris}" class="w-48 h-48 object-contain rounded-xl" alt="QRIS" onerror="this.onerror=null; this.outerHTML='<div class=\\'w-48 h-48 flex items-center justify-center bg-slate-50 rounded-xl text-xs font-bold text-slate-500\\'>QR tidak tersedia</div>';"></div><p class="text-xs font-bold text-slate-900 uppercase">Scan QR Code di atas</p><p class="text-[11px] text-slate-500 mt-1 text-center max-w-xs">Gunakan E-Wallet atau Mobile Banking Untuk Melakukan Pembayaran.</p></div>`;
+    } else dynamicDiv.innerHTML = '';
+
+    const modal = document.getElementById('invoiceModalFull');
+    const modalContent = document.getElementById('invoiceModalContent');
+    modal.classList.remove('hidden');
+    setTimeout(() => { modalContent.classList.remove('scale-95', 'opacity-0'); modalContent.classList.add('scale-100', 'opacity-100'); }, 10);
+    document.body.style.overflow = 'hidden';
+  }
+  function closeInvoiceModalFull() { if (window.location.hash.startsWith('#transactions-')) history.back(); else hideInvoiceModalUI(); }
+  function hideInvoiceModalUI() {
+    const modal = document.getElementById('invoiceModalFull');
+    const modalContent = document.getElementById('invoiceModalContent');
+    if (modalContent) { modalContent.classList.remove('scale-100', 'opacity-100'); modalContent.classList.add('scale-95', 'opacity-0'); }
+    setTimeout(() => { modal.classList.add('hidden'); document.body.style.overflow = ''; }, 200);
+  }
+
+  function openWithdrawModal(transactionData) {
+    document.getElementById('modalFullWithdrawType').innerHTML = '<span class="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200"><i class="fas fa-arrow-up text-[9px]"></i> Withdraw</span>';
+    document.getElementById('modalFullWithdrawId').innerText = transactionData.id;
+    document.getElementById('modalFullWithdrawUsername').innerText = transactionData.username || '-';
+    document.getElementById('modalFullWithdrawEmail').innerText = transactionData.email || '-';
+
+    const formatOpts = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false };
+    const created = new Date(transactionData.created);
+    document.getElementById('modalFullWithdrawTanggal').innerText = created.toLocaleString('id-ID', formatOpts).replace(/\./g, ':');
+
+    if (transactionData.completed) {
+      const compDate = new Date(transactionData.completed);
+      document.getElementById('modalFullWithdrawCompleted').innerText = compDate.toLocaleString('id-ID', formatOpts).replace(/\./g, ':');
+      document.getElementById('modalFullWithdrawCompletedRow').classList.remove('hidden');
+    } else document.getElementById('modalFullWithdrawCompletedRow').classList.add('hidden');
+
+    const adminNoteRow = document.getElementById('modalFullWithdrawAdminNoteRow');
+    const adminNoteEl = document.getElementById('modalFullWithdrawAdminNote');
+    if (
+      (transactionData.status === 'expired' || transactionData.status === 'rejected') &&
+      transactionData.note &&
+      transactionData.note.trim() !== ''
+    ) {
+      adminNoteEl.innerText = transactionData.note;
+      adminNoteRow.classList.remove('hidden');
+    } else {
+      adminNoteRow.classList.add('hidden');
+    }
+
+    const nominal = Math.abs(parseInt(transactionData.amount)) || 0;
+    const fee = parseInt(transactionData.fee) || 0;
+    const totalPotong = nominal + fee;
+    document.getElementById('modalFullWithdrawNominal').innerText = `Rp ${nominal.toLocaleString('id-ID')}`;
+    document.getElementById('modalFullWithdrawFee').innerText = `Rp ${fee.toLocaleString('id-ID')}`;
+    document.getElementById('modalFullWithdrawTotalPotong').innerText = `Rp ${totalPotong.toLocaleString('id-ID')}`;
+    document.getElementById('modalFullWithdrawDiterima').innerText = `Rp ${nominal.toLocaleString('id-ID')}`;
+
+    let statusHTML = '';
+    const st = transactionData.status;
+    if (st === 'paid' || st === 'success') statusHTML = `<span class="text-xs font-bold uppercase text-emerald-700">${st === 'paid' ? 'PAID' : 'COMPLETED'}</span>`;
+    else if (st === 'pending') statusHTML = '<span class="text-xs font-bold uppercase text-amber-700">PENDING</span>';
+    else statusHTML = `<span class="text-xs font-bold uppercase text-rose-700">${st === 'rejected' ? 'REJECTED' : 'EXPIRED'}</span>`;
+    document.getElementById('modalFullWithdrawStatus').innerHTML = statusHTML;
+
+    document.getElementById('modalFullWithdrawMethod').innerText = transactionData.method || '-';
+    document.getElementById('modalFullWithdrawAccount').innerText = transactionData.account || '-';
+    document.getElementById('modalFullWithdrawName').innerText = transactionData.name || '-';
+
+    const modal = document.getElementById('withdrawModalFull');
+    const modalContent = document.getElementById('withdrawModalContent');
+    modal.classList.remove('hidden');
+    setTimeout(() => { modalContent.classList.remove('scale-95', 'opacity-0'); modalContent.classList.add('scale-100', 'opacity-100'); }, 10);
+    document.body.style.overflow = 'hidden';
+  }
+  function closeWithdrawModalFull() { if (window.location.hash.startsWith('#transactions-')) history.back(); else hideWithdrawModalUI(); }
+  function hideWithdrawModalUI() {
+    const modal = document.getElementById('withdrawModalFull');
+    const modalContent = document.getElementById('withdrawModalContent');
+    if (modalContent) { modalContent.classList.remove('scale-100', 'opacity-100'); modalContent.classList.add('scale-95', 'opacity-0'); }
+    setTimeout(() => { modal.classList.add('hidden'); document.body.style.overflow = ''; }, 200);
+  }
+
+  function getTransactionDataFromRow(row) {
+    return {
+      id: row.dataset.id,
+      type: row.dataset.type,
+      amount: row.dataset.amount,
+      fee: row.dataset.fee,
+      status: row.dataset.status,
+      created: row.dataset.created,
+      expired: row.dataset.expired || null,
+      username: row.dataset.username,
+      email: row.dataset.email,
+      method: row.dataset.method,
+      account: row.dataset.account,
+      name: row.dataset.name,
+      note: row.dataset.note,
+      qris: row.dataset.qris,
+      completed: row.dataset.completed || null
+    };
+  }
+  function handleTransactionRouter() {
+    const hash = window.location.hash;
+    if (!hash.startsWith('#transactions-')) return;
+    const transactionId = hash.replace('#transactions-', '');
+    const row = document.querySelector(`.trx-row[data-id="${transactionId}"]`);
+    if (!row) { hideInvoiceModalUI(); hideWithdrawModalUI(); history.replaceState(null, null, window.location.pathname + window.location.search); return; }
+    const data = getTransactionDataFromRow(row);
+    if (data.type === 'withdraw') { hideInvoiceModalUI(); openWithdrawModal(data); }
+    else { hideWithdrawModalUI(); openDepositModal(data); }
+  }
+  window.addEventListener('hashchange', handleTransactionRouter);
+  window.addEventListener('popstate', function() {
+    if (!window.location.hash.startsWith('#transactions-')) { hideInvoiceModalUI(); hideWithdrawModalUI(); }
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.date-cell').forEach(formatDateCell);
+    applyCurrentFilter();
+    if (window.location.hash.startsWith('#transactions-')) handleTransactionRouter();
+  });
+</script>
+
+<%- include('partials/footer') %>

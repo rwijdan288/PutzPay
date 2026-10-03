@@ -1,0 +1,427 @@
+<%- include('partials/header', { title: 'Beranda' }) %>
+
+<div class="w-full min-h-screen bg-slate-50">
+  <div class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12 space-y-10 sm:space-y-14 md:space-y-16">
+
+    <!-- ========== HERO SECTION ========== -->
+    <div class="rounded-2xl sm:rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 md:p-12 text-slate-900 shadow-card relative overflow-hidden">
+      <!-- Decorative subtle background glow -->
+      <div class="absolute -right-32 -top-32 w-64 sm:w-80 h-64 sm:h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-32 -bottom-32 w-64 sm:w-80 h-64 sm:h-80 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="max-w-3xl mx-auto relative z-10">
+        
+        <!-- Badge Pill -->
+        <div class="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-[10px] sm:text-xs font-semibold font-mono mb-4 sm:mb-6">
+          <i class="fa-solid fa-bolt text-blue-600 text-[10px] sm:text-xs"></i>
+          <span>Payment Gateway QRIS Auto-Settlement</span>
+        </div>
+
+        <% if (settings.logoUrl) { %>
+          <img src="<%= settings.logoUrl %>" alt="Logo" class="w-16 sm:w-20 h-16 sm:h-20 mx-auto mb-4 sm:mb-6 object-contain rounded-2xl border border-slate-200 shadow-xs bg-slate-50 p-2" />
+        <% } else { %>
+          <div class="w-14 sm:w-16 h-14 sm:h-16 mx-auto mb-4 sm:mb-6 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl sm:text-2xl shadow-card">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+        <% } %>
+
+        <h1 class="text-xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 mb-3 sm:mb-4 leading-tight font-outfit">
+          <%= settings.title || 'Platform Pembayaran QRIS Modern' %>
+        </h1>
+        
+        <p class="text-xs sm:text-sm text-slate-500 max-w-2xl mx-auto leading-relaxed mb-6 sm:mb-8 font-sans">
+          <%= settings.description || 'Payment gateway otomatis untuk bisnis digital. Cepat, aman, dan biaya rendah.' %>
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto">
+          <a href="/register" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white shadow-btn py-3 sm:py-3.5 px-6 sm:px-7 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold font-outfit transition-all flex items-center justify-center gap-2 active:scale-95">
+            Mulai Sekarang <i class="fas fa-arrow-right text-xs"></i>
+          </a>
+          <a href="/docs" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 py-3 sm:py-3.5 px-6 sm:px-7 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold font-outfit transition-all flex items-center justify-center gap-2 active:scale-95">
+            <i class="fas fa-code text-slate-600 text-xs"></i> Panduan API
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== STATISTIK TERKINI ========== -->
+    <% 
+      const currentStats = (typeof stats !== 'undefined' && stats) ? stats : { 
+        totalUsers: 0, 
+        totalWithdrawAmount: 0, 
+        totalDepositAmount: 0, 
+        totalTransactions: 0 
+      }; 
+    %>
+    <div id="section-statistik-realtime" class="space-y-5 sm:space-y-6">
+      <!-- SMOOTH FLOATING ANIMATION CSS -->
+      <style>
+        @keyframes floatUpDownGentle {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+        }
+
+        .card-float-server {
+          animation: floatUpDownGentle 4s ease-in-out infinite;
+          will-change: transform;
+          display: block;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .card-float-server { animation: none !important; }
+        }
+      </style>
+
+      <!-- Header Section -->
+      <div class="flex flex-col sm:flex-row sm:items-start lg:items-center justify-between gap-4">
+        <div class="flex items-start sm:items-center gap-3">
+          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center font-bold text-sm flex-shrink-0 mt-0.5 sm:mt-0">
+            <i class="fa-solid fa-chart-line text-sm"></i>
+          </div>
+          <div>
+            <h2 class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 font-outfit">Statistik Real-time Platform</h2>
+            <p class="text-[11px] sm:text-xs text-slate-500 font-sans">Aktivitas dan volume transaksi pengguna yang terus bertumbuh.</p>
+          </div>
+        </div>
+
+        <!-- REAL-TIME LIVE SYNC BADGE -->
+        <div id="platformSyncBadge" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200/80 shadow-xs text-[10px] sm:text-xs font-mono transition-all duration-300 w-fit">
+          <span class="relative flex h-2 w-2 flex-shrink-0">
+            <span id="platformSyncPulse" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span id="platformSyncDot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span class="text-slate-500 font-medium">Live:</span>
+          <span id="platformSyncText" class="text-emerald-600 font-bold">Sync</span>
+        </div>
+      </div>
+
+      <!-- LIVE SERVER MONITORING CARD -->
+      <div class="card-float-server">
+        <%- include('partials/live_server_card') %>
+      </div>
+
+      <!-- 3 PLATFORM METRIC CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 auto-rows-max">
+        <!-- Total Pengguna -->
+        <div id="cardTotalUsers" class="group relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-200 overflow-hidden flex flex-col justify-between h-full">
+          <div class="relative z-10">
+            <div class="flex items-center justify-between gap-2 sm:gap-3 mb-3">
+              <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                <span class="w-9 sm:w-10 h-9 sm:h-10 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xs sm:text-sm font-semibold border border-blue-100/60 shadow-2xs flex-shrink-0">
+                  <i class="fa-solid fa-users"></i>
+                </span>
+                <span class="text-[11px] sm:text-xs font-semibold text-slate-500 font-sans truncate">Total Pengguna</span>
+              </div>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50/80 border border-blue-100 text-[9px] sm:text-[10px] font-mono font-medium text-blue-600 flex-shrink-0">
+                <span class="w-1 h-1 rounded-full bg-blue-500"></span>
+                <span>Aktif</span>
+              </span>
+            </div>
+
+            <div class="mt-2 min-h-[32px] sm:min-h-[36px] flex items-baseline">
+              <p id="statValUsers" class="text-xl sm:text-2xl font-extrabold text-slate-900 font-outfit tracking-tight break-words">
+                <%= (currentStats.totalUsers && currentStats.totalUsers > 32) ? currentStats.totalUsers.toLocaleString('id-ID') + '+' : '32+' %>
+              </p>
+            </div>
+
+            <p class="text-[10px] sm:text-[11px] text-slate-400 font-sans mt-3 pt-3 border-t border-slate-100 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-check text-blue-500 text-[9px] flex-shrink-0"></i>
+              <span>Akun merchant terdaftar</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Total Pencairan -->
+        <div id="cardTotalWithdraw" class="group relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-200 overflow-hidden flex flex-col justify-between h-full">
+          <div class="relative z-10">
+            <div class="flex items-center justify-between gap-2 sm:gap-3 mb-3">
+              <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                <span class="w-9 sm:w-10 h-9 sm:h-10 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs sm:text-sm font-semibold border border-emerald-100/60 shadow-2xs flex-shrink-0">
+                  <i class="fa-solid fa-money-bill-transfer"></i>
+                </span>
+                <span class="text-[11px] sm:text-xs font-semibold text-slate-500 font-sans truncate">Total Withdraw</span>
+              </div>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50/80 border border-emerald-100 text-[9px] sm:text-[10px] font-mono font-medium text-emerald-600 flex-shrink-0">
+                <span class="w-1 h-1 rounded-full bg-emerald-500"></span>
+                <span>Terverifikasi</span>
+              </span>
+            </div>
+
+            <div class="mt-2 min-h-[32px] sm:min-h-[36px] flex items-baseline">
+              <p id="statValWithdraw" class="text-xl sm:text-2xl font-extrabold text-slate-900 font-outfit tracking-tight break-words">
+                <%= (currentStats.totalWithdrawAmount && currentStats.totalWithdrawAmount > 10000) ? 'Rp ' + currentStats.totalWithdrawAmount.toLocaleString('id-ID') : 'Rp 10.000' %>
+              </p>
+            </div>
+
+            <p class="text-[10px] sm:text-[11px] text-slate-400 font-sans mt-3 pt-3 border-t border-slate-100 flex items-center gap-1.5">
+              <i class="fa-solid fa-bolt text-emerald-500 text-[9px] flex-shrink-0"></i>
+              <span>Pencairan otomatis 24/7</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Total Transaksi -->
+        <div id="cardTotalDeposit" class="group relative bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-200 overflow-hidden flex flex-col justify-between h-full">
+          <div class="relative z-10">
+            <div class="flex items-center justify-between gap-2 sm:gap-3 mb-3">
+              <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                <span class="w-9 sm:w-10 h-9 sm:h-10 rounded-lg sm:rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xs sm:text-sm font-semibold border border-purple-100/60 shadow-2xs flex-shrink-0">
+                  <i class="fa-solid fa-qrcode"></i>
+                </span>
+                <span class="text-[11px] sm:text-xs font-semibold text-slate-500 font-sans truncate">Total Transaksi</span>
+              </div>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-50/80 border border-purple-100 text-[9px] sm:text-[10px] font-mono font-medium text-purple-600 flex-shrink-0">
+                <span class="w-1 h-1 rounded-full bg-purple-500"></span>
+                <span>Live</span>
+              </span>
+            </div>
+
+            <div class="mt-2 min-h-[32px] sm:min-h-[36px] flex items-baseline">
+              <p id="statValDeposit" class="text-xl sm:text-2xl font-extrabold text-slate-900 font-outfit tracking-tight break-words">
+                <%= (currentStats.totalDepositAmount && currentStats.totalDepositAmount > 920) ? 'Rp ' + currentStats.totalDepositAmount.toLocaleString('id-ID') : 'Rp 920' %>
+              </p>
+            </div>
+
+            <div class="text-[10px] sm:text-[11px] text-slate-400 font-sans mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-1.5">
+              <span class="flex items-center gap-1 min-w-0">
+                <i class="fa-solid fa-receipt text-purple-500 text-[9px] flex-shrink-0"></i>
+                <span class="truncate">QRIS Sukses</span>
+              </span>
+              <span id="statValTrxCount" data-val="<%= currentStats.totalTransactions || 0 %>" class="font-mono text-slate-500 font-semibold flex-shrink-0">
+                <%= (currentStats.totalTransactions || 0).toLocaleString('id-ID') %>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== KEUNGGULAN UTAMA ========== -->
+    <div class="space-y-5 sm:space-y-6">
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center font-bold text-sm flex-shrink-0 mt-0.5">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div>
+          <h2 class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 font-outfit">Mengapa Memilih <%= settings.name %>?</h2>
+          <p class="text-[11px] sm:text-xs text-slate-500 font-sans">Fitur unggulan dirancang khusus untuk kenyamanan developer dan bisnis digital.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+        <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all flex gap-4">
+          <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 font-bold text-sm sm:text-base">
+            <i class="fa-solid fa-lock"></i>
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-xs sm:text-sm font-bold text-slate-900 font-outfit mb-1">Keamanan Tingkat Tinggi</h3>
+            <p class="text-[10px] sm:text-xs text-slate-500 font-sans leading-relaxed">Terenkripsi dengan HMAC-SHA256, webhook verification, proteksi 24/7.</p>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all flex gap-4">
+          <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 font-bold text-sm sm:text-base">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-xs sm:text-sm font-bold text-slate-900 font-outfit mb-1">Deteksi Pembayaran Instan</h3>
+            <p class="text-[10px] sm:text-xs text-slate-500 font-sans leading-relaxed">Verifikasi mutasi dalam detik, saldo bertambah otomatis.</p>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all flex gap-4">
+          <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0 font-bold text-sm sm:text-base">
+            <i class="fa-solid fa-code"></i>
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-xs sm:text-sm font-bold text-slate-900 font-outfit mb-1">Developer-Friendly REST API</h3>
+            <p class="text-[10px] sm:text-xs text-slate-500 font-sans leading-relaxed">Dokumentasi lengkap, integrasi mudah dengan berbagai framework.</p>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all flex gap-4">
+          <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 font-bold text-sm sm:text-base">
+            <i class="fa-solid fa-percent"></i>
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-xs sm:text-sm font-bold text-slate-900 font-outfit mb-1">Biaya Paling Kompetitif</h3>
+            <p class="text-[10px] sm:text-xs text-slate-500 font-sans leading-relaxed">Admin fee rendah, transparan, maksimalkan keuntungan bisnis.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== TIGA LANGKAH INTEGRASI ========== -->
+    <div class="space-y-5 sm:space-y-6">
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center font-bold text-sm flex-shrink-0 mt-0.5">
+          <i class="fa-solid fa-diagram-project"></i>
+        </div>
+        <div>
+          <h2 class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 font-outfit">3 Langkah Mudah Integrasi</h2>
+          <p class="text-[11px] sm:text-xs text-slate-500 font-sans">Mulai menerima pembayaran digital dalam hitungan menit.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+        <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all relative">
+          <span class="absolute top-4 sm:top-5 right-4 sm:right-5 w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs sm:text-xs font-mono">1</span>
+          <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3 sm:mb-4 text-sm sm:text-base">
+            <i class="fa-solid fa-user-plus"></i>
+          </div>
+          <h3 class="text-xs sm:text-sm font-bold text-slate-900 font-outfit mb-1">1. Registrasi Akun</h3>
+          <p class="text-[10px] sm:text-xs text-slate-500 font-sans leading-relaxed">Daftar gratis 1 menit, dapatkan API Key instant di profil.</p>
+        </div>
+
+        <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all relative">
+          <span class="absolute top-4 sm:top-5 right-4 sm:right-5 w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-xs sm:text-xs font-mono">2</span>
+          <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-3 sm:mb-4 text-sm sm:text-base">
+            <i class="fa-solid fa-terminal"></i>
+          </div>
+          <h3 class="text-xs sm:text-sm font-bold text-slate-900 font-outfit mb-1">2. Panggil API Endpoint</h3>
+          <p class="text-[10px] sm:text-xs text-slate-500 font-sans leading-relaxed">Generate QRIS Dinamis, cek status pembayaran dari aplikasi.</p>
+        </div>
+
+        <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all relative">
+          <span class="absolute top-4 sm:top-5 right-4 sm:right-5 w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs sm:text-xs font-mono">3</span>
+          <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 sm:mb-4 text-sm sm:text-base">
+            <i class="fa-solid fa-wallet"></i>
+          </div>
+          <h3 class="text-xs sm:text-sm font-bold text-slate-900 font-outfit mb-1">3. Terima Saldo Otomatis</h3>
+          <p class="text-[10px] sm:text-xs text-slate-500 font-sans leading-relaxed">Pembayaran sukses langsung menambah saldo, siap di-withdraw.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== CALL TO ACTION BANNER ========== -->
+    <div class="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-slate-900 to-blue-950 text-white p-6 sm:p-8 md:p-12 text-center shadow-card border border-slate-800">
+      <h3 class="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight mb-2 sm:mb-3 font-outfit">Siap Menerima Pembayaran QRIS?</h3>
+      <p class="text-[11px] sm:text-xs lg:text-sm text-slate-300 mb-5 sm:mb-6 max-w-lg mx-auto font-sans leading-relaxed">Bergabunglah dengan ratusan developer dan merchant yang telah mempercayai platform PutzPay.</p>
+      <a href="/register" class="bg-blue-600 hover:bg-blue-500 text-white shadow-btn px-6 sm:px-7 py-3 sm:py-3.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold font-outfit transition-all inline-flex items-center gap-2 active:scale-95">
+        Buat Akun Gratis <i class="fas fa-arrow-right text-xs"></i>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================= -->
+<!-- POPUP WAJIB JOIN CHANNEL TELEGRAM RESMI PUTZPAY (HOMEPAGE ONLY)  -->
+<!-- ================================================================= -->
+<% if (typeof telegramVerified === 'undefined' || !telegramVerified) { %>
+<div id="tgMandatoryPopupOverlay" class="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 select-none">
+  <!-- Popup Card Container -->
+  <div id="tgMandatoryPopupCard" class="relative w-full max-w-sm bg-white/95 backdrop-blur-2xl border border-white/80 shadow-2xl rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-center text-slate-900 transform scale-95 transition-all duration-300 overflow-hidden">
+    <!-- Close X button -->
+    <button type="button" id="tgCornerCloseBtn" aria-label="Tutup" class="absolute top-4 right-4 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all cursor-pointer z-20">
+      <i class="fa-solid fa-xmark text-sm font-bold"></i>
+    </button>
+
+    <!-- Decorative Glow -->
+    <div class="absolute -top-16 -right-16 w-40 sm:w-44 h-40 sm:h-44 bg-sky-400/20 rounded-full blur-2xl pointer-events-none"></div>
+    <div class="absolute -bottom-16 -left-16 w-40 sm:w-44 h-40 sm:h-44 bg-blue-600/15 rounded-full blur-2xl pointer-events-none"></div>
+
+    <div class="relative z-10">
+      <!-- Icon -->
+      <div class="relative inline-flex mb-4 sm:mb-5">
+        <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-gradient-to-tr from-[#0088cc] via-[#229ED9] to-[#37b0ea] text-white flex items-center justify-center text-2xl sm:text-3xl shadow-xl shadow-sky-500/30">
+          <i class="fa-brands fa-telegram"></i>
+        </div>
+        <div class="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[9px] sm:text-[10px] font-bold border-2 border-white shadow-xs">
+          <i class="fa-solid fa-check"></i>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <h2 class="text-base sm:text-lg font-extrabold text-slate-900 font-outfit tracking-tight mb-2 flex items-center justify-center gap-2">
+        <span>📢 Channel Telegram Resmi</span>
+      </h2>
+      
+      <p class="text-[11px] sm:text-xs text-slate-600 font-sans leading-relaxed mb-5 sm:mb-6">
+        Gabung ke channel Telegram resmi PutzPay untuk update sistem, maintenance, promo, dan pengumuman penting.
+      </p>
+
+      <!-- Action Area -->
+      <div class="space-y-3">
+        <!-- Join Button -->
+        <a id="tgJoinChannelBtn" href="https://t.me/PutzPayOfficial" target="_blank" rel="noopener noreferrer" class="w-full bg-[#229ED9] hover:bg-[#1e8cc1] text-white shadow-md shadow-sky-500/25 py-3 sm:py-3.5 px-6 rounded-lg sm:rounded-2xl text-xs sm:text-sm font-bold font-outfit transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
+          <i class="fa-brands fa-telegram"></i>
+          <span>📢 JOIN CHANNEL</span>
+        </a>
+
+        <!-- Close Button -->
+        <button type="button" id="tgCloseBtn" class="w-full bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 border border-slate-200 py-3 sm:py-3.5 px-6 rounded-lg sm:rounded-2xl text-xs sm:text-sm font-bold font-outfit transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
+          <i class="fa-solid fa-xmark text-sm font-bold text-slate-500"></i>
+          <span>X TUTUP</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const currentPath = window.location.pathname;
+  if (currentPath !== '/' && currentPath !== '' && currentPath !== '/home') {
+    return;
+  }
+
+  try {
+    if (sessionStorage.getItem('tg_popup_dismissed') === '1') {
+      return;
+    }
+  } catch (e) {}
+
+  const overlay = document.getElementById('tgMandatoryPopupOverlay');
+  const card = document.getElementById('tgMandatoryPopupCard');
+  const closeBtn = document.getElementById('tgCloseBtn');
+  const cornerCloseBtn = document.getElementById('tgCornerCloseBtn');
+
+  if (!overlay || !card) return;
+
+  function showPopup() {
+    overlay.classList.remove('opacity-0', 'pointer-events-none');
+    overlay.classList.add('opacity-100', 'pointer-events-auto');
+    card.classList.remove('scale-95');
+    card.classList.add('scale-100');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePopup() {
+    card.classList.remove('scale-100');
+    card.classList.add('scale-95');
+    overlay.classList.remove('opacity-100', 'pointer-events-auto');
+    overlay.classList.add('opacity-0', 'pointer-events-none');
+    try {
+      sessionStorage.setItem('tg_popup_dismissed', '1');
+    } catch (e) {}
+    setTimeout(function() {
+      overlay.remove();
+      document.body.style.overflow = '';
+    }, 300);
+  }
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(showPopup, 150);
+  } else {
+    window.addEventListener('DOMContentLoaded', function() {
+      setTimeout(showPopup, 150);
+    });
+  }
+
+  if (closeBtn) closeBtn.addEventListener('click', closePopup);
+  if (cornerCloseBtn) cornerCloseBtn.addEventListener('click', closePopup);
+
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closePopup();
+  });
+
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' || e.keyCode === 27) closePopup();
+  });
+})();
+</script>
+<% } %>
+
+<%- include('partials/live_toast') %>
+<%- include('partials/footer') %>

@@ -1,0 +1,480 @@
+<%- include('partials/header', { title: 'Admin Support Chat' }) %>
+
+<div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-8 space-y-6 w-full min-w-0 font-sans">
+
+  <!-- Header Section -->
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-6 text-white shadow-sm sm:shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+    <div class="space-y-1.5 z-10">
+      <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider border border-blue-500/30">
+        <i class="fa-solid fa-headset text-xs"></i>
+        <span>Pusat Bantuan & Live Chat</span>
+      </div>
+      <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl font-bold tracking-tight text-white font-outfit">Live Chat Support Admin</h1>
+      <p class="text-xs sm:text-sm text-slate-400">Kelola dan balas percakapan bantuan pelanggan secara Realtime.</p>
+    </div>
+
+    <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-800/80 border border-slate-700/80 px-4 py-2 rounded-xl text-slate-200 self-start sm:self-center z-10">
+      <span class="relative flex h-2.5 w-2.5">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+      </span>
+      <span class="text-xs font-medium font-mono text-emerald-400">Support Live Active</span>
+    </div>
+  </div>
+
+  <!-- Main Chat Dashboard Panel -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm sm:shadow-card grid grid-cols-1 lg:grid-cols-12 min-h-[620px] max-h-[800px]">
+
+    <!-- User List Panel (Left) -->
+    <div class="lg:col-span-4 border-r-0 lg:border-r border-b lg:border-b-0 border-slate-200 bg-slate-50/50 flex flex-col h-full">
+      
+      <!-- Search Box -->
+      <div class="p-3.5 border-b border-slate-200 bg-white">
+        <div class="relative w-full">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input id="userSearchInput" type="text" placeholder="Cari pengguna..." 
+                 class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 placeholder:text-slate-400 transition-all font-sans">
+        </div>
+      </div>
+
+      <!-- Users List Scroll Container -->
+      <div id="usersListContainer" class="flex-1 overflow-y-auto divide-y divide-slate-100 custom-scroll">
+        <div class="p-8 text-center text-xs text-slate-400">
+          <i class="fa-solid fa-spinner animate-spin text-lg mb-2 text-blue-600"></i>
+          <p>Memuat daftar pengguna...</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Conversation Chat Panel (Right) -->
+    <div class="lg:col-span-8 flex flex-col bg-slate-50/30 h-full relative">
+      
+      <!-- Chat Header -->
+      <div id="activeChatHeader" class="p-3 sm:p-4 bg-white border-b border-slate-200 flex items-center justify-between gap-2 sm:gap-3">
+        <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div id="activeUserAvatar" class="w-10 h-10 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center font-bold text-blue-600 text-sm font-outfit uppercase shrink-0 overflow-hidden shadow-xs">
+            ?
+          </div>
+          <div class="min-w-0">
+            <h2 id="activeUsername" class="font-outfit font-bold text-xs sm:text-sm lg:text-base text-slate-900 truncate">Pilih Pengguna</h2>
+            <div class="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+              <span id="activeUserOnlineDot" class="w-2 h-2 rounded-full bg-slate-300 inline-block"></span>
+              <span id="activeUserOnlineText">Offline</span>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="resetAllChats()" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl text-xs font-semibold text-rose-600 font-outfit transition-all cursor-pointer active:scale-95">
+          <i class="fa-solid fa-trash-can mr-1"></i> Reset All
+        </button>
+      </div>
+
+      <!-- Messages Area -->
+      <div id="adminChatMessages" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-3 bg-slate-50 custom-scroll min-h-[350px]">
+        <div class="flex flex-col items-center justify-center h-full text-center text-slate-400 text-xs p-6 space-y-2">
+          <div class="w-12 h-12 rounded-lg sm:rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 text-xl">
+            <i class="fa-solid fa-comments"></i>
+          </div>
+          <p class="font-outfit font-bold text-slate-700 text-sm">Pilih percakapan dari daftar di sebelah kiri</p>
+          <p class="text-slate-400">Anda dapat membalas pesan pengguna secara realtime.</p>
+        </div>
+      </div>
+
+      <!-- Input Bar -->
+      <div id="adminInputBar" class="p-3 bg-white border-t border-slate-200 hidden">
+        
+        <!-- Reply Preview -->
+        <div id="adminReplyPreview" class="hidden relative mb-2 p-2.5 bg-blue-50/70 border border-blue-200 rounded-xl flex flex-col">
+          <div class="flex justify-between items-center mb-0.5">
+            <span id="adminReplyName" class="text-xs font-bold text-blue-700 font-outfit">Username</span>
+            <button onclick="cancelAdminReply()" type="button" class="text-slate-400 hover:text-slate-700 p-1 bg-white rounded-lg w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center border border-slate-200 cursor-pointer">
+              <i class="fas fa-times text-[10px]"></i>
+            </button>
+          </div>
+          <span id="adminReplyText" class="text-xs text-slate-600 truncate pr-4">Membalas pesan...</span>
+        </div>
+
+        <!-- Image Upload Preview -->
+        <div id="adminImagePreviewContainer" class="hidden relative inline-block mb-2">
+          <img id="adminImagePreview" src="" alt="Preview" class="h-16 w-16 object-cover rounded-xl border border-slate-200 shadow-sm" />
+          <button onclick="removeAdminImage()" type="button" class="absolute -top-2 -right-2 w-4 h-4 sm:w-5 sm:h-5 bg-rose-500 text-white font-bold rounded-full flex items-center justify-center text-[10px] hover:bg-rose-600 shadow-xs cursor-pointer">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <form id="adminChatForm" class="flex items-center gap-1.5 sm:gap-2">
+          <label for="adminImageInput" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-blue-50 hover:text-blue-600 border border-slate-200 transition-colors flex items-center justify-center text-slate-600 cursor-pointer shrink-0">
+            <i class="fas fa-image text-xs"></i>
+          </label>
+          <input type="file" id="adminImageInput" accept="image/*" class="hidden" />
+
+          <input type="text" id="adminMessageInput" placeholder="Ketik balasan untuk pengguna..." autocomplete="off"
+                 class="flex-1 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 placeholder:text-slate-400 transition-all font-sans">
+
+          <button type="submit" id="adminSendBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-xs font-semibold font-outfit flex items-center gap-1.5 shadow-btn transition-all active:scale-95 cursor-pointer">
+            <span>Kirim</span> <i class="fas fa-paper-plane text-xs"></i>
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Image Viewer Modal -->
+<div id="imageModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-slate-950/80 backdrop-blur-sm">
+  <div class="relative max-w-[90%] max-h-[90%] flex items-center justify-center p-2">
+    <button onclick="closeImageModal()" class="absolute -top-4 -right-4 text-slate-700 bg-white hover:bg-slate-100 rounded-full w-9 h-9 flex items-center justify-center text-sm z-10 transition-colors border border-slate-200 shadow-md cursor-pointer">
+      <i class="fas fa-times"></i>
+    </button>
+    <img id="modalImage" src="" alt="Pratinjau Gambar" class="object-contain max-w-full max-h-full rounded-lg sm:rounded-2xl border border-white/20 shadow-2xl">
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const currentUser = <%- JSON.stringify(user) %>;
+  const socket = io();
+
+  socket.emit('join_support_chat', { userId: currentUser._id, role: 'admin' });
+
+  let usersList = [];
+  let selectedUserId = null;
+  let activeMessages = [];
+  let displayedMsgIds = new Set();
+  let uploadedAdminImageUrl = null;
+  let adminReplyTo = null;
+
+  const usersListContainer = document.getElementById('usersListContainer');
+  const userSearchInput = document.getElementById('userSearchInput');
+  const adminChatMessages = document.getElementById('adminChatMessages');
+  const adminChatForm = document.getElementById('adminChatForm');
+  const adminMessageInput = document.getElementById('adminMessageInput');
+  const adminImageInput = document.getElementById('adminImageInput');
+  const adminImagePreview = document.getElementById('adminImagePreview');
+  const adminImagePreviewContainer = document.getElementById('adminImagePreviewContainer');
+  const adminInputBar = document.getElementById('adminInputBar');
+
+  // Socket Handlers
+  socket.on('user:online_status', ({ userId, isOnline }) => {
+    const user = usersList.find(u => u.userId === userId);
+    if (user) user.isOnline = isOnline;
+    renderUsersList();
+    if (selectedUserId === userId) {
+      updateActiveUserOnlineStatus(isOnline);
+    }
+  });
+
+  socket.on('chat:receive', (msg) => {
+    // Refresh users list order / unread count
+    loadUsersList();
+
+    if (selectedUserId && (msg.userId === selectedUserId || msg.targetUserId === selectedUserId)) {
+      renderSingleMessage(msg);
+      forceScrollAdminChat();
+      // Auto read
+      socket.emit('chat:read', { targetUserId: selectedUserId });
+      fetch('/api/chat/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId: selectedUserId }),
+        credentials: 'include'
+      }).catch(() => {});
+    }
+  });
+
+  socket.on('chat:read_ack', ({ targetUserId }) => {
+    if (selectedUserId === targetUserId) {
+      document.querySelectorAll('.admin-msg-status').forEach(el => {
+        el.className = 'fa-solid fa-check-double text-blue-200 text-[10px] admin-msg-status';
+        el.title = 'Dibaca';
+      });
+    }
+  });
+
+  async function loadUsersList() {
+    try {
+      const res = await fetch('/api/admin/chat/users', { credentials: 'include' });
+      usersList = await res.json();
+      renderUsersList();
+    } catch (err) {
+      console.error('Failed to load chat users:', err);
+    }
+  }
+
+  function renderUsersList() {
+    const query = (userSearchInput.value || '').toLowerCase().trim();
+    const filtered = usersList.filter(u => u.username.toLowerCase().includes(query));
+
+    if (filtered.length === 0) {
+      usersListContainer.innerHTML = `
+        <div class="p-8 text-center text-xs text-slate-400">
+          <p>Tidak ada pengguna ditemukan.</p>
+        </div>
+      `;
+      return;
+    }
+
+    usersListContainer.innerHTML = '';
+    filtered.forEach(u => {
+      const isSelected = (selectedUserId === u.userId);
+      const item = document.createElement('div');
+      item.className = `p-3.5 flex items-center gap-2 sm:gap-3 cursor-pointer transition-colors border-b border-slate-100 ${isSelected ? 'bg-blue-50/70 border-l-2 border-l-blue-600' : 'bg-white hover:bg-slate-50'}`;
+      item.onclick = () => selectUserChat(u);
+
+      const avatar = document.createElement('div');
+      avatar.className = 'w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-700 text-xs font-outfit uppercase shrink-0 relative shadow-xs';
+      if (u.profilePicture) {
+        avatar.innerHTML = `<img src="${u.profilePicture}" class="w-full h-full object-cover rounded-full" alt="${u.username}">`;
+      } else {
+        avatar.textContent = u.username.charAt(0).toUpperCase();
+      }
+
+      // Online status badge
+      const onlineDot = document.createElement('span');
+      onlineDot.className = `absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${u.isOnline ? 'bg-emerald-500' : 'bg-slate-300'}`;
+      avatar.appendChild(onlineDot);
+
+      const info = document.createElement('div');
+      info.className = 'min-w-0 flex-1';
+      info.innerHTML = `
+        <div class="flex items-center justify-between gap-1 mb-0.5">
+          <span class="font-outfit font-bold text-xs ${isSelected ? 'text-blue-700' : 'text-slate-900'} truncate">${u.username}</span>
+          <span class="text-[10px] text-slate-400 shrink-0">${new Date(u.lastMessageAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+        <div class="flex items-center justify-between gap-1">
+          <p class="text-xs text-slate-500 truncate min-w-0">${u.lastMessage || '...'}</p>
+          ${u.unreadCount > 0 ? `<span class="px-2 py-0.5 bg-rose-500 text-white text-[10px] font-bold rounded-full shadow-xs shrink-0">${u.unreadCount}</span>` : ''}
+        </div>
+      `;
+
+      item.appendChild(avatar);
+      item.appendChild(info);
+      usersListContainer.appendChild(item);
+    });
+  }
+
+  userSearchInput.addEventListener('input', renderUsersList);
+
+  async function selectUserChat(userObj) {
+    selectedUserId = userObj.userId;
+    renderUsersList();
+
+    // Update Header
+    document.getElementById('activeUsername').textContent = userObj.username;
+    const avatar = document.getElementById('activeUserAvatar');
+    if (userObj.profilePicture) {
+      avatar.innerHTML = `<img src="${userObj.profilePicture}" class="w-full h-full object-cover rounded-full" alt="${userObj.username}">`;
+    } else {
+      avatar.textContent = userObj.username.charAt(0).toUpperCase();
+    }
+    updateActiveUserOnlineStatus(userObj.isOnline);
+
+    adminInputBar.classList.remove('hidden');
+    adminChatMessages.innerHTML = '';
+    displayedMsgIds.clear();
+
+    // Mark read
+    socket.emit('chat:read', { targetUserId: selectedUserId });
+    fetch('/api/chat/read', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetUserId: selectedUserId }),
+      credentials: 'include'
+    }).catch(() => {});
+
+    // Load Messages
+    await loadActiveUserMessages();
+  }
+
+  function updateActiveUserOnlineStatus(isOnline) {
+    const dot = document.getElementById('activeUserOnlineDot');
+    const txt = document.getElementById('activeUserOnlineText');
+    if (isOnline) {
+      dot.className = 'w-2 h-2 rounded-full bg-emerald-500 inline-block';
+      txt.textContent = 'Online';
+      txt.className = 'text-emerald-600 font-medium';
+    } else {
+      dot.className = 'w-2 h-2 rounded-full bg-slate-300 inline-block';
+      txt.textContent = 'Offline';
+      txt.className = 'text-slate-500 font-medium';
+    }
+  }
+
+  async function loadActiveUserMessages() {
+    try {
+      const res = await fetch(`/api/chat/messages?targetUserId=${selectedUserId}`, { credentials: 'include' });
+      const msgs = await res.json();
+      activeMessages = msgs;
+      msgs.forEach(renderSingleMessage);
+      forceScrollAdminChat();
+    } catch (err) {
+      console.error('Gagal memuat pesan:', err);
+    }
+  }
+
+  function renderSingleMessage(msg) {
+    if (displayedMsgIds.has(msg._id)) return;
+    displayedMsgIds.add(msg._id);
+
+    const isAdmin = (msg.role === 'admin');
+
+    const wrapper = document.createElement('div');
+    wrapper.id = `admin-msg-${msg._id}`;
+    wrapper.className = `flex items-end gap-1.5 sm:gap-2 group p-1 ${isAdmin ? 'flex-row-reverse' : ''}`;
+
+    const bubble = document.createElement('div');
+    bubble.className = `px-4 py-2.5 text-xs rounded-lg sm:rounded-2xl shadow-xs ${isAdmin ? 'bg-blue-600 text-white rounded-br-sm max-w-[80%]' : 'bg-white text-slate-900 border border-slate-200/80 rounded-bl-sm max-w-[80%]'}`;
+
+    const senderHeader = document.createElement('div');
+    senderHeader.className = `text-[11px] font-bold font-outfit mb-1 flex items-center gap-1 ${isAdmin ? 'text-blue-100' : 'text-slate-900'}`;
+    senderHeader.innerHTML = `${msg.username} ${isAdmin ? '<span class="text-blue-200"><i class="fas fa-check-circle text-xs"></i> Admin</span>' : ''}`;
+    bubble.appendChild(senderHeader);
+
+    if (msg.image) {
+      const img = document.createElement('img');
+      img.src = msg.image;
+      img.className = 'max-w-[200px] rounded-xl my-1 cursor-pointer border border-black/10';
+      img.onclick = () => openImageModal(msg.image);
+      bubble.appendChild(img);
+    }
+
+    if (msg.message) {
+      const msgTxt = document.createElement('p');
+      msgTxt.className = `whitespace-pre-wrap leading-relaxed text-xs ${isAdmin ? 'text-white' : 'text-slate-800'}`;
+      msgTxt.textContent = msg.message;
+      bubble.appendChild(msgTxt);
+    }
+
+    const timeDiv = document.createElement('div');
+    timeDiv.className = `text-[10px] text-right mt-1 flex items-center justify-end gap-1 ${isAdmin ? 'text-blue-200' : 'text-slate-400'}`;
+    let statusIcon = '';
+    if (isAdmin) {
+      if (msg.isRead || msg.status === 'read') {
+        statusIcon = `<i class="fa-solid fa-check-double text-blue-200 text-[10px] admin-msg-status" title="Dibaca"></i>`;
+      } else {
+        statusIcon = `<i class="fa-solid fa-check text-blue-300 text-[10px] admin-msg-status" title="Terkirim"></i>`;
+      }
+    }
+    timeDiv.innerHTML = `${new Date(msg.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} ${statusIcon}`;
+    bubble.appendChild(timeDiv);
+
+    wrapper.appendChild(bubble);
+
+    // Reply Button
+    const replyBtn = document.createElement('button');
+    replyBtn.className = 'text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200/60 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer';
+    replyBtn.innerHTML = '<i class="fas fa-reply text-[10px]"></i>';
+    replyBtn.onclick = () => initiateAdminReply(msg);
+    wrapper.appendChild(replyBtn);
+
+    adminChatMessages.appendChild(wrapper);
+  }
+
+  function initiateAdminReply(msg) {
+    adminReplyTo = { _id: msg._id, username: msg.username, message: msg.message };
+    document.getElementById('adminReplyName').textContent = msg.username;
+    document.getElementById('adminReplyText').textContent = msg.message || '📷 Gambar';
+    document.getElementById('adminReplyPreview').classList.remove('hidden');
+    adminMessageInput.focus();
+  }
+
+  function cancelAdminReply() {
+    adminReplyTo = null;
+    document.getElementById('adminReplyPreview').classList.add('hidden');
+  }
+
+  adminImageInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('image', file);
+    try {
+      const res = await fetch('/api/chat/upload', { method: 'POST', body: formData, credentials: 'include' });
+      const data = await res.json();
+      if (data.success) {
+        uploadedAdminImageUrl = data.imageUrl;
+        adminImagePreview.src = data.imageUrl;
+        adminImagePreviewContainer.classList.remove('hidden');
+      } else alert(data.error || 'Gagal upload gambar');
+    } catch (err) {
+      alert('Gagal upload gambar');
+    }
+    adminImageInput.value = '';
+  });
+
+  function removeAdminImage() {
+    uploadedAdminImageUrl = null;
+    adminImagePreviewContainer.classList.add('hidden');
+    adminImagePreview.src = '';
+  }
+
+  adminChatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = adminMessageInput.value.trim();
+    if (!text && !uploadedAdminImageUrl) return;
+    if (!selectedUserId) return;
+
+    try {
+      const res = await fetch('/api/chat/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text,
+          image: uploadedAdminImageUrl,
+          replyTo: adminReplyTo,
+          targetUserId: selectedUserId
+        }),
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (data.success && data.message) {
+        renderSingleMessage(data.message);
+        forceScrollAdminChat();
+        adminMessageInput.value = '';
+        removeAdminImage();
+        cancelAdminReply();
+        loadUsersList();
+      }
+    } catch (err) {
+      alert('Gagal mengirim pesan');
+    }
+  });
+
+  function forceScrollAdminChat() {
+    adminChatMessages.scrollTop = adminChatMessages.scrollHeight;
+  }
+
+  function openImageModal(url) {
+    document.getElementById('modalImage').src = url;
+    document.getElementById('imageModal').classList.remove('hidden');
+  }
+
+  function closeImageModal() {
+    document.getElementById('imageModal').classList.add('hidden');
+  }
+
+  async function resetAllChats() {
+    if (!confirm('⚠️ Apakah Anda yakin ingin MENGHAPUS SELURUH PERCAKAPAN CHAT SUPPORT?')) return;
+    try {
+      const res = await fetch('/api/chat/reset', { method: 'POST', credentials: 'include' });
+      const data = await res.json();
+      if (data.success) {
+        adminChatMessages.innerHTML = '';
+        displayedMsgIds.clear();
+        selectedUserId = null;
+        adminInputBar.classList.add('hidden');
+        loadUsersList();
+      } else alert(data.error);
+    } catch (err) {
+      alert('Gagal reset chat');
+    }
+  }
+
+  loadUsersList();
+</script>
+
+<%- include('partials/footer') %>

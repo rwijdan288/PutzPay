@@ -1,0 +1,47 @@
+<%- include('partials/header', { title: (typeof errorCode !== 'undefined' && errorCode === 'account_not_found') ? 'Akun Belum Terdaftar' : 'Autentikasi Gagal' }) %>
+
+<div class="min-h-screen sm:min-h-[75vh] flex flex-col items-center justify-center py-5 sm:py-6 px-4">
+  <div class="w-full max-w-md bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-7 sm:p-9 shadow-sm sm:shadow-card relative text-center">
+    
+    <% if (typeof errorCode !== 'undefined' && errorCode === 'account_not_found') { %>
+      <div class="w-14 h-14 rounded-lg sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl mx-auto mb-5">
+        <i class="fa-solid fa-user-slash"></i>
+      </div>
+
+      <h2 class="text-xl font-bold text-slate-900 tracking-tight font-outfit mb-2">Akun Google Belum Terdaftar</h2>
+      <p class="text-xs text-slate-500 mb-6 leading-relaxed font-sans">
+        <%= errorMessage || 'Akun Google ini belum terhubung dengan PutzPay. Silakan daftar akun terlebih dahulu.' %>
+      </p>
+
+      <div class="space-y-3">
+        <a href="/auth/google?intent=register" target="_top" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl text-xs font-semibold font-outfit shadow-btn transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-95">
+          <i class="fa-solid fa-user-plus text-xs"></i> DAFTAR DENGAN GOOGLE
+        </a>
+        <a href="/login" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 py-3.5 rounded-xl text-xs font-semibold font-outfit transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-95">
+          <i class="fa-solid fa-arrow-left text-xs"></i> KEMBALI KE LOGIN
+        </a>
+      </div>
+    <% } else { %>
+      <div class="w-14 h-14 rounded-lg sm:rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl mx-auto mb-5">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+
+      <h2 class="text-xl font-bold text-slate-900 tracking-tight font-outfit mb-2">Autentikasi Google Gagal</h2>
+      <p class="text-xs text-slate-500 mb-6 leading-relaxed font-sans">
+        <%= errorMessage || 'Sesi Google telah kedaluwarsa atau tidak valid. Silakan coba login kembali.' %>
+      </p>
+
+      <div class="space-y-3">
+        <a href="/auth/google" target="_top" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl text-xs font-semibold font-outfit shadow-btn transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-95">
+          <i class="fa-solid fa-rotate-right text-xs"></i> COBA LAGI
+        </a>
+        <a href="/login" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 py-3.5 rounded-xl text-xs font-semibold font-outfit transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-95">
+          <i class="fa-solid fa-arrow-left text-xs"></i> KEMBALI KE LOGIN
+        </a>
+      </div>
+    <% } %>
+
+  </div>
+</div>
+
+<%- include('partials/footer') %>

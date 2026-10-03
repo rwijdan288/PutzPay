@@ -1,0 +1,393 @@
+<%- include('partials/header', { 
+  title: 'Partner Resmi PutzPay - Ekosistem Kemitraan Gateway Pembayaran',
+  metaDescription: 'Daftar partner resmi PutzPay. Temukan ekosistem kemitraan terverifikasi dan resmi yang terintegrasi dengan gateway pembayaran PutzPay.',
+  canonicalPath: '/partners'
+}) %>
+
+<div class="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8 w-full min-w-0 font-sans">
+  
+  <!-- HERO BANNER -->
+  <div class="bg-slate-900 text-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 shadow-sm sm:shadow-card border border-slate-800 relative overflow-hidden w-full min-w-0">
+    <div class="absolute -right-16 -top-16 w-80 h-80 bg-blue-600/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -left-16 -bottom-16 w-80 h-80 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative z-10 space-y-5">
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider border border-blue-500/30 font-mono">
+          <i class="fa-solid fa-handshake text-xs"></i> Ekosistem Kemitraan
+        </span>
+        <% if (typeof isPartnerEnabled !== 'undefined' && isPartnerEnabled) { %>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase border border-emerald-500/30 font-mono">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>PROGRAM AKTIF</span>
+          </span>
+        <% } else { %>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold uppercase border border-amber-500/30 font-mono">
+            <i class="fa-solid fa-pause text-xs"></i>
+            <span>DALAM PEMELIHARAAN</span>
+          </span>
+        <% } %>
+      </div>
+
+      <div class="max-w-3xl space-y-2">
+        <h1 class="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white font-outfit">
+          <%= (typeof settings !== 'undefined' && settings.partnerBannerTitle) ? settings.partnerBannerTitle : 'Partner Resmi PutzPay' %>
+        </h1>
+        <p class="text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed font-sans">
+          <%= (typeof settings !== 'undefined' && settings.partnerBannerSubtitle) ? settings.partnerBannerSubtitle : 'Temukan entitas bisnis, aggregator pembayaran, dan platform digital terpercaya yang terhubung dalam jaringan transaksi resmi PutzPay.' %>
+        </p>
+      </div>
+
+      <!-- Quick Metrics Pill -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-4 border-t border-slate-800 text-xs">
+        <div class="p-3 rounded-lg sm:rounded-2xl bg-slate-800/60 border border-slate-700/60">
+          <span class="text-slate-400 text-[11px] block font-mono">Partner Terdaftar</span>
+          <span class="text-base sm:text-lg font-bold font-outfit text-white"><%= (typeof partners !== 'undefined') ? partners.length : 0 %> Partner</span>
+        </div>
+        <div class="p-3 rounded-lg sm:rounded-2xl bg-slate-800/60 border border-slate-700/60">
+          <span class="text-slate-400 text-[11px] block font-mono">Integrasi API</span>
+          <span class="text-base sm:text-lg font-bold font-outfit text-emerald-400">Direct Gateway</span>
+        </div>
+        <div class="p-3 rounded-lg sm:rounded-2xl bg-slate-800/60 border border-slate-700/60">
+          <span class="text-slate-400 text-[11px] block font-mono">Ketersediaan Sistem</span>
+          <span class="text-base sm:text-lg font-bold font-outfit text-blue-400">99.9% Uptime</span>
+        </div>
+        <div class="p-3 rounded-lg sm:rounded-2xl bg-slate-800/60 border border-slate-700/60">
+          <span class="text-slate-400 text-[11px] block font-mono">Status Kemitraan</span>
+          <span class="text-base sm:text-lg font-bold font-outfit text-amber-300">Terverifikasi</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if (typeof isPartnerEnabled !== 'undefined' && !isPartnerEnabled) { %>
+    <!-- Notice Pemeliharaan / Nonaktif -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-8 sm:p-14 shadow-sm sm:shadow-card text-center space-y-6">
+      <div class="w-16 h-16 rounded-2xl sm:rounded-3xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center text-2xl mx-auto shadow-xs">
+        <i class="fa-solid fa-wrench"></i>
+      </div>
+      <div class="space-y-2 max-w-lg mx-auto">
+        <h2 class="text-base sm:text-lg lg:text-xl lg:text-2xl font-bold text-slate-900 font-outfit">Halaman Partner Sedang Diperbarui</h2>
+        <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+          Direktori kemitraan saat ini sedang menjalani audit berkala dan peningkatan infrastruktur. Silakan hubungi Customer Support kami jika Anda membutuhkan informasi kemitraan mendesak.
+        </p>
+      </div>
+      <div class="pt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+        <a href="<%= (typeof settings !== 'undefined' && settings.partnerCtaUrl) ? settings.partnerCtaUrl : 'https://t.me/PutzOfficial' %>" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-xs font-semibold font-outfit shadow-btn transition-all inline-flex items-center gap-1.5 sm:gap-2">
+          <i class="fa-solid fa-headset text-xs"></i> Hubungi Customer Care
+        </a>
+        <a href="/" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-6 py-2.5 rounded-xl text-xs font-semibold font-outfit transition-all inline-flex items-center gap-1.5 sm:gap-2">
+          <i class="fa-solid fa-house text-xs"></i> Kembali ke Beranda
+        </a>
+      </div>
+    </div>
+  <% } else { %>
+
+    <!-- TOOLBAR: SEARCH & CATEGORY FILTER -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm sm:shadow-card space-y-4">
+      <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        <!-- Live Search Input -->
+        <div class="relative flex-1 min-w-0">
+          <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+          <input 
+            type="text" 
+            id="partnerSearchInput" 
+            placeholder="Cari nama partner, kategori, atau layanan..." 
+            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-lg sm:rounded-2xl text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-sans"
+          />
+        </div>
+
+        <!-- Partnership Button CTA Header -->
+        <div class="shrink-0">
+          <a href="#becomePartnerSection" class="w-full sm:w-auto bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-4 py-2.5 rounded-lg sm:rounded-2xl text-xs font-semibold font-outfit flex items-center justify-center gap-1.5 sm:gap-2 transition-all">
+            <i class="fa-solid fa-file-signature text-xs"></i>
+            <span>Daftar Kemitraan</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Categories Filter Tabs -->
+      <% 
+        const categories = ['Semua'];
+        if (typeof partners !== 'undefined' && Array.isArray(partners)) {
+          partners.forEach(p => {
+            if (p.category && !categories.includes(p.category)) {
+              categories.push(p.category);
+            }
+          });
+        }
+      %>
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar pt-1 border-t border-slate-100">
+        <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider mr-2 shrink-0">Filter:</span>
+        <% categories.forEach((cat, idx) => { %>
+          <button 
+            type="button" 
+            onclick="filterPartnersByCategory('<%= cat %>')" 
+            class="category-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium font-sans whitespace-nowrap transition-all <%= idx === 0 ? 'bg-blue-600 text-white shadow-xs font-semibold active-filter' : 'bg-slate-100 hover:bg-slate-200 text-slate-600' %>"
+            data-category="<%= cat %>"
+          >
+            <%= cat %>
+          </button>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- PARTNERS DIRECTORY GRID -->
+    <div id="partnersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <% if (typeof partners !== 'undefined' && partners.length > 0) { %>
+        <% partners.forEach(partner => { %>
+          <div 
+            class="partner-card bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl sm:rounded-3xl p-6 shadow-sm sm:shadow-card hover:shadow-card-hover sm:shadow-card-hover transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+            data-name="<%= (partner.name || '').toLowerCase() %>"
+            data-category="<%= partner.category || '' %>"
+            data-desc="<%= (partner.description || '').toLowerCase() %>"
+          >
+            <!-- Background accent glow on hover -->
+            <div class="absolute -top-12 -right-12 w-28 h-28 bg-blue-500/5 rounded-full blur-xl group-hover:bg-blue-500/10 transition-all pointer-events-none"></div>
+
+            <div class="space-y-4">
+              <!-- Card Top: Logo & Tier Badge -->
+              <div class="flex items-start justify-between gap-2 sm:gap-3">
+                <div class="w-14 h-14 rounded-lg sm:rounded-2xl bg-slate-50 border border-slate-200/80 p-1.5 flex items-center justify-center shrink-0 shadow-xs group-hover:border-blue-200 transition-colors">
+                  <% if (partner.logoUrl) { %>
+                    <img 
+                      src="<%= partner.logoUrl %>" 
+                      alt="<%= partner.name %>" 
+                      class="w-full h-full object-contain rounded-xl"
+                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                    />
+                    <div class="hidden w-full h-full rounded-xl bg-blue-50 text-blue-600 items-center justify-center font-bold text-sm font-outfit">
+                      <%= (partner.name || 'P').substring(0, 2).toUpperCase() %>
+                    </div>
+                  <% } else { %>
+                    <div class="w-full h-full rounded-xl bg-gradient-to-tr from-blue-50 to-indigo-50 text-blue-600 flex items-center justify-center font-bold text-sm font-outfit">
+                      <%= (partner.name || 'P').substring(0, 2).toUpperCase() %>
+                    </div>
+                  <% } %>
+                </div>
+
+                <!-- Tier Badge -->
+                <div>
+                  <% if (partner.tier === 'strategic') { %>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-semibold font-mono">
+                      <i class="fa-solid fa-crown text-amber-500 text-[10px]"></i>
+                      <span><%= partner.badge || 'Strategic Partner' %></span>
+                    </span>
+                  <% } else if (partner.tier === 'certified') { %>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold font-mono">
+                      <i class="fa-solid fa-certificate text-emerald-500 text-[10px]"></i>
+                      <span><%= partner.badge || 'Certified Partner' %></span>
+                    </span>
+                  <% } else if (partner.tier === 'verified') { %>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-[11px] font-semibold font-mono">
+                      <i class="fa-solid fa-circle-check text-indigo-500 text-[10px]"></i>
+                      <span><%= partner.badge || 'Verified Merchant' %></span>
+                    </span>
+                  <% } else { %>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-semibold font-mono">
+                      <i class="fa-solid fa-shield-check text-blue-500 text-[10px]"></i>
+                      <span><%= partner.badge || 'Official Partner' %></span>
+                    </span>
+                  <% } %>
+                </div>
+              </div>
+
+              <!-- Partner Information -->
+              <div class="space-y-1.5">
+                <div class="flex items-center gap-1.5">
+                  <h3 class="text-base font-bold text-slate-900 font-outfit group-hover:text-blue-600 transition-colors">
+                    <%= partner.name %>
+                  </h3>
+                  <i class="fa-solid fa-circle-check text-blue-600 text-xs shrink-0" title="Terverifikasi Resmi"></i>
+                </div>
+
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                  <span class="text-[11px] font-medium text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-lg">
+                    <i class="fa-solid fa-tag text-[9px] text-slate-400 mr-1"></i><%= partner.category || 'Fintech & Payment' %>
+                  </span>
+                </div>
+
+                <p class="text-xs text-slate-600 leading-relaxed font-sans pt-1">
+                  <%= partner.description || 'Mitra kemitraan resmi terverifikasi dalam ekosistem payment gateway PutzPay.' %>
+                </p>
+              </div>
+            </div>
+
+            <!-- Card Bottom: Link Action -->
+            <div class="pt-5 mt-5 border-t border-slate-100 flex items-center justify-between gap-2 sm:gap-3">
+              <div class="flex items-center gap-1 text-[11px] font-mono text-slate-400">
+                <i class="fa-solid fa-shield-halved text-emerald-500"></i>
+                <span>Resmi & Sah</span>
+              </div>
+
+              <% if (partner.websiteUrl) { %>
+                <a 
+                  href="<%= partner.websiteUrl %>" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="inline-flex items-center gap-1.5 text-xs font-semibold font-outfit text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3.5 py-1.5 rounded-xl transition-all"
+                >
+                  <span>Kunjungi</span>
+                  <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                </a>
+              <% } else { %>
+                <span class="inline-flex items-center gap-1 text-xs font-medium text-slate-400 font-mono">
+                  <span>Terintegrasi API</span>
+                </span>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <!-- Empty State -->
+        <div class="col-span-full bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-12 text-center space-y-4">
+          <div class="w-14 h-14 rounded-lg sm:rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center text-xl mx-auto">
+            <i class="fa-solid fa-handshake-slash"></i>
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-base font-bold text-slate-800 font-outfit">Belum Ada Partner Yang Ditampilkan</h3>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto">Daftar mitra kemitraan resmi PutzPay akan segera diperbarui secara berkala.</p>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Empty Search State (Hidden by default) -->
+    <div id="noSearchResults" class="hidden bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl p-10 text-center space-y-3">
+      <div class="w-12 h-12 rounded-lg sm:rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center text-lg mx-auto">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </div>
+      <h3 class="text-sm font-bold text-slate-800 font-outfit">Partner Tidak Ditemukan</h3>
+      <p class="text-xs text-slate-500 max-w-sm mx-auto">Tidak ada partner yang cocok dengan kata kunci pencarian atau filter yang dipilih.</p>
+      <button type="button" onclick="resetFilters()" class="text-xs font-semibold text-blue-600 hover:underline pt-2">
+        Reset Pencarian & Filter
+      </button>
+    </div>
+
+    <!-- BECOME A PARTNER SECTION (CTA) -->
+    <div id="becomePartnerSection" class="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 text-white border border-slate-800 rounded-2xl sm:rounded-3xl p-6 sm:p-10 shadow-sm sm:shadow-card relative overflow-hidden space-y-8">
+      <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="space-y-2 max-w-2xl">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider border border-blue-500/30 font-mono">
+            <i class="fa-solid fa-rocket text-xs"></i> Peluang Kolaborasi
+          </div>
+          <h2 class="text-xl sm:text-3xl font-bold font-outfit text-white">
+            Tertarik Bergabung Menjadi Partner Resmi PutzPay?
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
+            Tingkatkan volume bisnis Anda dengan ekosistem pembayaran QRIS otomatis, API tanpa jeda, biaya transaksi paling bersaing, serta eksposur direktori resmi.
+          </p>
+        </div>
+
+        <div class="shrink-0 w-full sm:w-auto">
+          <a 
+            href="<%= (typeof settings !== 'undefined' && settings.partnerCtaUrl) ? settings.partnerCtaUrl : 'https://t.me/PutzOfficial' %>" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-lg sm:rounded-2xl text-xs font-bold font-outfit shadow-btn transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95"
+          >
+            <i class="fa-brands fa-telegram text-sm"></i>
+            <span><%= (typeof settings !== 'undefined' && settings.partnerCtaText) ? settings.partnerCtaText : 'Ajukan Kemitraan Resmi' %></span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 4 Pillars of Partnership -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6 border-t border-slate-800/80">
+        <div class="p-4 rounded-lg sm:rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-2">
+          <div class="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center text-xs font-bold">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <h4 class="text-xs font-bold text-white font-outfit">Direct API & Webhook</h4>
+          <p class="text-[11px] text-slate-400 leading-relaxed">Integrasi langsung QRIS dinamis dan notifikasi callback otomatis instan ke server Anda.</p>
+        </div>
+
+        <div class="p-4 rounded-lg sm:rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-2">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-xs font-bold">
+            <i class="fa-solid fa-percent"></i>
+          </div>
+          <h4 class="text-xs font-bold text-white font-outfit">Skema Fee Prioritas</h4>
+          <p class="text-[11px] text-slate-400 leading-relaxed">Penawaran MDR dan biaya admin withdraw khusus untuk partner bisnis bervolume tinggi.</p>
+        </div>
+
+        <div class="p-4 rounded-lg sm:rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-2">
+          <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center text-xs font-bold">
+            <i class="fa-solid fa-certificate"></i>
+          </div>
+          <h4 class="text-xs font-bold text-white font-outfit">Sertifikasi & Lencana</h4>
+          <p class="text-[11px] text-slate-400 leading-relaxed">Pencantuman profil bisnis di direktori resmi PutzPay lengkap dengan badge terverifikasi.</p>
+        </div>
+
+        <div class="p-4 rounded-lg sm:rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-2">
+          <div class="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center justify-center text-xs font-bold">
+            <i class="fa-solid fa-headset"></i>
+          </div>
+          <h4 class="text-xs font-bold text-white font-outfit">Dukungan Tim Ahli 24/7</h4>
+          <p class="text-[11px] text-slate-400 leading-relaxed">Kanal komunikasi prioritas untuk monitoring stabilitas sistem transaksi secara nonstop.</p>
+        </div>
+      </div>
+    </div>
+
+  <% } %>
+
+</div>
+
+<script>
+  let activeCategory = 'Semua';
+  const searchInput = document.getElementById('partnerSearchInput');
+  const partnerCards = document.querySelectorAll('.partner-card');
+  const noSearchResults = document.getElementById('noSearchResults');
+  const partnersGrid = document.getElementById('partnersGrid');
+
+  function applyFilters() {
+    const query = (searchInput?.value || '').trim().toLowerCase();
+    let visibleCount = 0;
+
+    partnerCards.forEach(card => {
+      const name = card.getAttribute('data-name') || '';
+      const category = card.getAttribute('data-category') || '';
+      const desc = card.getAttribute('data-desc') || '';
+
+      const matchSearch = !query || name.includes(query) || category.toLowerCase().includes(query) || desc.includes(query);
+      const matchCategory = (activeCategory === 'Semua') || (category === activeCategory);
+
+      if (matchSearch && matchCategory) {
+        card.classList.remove('hidden');
+        visibleCount++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    if (noSearchResults) {
+      if (visibleCount === 0 && partnerCards.length > 0) {
+        noSearchResults.classList.remove('hidden');
+      } else {
+        noSearchResults.classList.add('hidden');
+      }
+    }
+  }
+
+  function filterPartnersByCategory(cat) {
+    activeCategory = cat;
+    document.querySelectorAll('.category-filter-btn').forEach(btn => {
+      if (btn.getAttribute('data-category') === cat) {
+        btn.className = 'category-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold font-sans whitespace-nowrap transition-all bg-blue-600 text-white shadow-xs active-filter';
+      } else {
+        btn.className = 'category-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium font-sans whitespace-nowrap transition-all bg-slate-100 hover:bg-slate-200 text-slate-600';
+      }
+    });
+    applyFilters();
+  }
+
+  function resetFilters() {
+    if (searchInput) searchInput.value = '';
+    filterPartnersByCategory('Semua');
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', applyFilters);
+  }
+</script>
+
+<%- include('partials/footer') %>

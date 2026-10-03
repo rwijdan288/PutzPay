@@ -1,0 +1,256 @@
+<%- include('partials/header') %>
+
+<div class="max-w-4xl lg:max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 animate-fade-in">
+
+  <% if (error) { %>
+    <!-- Error / Inactive Link Card -->
+    <div class="max-w-md mx-auto bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-8 sm:p-10 text-center shadow-xl space-y-4">
+      <div class="w-16 h-16 mx-auto rounded-lg sm:rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-3xl shadow-soft">
+        <i class="fa-solid fa-circle-exclamation"></i>
+      </div>
+      <h2 class="text-base sm:text-lg font-bold text-slate-900 font-sans"><%= error %></h2>
+      <p class="text-xs sm:text-sm text-slate-500 font-sans leading-relaxed">
+        Tautan pembayaran ini mungkin sudah kadaluarsa, dinonaktifkan oleh merchant, atau URL yang Anda tuju salah.
+      </p>
+      <div class="pt-3">
+        <a href="/" class="inline-flex items-center gap-1.5 sm:gap-2 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors">
+          <i class="fa-solid fa-house text-xs"></i> Kembali ke Beranda
+        </a>
+      </div>
+    </div>
+  <% } else { %>
+    
+    <!-- Main Responsive Checkout Container -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-start">
+      
+      <!-- Left Column: Product & Merchant Details -->
+      <div class="md:col-span-5 lg:col-span-5 space-y-5">
+        
+        <!-- Merchant & Item Card -->
+        <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-sm sm:shadow-card space-y-5 relative overflow-hidden">
+          <div class="h-2 bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500 absolute top-0 left-0 right-0"></div>
+
+          <!-- Merchant Info -->
+          <div class="flex items-center gap-2 sm:gap-3.5 pt-1">
+            <div class="w-13 h-13 rounded-lg sm:rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-indigo-600 font-bold text-xl shadow-xs overflow-hidden shrink-0">
+              <% if (merchant && merchant.profilePicture) { %>
+                <img src="<%= merchant.profilePicture %>" alt="<%= merchant.name || merchant.username %>" class="w-full h-full object-cover">
+              <% } else { %>
+                <i class="fa-solid fa-store"></i>
+              <% } %>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <h2 class="text-sm font-bold text-slate-900 font-sans truncate">
+                  <%= merchant ? (merchant.name || merchant.username) : 'Merchant Resmi' %>
+                </h2>
+                <span class="text-blue-600 text-xs" title="Merchant Terverifikasi">
+                  <i class="fa-solid fa-circle-check"></i>
+                </span>
+              </div>
+              <p class="text-[11px] font-mono text-slate-400">
+                Official Merchant • <%= settings.name || 'PutzPay' %>
+              </p>
+            </div>
+          </div>
+
+          <!-- Title & Description -->
+          <div class="border-t border-slate-100 pt-4 space-y-2">
+            <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+              Item / Layanan
+            </span>
+            <h1 class="text-base sm:text-lg lg:text-xl lg:text-2xl font-black text-slate-900 font-sans tracking-tight leading-snug">
+              <%= link.title %>
+            </h1>
+            <% if (link.description) { %>
+              <p class="text-xs sm:text-sm text-slate-600 font-sans leading-relaxed whitespace-pre-line pt-1">
+                <%= link.description %>
+              </p>
+            <% } %>
+          </div>
+
+          <!-- Price Highlight (if Fixed) -->
+          <% if (link.amountType === 'fixed') { %>
+            <div class="bg-indigo-50/70 border border-indigo-100 rounded-lg sm:rounded-2xl p-4 sm:p-5 text-center">
+              <span class="text-[11px] font-mono font-semibold text-indigo-600 uppercase tracking-wider block mb-1">
+                Total Tagihan Pembayaran
+              </span>
+              <p class="text-base sm:text-lg lg:text-xl lg:text-2xl lg:text-3xl lg:text-4xl font-black text-slate-900 font-outfit">
+                Rp <%= link.amount.toLocaleString('id-ID') %>
+              </p>
+              <span class="text-[10px] text-slate-400 font-mono mt-1 block">Harga pas belum termasuk kode verifikasi</span>
+            </div>
+          <% } %>
+
+        </div>
+
+        <!-- Trust & Supported Payments Info Card -->
+        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl sm:rounded-3xl p-5 sm:p-6 space-y-3.5">
+          <div class="flex items-center gap-1.5 sm:gap-2 text-xs font-bold text-slate-700 font-sans">
+            <i class="fa-solid fa-shield-halved text-emerald-600"></i>
+            <span>Jaminan Transaksi Aman & Terverifikasi</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-sans leading-relaxed">
+            Pembayaran diproses otomatis melalui QRIS Realtime Settlement. Didukung oleh seluruh aplikasi perbankan dan dompet digital di Indonesia:
+          </p>
+          <div class="flex flex-wrap gap-1.5 text-[10px] font-mono font-semibold text-slate-600">
+            <span class="bg-white border border-slate-200 px-2 py-1 rounded-lg">BCA</span>
+            <span class="bg-white border border-slate-200 px-2 py-1 rounded-lg">Mandiri</span>
+            <span class="bg-white border border-slate-200 px-2 py-1 rounded-lg">BRI</span>
+            <span class="bg-white border border-slate-200 px-2 py-1 rounded-lg">BNI</span>
+            <span class="bg-white border border-slate-200 px-2 py-1 rounded-lg">GoPay</span>
+            <span class="bg-white border border-slate-200 px-2 py-1 rounded-lg">OVO</span>
+            <span class="bg-white border border-slate-200 px-2 py-1 rounded-lg">DANA</span>
+            <span class="bg-white border border-slate-200 px-2 py-1 rounded-lg">ShopeePay</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Checkout Form -->
+      <div class="md:col-span-7 lg:col-span-7">
+        <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-sm sm:shadow-card overflow-hidden">
+          
+          <div class="px-6 sm:px-8 pt-6 sm:pt-8 pb-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h2 class="text-base sm:text-lg font-bold text-slate-900 font-sans">Formulir Pembayaran</h2>
+              <p class="text-xs text-slate-500 font-sans mt-0.5">Isi rincian untuk membuat QRIS resmi</p>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+          </div>
+
+          <form id="checkoutForm" onsubmit="handleCheckout(event)" class="p-6 sm:p-8 space-y-5">
+            
+            <!-- Open Amount Selection (if Free / Open) -->
+            <% if (link.amountType !== 'fixed') { %>
+              <div class="space-y-2">
+                <label class="block text-xs font-bold text-slate-800 font-sans">
+                  Nominal Pembayaran (Rp) <span class="text-rose-500">*</span>
+                </label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 select-none font-sans">Rp</span>
+                  <input type="number" id="payAmount" required min="<%= link.minAmount || 1000 %>" placeholder="Contoh: 50000" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl text-base font-mono font-bold focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                  <span>Minimal: Rp <%= (link.minAmount || 1000).toLocaleString('id-ID') %></span>
+                  <span>Kelipatan Bebas</span>
+                </div>
+
+                <!-- Quick Nominal Chips -->
+                <div class="grid grid-cols-4 sm:grid-cols-5 gap-1.5 sm:gap-2 pt-1">
+                  <button type="button" onclick="setNominal(10000)" class="py-2 px-2 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 text-slate-700 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer text-center active:scale-95">
+                    +10rb
+                  </button>
+                  <button type="button" onclick="setNominal(25000)" class="py-2 px-2 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 text-slate-700 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer text-center active:scale-95">
+                    +25rb
+                  </button>
+                  <button type="button" onclick="setNominal(50000)" class="py-2 px-2 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 text-slate-700 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer text-center active:scale-95">
+                    +50rb
+                  </button>
+                  <button type="button" onclick="setNominal(100000)" class="py-2 px-2 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 text-slate-700 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer text-center active:scale-95">
+                    +100rb
+                  </button>
+                  <button type="button" onclick="setNominal(250000)" class="py-2 px-2 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 text-slate-700 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer text-center active:scale-95 hidden sm:block">
+                    +250rb
+                  </button>
+                </div>
+              </div>
+            <% } %>
+
+            <!-- Customer Name -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-bold text-slate-800 font-sans">
+                Nama Lengkap / Pembeli <span class="text-rose-500">*</span>
+              </label>
+              <div class="relative">
+                <i class="fa-regular fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" id="custName" required placeholder="Masukkan nama Anda" class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl text-xs font-sans focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all">
+              </div>
+            </div>
+
+            <!-- Customer Phone / WhatsApp -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-bold text-slate-800 font-sans">
+                Nomor WhatsApp (Opsional)
+              </label>
+              <div class="relative">
+                <i class="fa-brands fa-whatsapp absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <input type="tel" id="custPhone" placeholder="08xxxxxxxxxx" class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-2xl text-xs font-sans focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all">
+              </div>
+              <p class="text-[11px] text-slate-400">Digunakan untuk kirim konfirmasi struk pembayaran jika dibutuhkan.</p>
+            </div>
+
+            <!-- Submit Action -->
+            <div class="pt-3 space-y-3">
+              <button type="submit" id="paySubmitBtn" class="w-full py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm rounded-lg sm:rounded-2xl shadow-btn transition-all flex items-center justify-center gap-1.5 sm:gap-2.5 cursor-pointer active:scale-98">
+                <i class="fa-solid fa-qrcode text-sm"></i>
+                <span>Lanjut ke Pembayaran QRIS</span>
+              </button>
+
+              <div class="flex items-center justify-center gap-1.5 sm:gap-2 text-[11px] font-mono text-slate-400">
+                <i class="fa-solid fa-lock text-emerald-500 text-xs"></i>
+                <span>Enkripsi 256-bit SSL • Settlement Otomatis</span>
+              </div>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+
+  <% } %>
+
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+  function setNominal(amount) {
+    const input = document.getElementById('payAmount');
+    if (input) {
+      input.value = amount;
+      input.focus();
+    }
+  }
+
+  async function handleCheckout(e) {
+    e.preventDefault();
+    const btn = document.getElementById('paySubmitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> <span>Menyiapkan QRIS...</span>';
+
+    const custName = document.getElementById('custName').value;
+    const custPhone = document.getElementById('custPhone') ? document.getElementById('custPhone').value : '';
+    const amountInput = document.getElementById('payAmount');
+    const amount = amountInput ? amountInput.value : null;
+
+    try {
+      const res = await fetch('/pay/<%= link ? link.code : "" %>/create-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: custName,
+          customerPhone: custPhone,
+          amount: amount
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Gagal membuat tagihan pembayaran');
+      }
+
+      // Redirect directly to the dedicated invoice & digital receipt page!
+      window.location.href = data.redirectUrl || ('/invoice/' + data.invoiceId);
+
+    } catch (err) {
+      alert(err.message || 'Terjadi kesalahan sistem');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-qrcode text-xs"></i> <span>Lanjut ke Pembayaran QRIS</span>';
+    }
+  }
+</script>

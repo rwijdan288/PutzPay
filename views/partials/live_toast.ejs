@@ -1,0 +1,253 @@
+<script src="/socket.io/socket.io.js"></script>
+
+<div id="liveToastContainer" class="fixed top-4 sm:top-5 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none flex flex-col items-center gap-1.5 sm:gap-2 max-w-[320px] sm:max-w-[340px] w-[calc(100%-1.5rem)]"></div>
+
+<script>
+  (function() {
+    window.CURRENT_USER_NAME = "<%= typeof user !== 'undefined' && user ? user.username : '' %>";
+
+    function sensorName(name) {
+      if (!name || typeof name !== 'string') return 'Pe******';
+      var clean = name.trim();
+      if (clean.length <= 2) {
+        return clean + '**';
+      }
+      return clean.substring(0, 2) + '*'.repeat(clean.length - 2);
+    }
+
+    function formatRupiah(amount) {
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0
+      }).format(amount || 0).replace(/\s+/g, '');
+    }
+
+    function getToastConfig(type, status) {
+      var t = (type || '').toLowerCase();
+      var s = (status || '').toLowerCase();
+
+      if (t === 'deposit_success' || (t.includes('deposit') && (s === 'paid' || s === 'success'))) {
+        return {
+          dotColor: 'bg-emerald-500',
+          progressBg: 'bg-emerald-500',
+          subtitle: 'Baru Saja Melakukan Deposit',
+          iconClass: 'fa-arrow-down-to-bracket',
+          iconBg: 'bg-emerald-50',
+          iconColor: 'text-emerald-600'
+        };
+      }
+
+      if (t === 'withdraw_success' || (t.includes('withdraw') && (s === 'success' || s === 'paid'))) {
+        return {
+          dotColor: 'bg-blue-500',
+          progressBg: 'bg-blue-500',
+          subtitle: 'Baru Saja Melakukan Withdraw',
+          iconClass: 'fa-arrow-up-from-bracket',
+          iconBg: 'bg-blue-50',
+          iconColor: 'text-blue-600'
+        };
+      }
+
+      if (t === 'payment_success' || (t.includes('payment') && (s === 'paid' || s === 'success'))) {
+        return {
+          dotColor: 'bg-purple-500',
+          progressBg: 'bg-purple-500',
+          subtitle: 'Baru Saja Melakukan Pembayaran',
+          iconClass: 'fa-circle-check',
+          iconBg: 'bg-purple-50',
+          iconColor: 'text-purple-600'
+        };
+      }
+
+      if (t === 'payment_failed' || s === 'failed' || s === 'rejected') {
+        return {
+          dotColor: 'bg-rose-500',
+          progressBg: 'bg-rose-500',
+          subtitle: 'Transaksi Gagal',
+          iconClass: 'fa-triangle-exclamation',
+          iconBg: 'bg-rose-50',
+          iconColor: 'text-rose-600'
+        };
+      }
+
+      if (t === 'payment_cancelled' || s === 'cancelled') {
+        return {
+          dotColor: 'bg-slate-400',
+          progressBg: 'bg-slate-500',
+          subtitle: 'Membatalkan Transaksi',
+          iconClass: 'fa-ban',
+          iconBg: 'bg-slate-100',
+          iconColor: 'text-slate-600'
+        };
+      }
+
+      if (t === 'payment_expired' || s === 'expired') {
+        return {
+          dotColor: 'bg-amber-500',
+          progressBg: 'bg-amber-500',
+          subtitle: 'Invoice Kedaluwarsa',
+          iconClass: 'fa-clock',
+          iconBg: 'bg-amber-50',
+          iconColor: 'text-amber-600'
+        };
+      }
+
+      return {
+        dotColor: 'bg-blue-500',
+        progressBg: 'bg-blue-500',
+        subtitle: 'Notifikasi Transaksi',
+        iconClass: 'fa-receipt',
+        iconBg: 'bg-blue-50',
+        iconColor: 'text-blue-600'
+      };
+    }
+
+    var toastQueue = [];
+    var isShowingToast = false;
+
+    function enqueueLiveToast(payload) {
+      if (!payload) return;
+      var status = (payload.status || '').toLowerCase();
+      var allowedStatuses = ['paid', 'success', 'failed', 'rejected', 'cancelled', 'expired'];
+      if (!allowedStatuses.includes(status)) return;
+
+      toastQueue.push(payload);
+      processToastQueue();
+    }
+
+    function processToastQueue() {
+      if (isShowingToast || toastQueue.length === 0) return;
+      isShowingToast = true;
+      var payload = toastQueue.shift();
+      showLiveToast(payload);
+    }
+
+    function showLiveToast(payload) {
+      var container = document.getElementById('liveToastContainer');
+      if (!container) {
+        isShowingToast = false;
+        return;
+      }
+
+      var maskedName = sensorName(payload.username);
+      var formattedAmount = formatRupiah(payload.amount);
+      var config = getToastConfig(payload.type, payload.status);
+
+      var toastEl = document.createElement('div');
+      toastEl.className = 'bg-white text-slate-900 border border-slate-200/90 rounded-lg sm:rounded-2xl p-3 shadow-xl w-full transition-all duration-300 transform -translate-y-4 opacity-0 pointer-events-auto relative overflow-hidden flex flex-col gap-1.5 font-sans text-xs';
+
+      toastEl.innerHTML = `
+        <div class="toast-progress absolute top-0 left-0 h-1 ${config.progressBg}" style="width: 100%;"></div>
+        <div class="flex items-center justify-between gap-1.5 border-b border-slate-100 pb-1.5 pt-0.5">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="w-2 h-2 rounded-full ${config.dotColor} shrink-0 animate-pulse"></span>
+            <span class="text-[11px] font-bold text-slate-900 tracking-wide truncate">${maskedName}</span>
+          </div>
+          <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider shrink-0 font-mono">Realtime</span>
+        </div>
+        <div class="flex items-center justify-between gap-1.5 sm:gap-2 pt-0.5">
+          <div class="flex flex-col min-w-0">
+            <span class="text-[10px] font-medium text-slate-500 leading-tight truncate">${config.subtitle}</span>
+            <span class="text-xs sm:text-sm font-bold text-slate-900 font-outfit">${formattedAmount}</span>
+          </div>
+          <div class="w-8 h-8 rounded-xl ${config.iconBg} flex items-center justify-center shrink-0">
+            <i class="fas ${config.iconClass} ${config.iconColor} text-xs"></i>
+          </div>
+        </div>
+      `;
+
+      container.appendChild(toastEl);
+
+      requestAnimationFrame(function() {
+        toastEl.classList.remove('-translate-y-4', 'opacity-0');
+        toastEl.classList.add('translate-y-0', 'opacity-100');
+      });
+
+      var DURATION = 5000;
+      var remainingTime = DURATION;
+      var startTime = Date.now();
+      var timerId = null;
+      var progressBar = toastEl.querySelector('.toast-progress');
+
+      function updateProgressBar() {
+        if (progressBar) {
+          var percentage = Math.max(0, (remainingTime / DURATION) * 100);
+          progressBar.style.width = percentage + '%';
+        }
+      }
+
+      function startTimer() {
+        startTime = Date.now();
+        timerId = setTimeout(function() {
+          hideToast();
+        }, remainingTime);
+      }
+
+      function pauseTimer() {
+        if (timerId) {
+          clearTimeout(timerId);
+          timerId = null;
+          remainingTime -= (Date.now() - startTime);
+          if (remainingTime < 0) remainingTime = 0;
+          updateProgressBar();
+        }
+      }
+
+      function hideToast() {
+        if (timerId) clearTimeout(timerId);
+        toastEl.classList.remove('translate-y-0', 'opacity-100');
+        toastEl.classList.add('-translate-y-4', 'opacity-0');
+
+        setTimeout(function() {
+          if (toastEl && toastEl.parentNode) {
+            toastEl.parentNode.removeChild(toastEl);
+          }
+          isShowingToast = false;
+          processToastQueue();
+        }, 300);
+      }
+
+      toastEl.addEventListener('mouseenter', pauseTimer);
+      toastEl.addEventListener('mouseleave', function() {
+        if (remainingTime > 0) startTimer();
+      });
+
+      toastEl.addEventListener('click', hideToast);
+
+      startTimer();
+    }
+
+    if (typeof io !== 'undefined') {
+      var socket = io();
+
+      socket.on('transaction_notification', function(payload) {
+        if (!payload) return;
+        var myName = (window.CURRENT_USER_NAME || '').toLowerCase().trim();
+        var targetUser = (payload.username || '').toLowerCase().trim();
+        if (myName && targetUser && myName === targetUser) return;
+        enqueueLiveToast(payload);
+      });
+
+      socket.on('deposit_success', function(data) {
+        if (!data) return;
+        enqueueLiveToast({
+          type: 'deposit_success',
+          status: 'paid',
+          username: data.username || 'Pengguna',
+          amount: data.amount || data.nominal || 0
+        });
+      });
+
+      socket.on('withdraw_success', function(data) {
+        if (!data) return;
+        enqueueLiveToast({
+          type: 'withdraw_success',
+          status: 'success',
+          username: data.username || 'Pengguna',
+          amount: data.amount || data.nominal || 0
+        });
+      });
+    }
+  })();
+</script>
